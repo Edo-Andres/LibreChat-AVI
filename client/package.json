@@ -74,6 +74,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.394.0",
     "match-sorter": "^6.3.4",
+    "posthog-js": "^1.258.2",
     "qrcode.react": "^4.2.0",
     "rc-input-number": "^7.4.2",
     "react": "^18.2.0",
