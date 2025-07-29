@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{appName}} - Health Check Error ❌</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #dc3545; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
+        .error-icon { font-size: 48px; text-align: center; margin: 10px 0; }
+        .info-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .info-table td { padding: 8px; border-bottom: 1px solid #ddd; }
+        .info-table td:first-child { font-weight: bold; width: 40%; }
+        .error-details { background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .error-code { background-color: #f5f5f5; padding: 10px; border-left: 4px solid #dc3545; font-family: monospace; word-break: break-word; }
+        .causes-list { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .causes-list ul { margin: 0; }
+        .action-required { background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; color: #666; font-size: 12px; margin-top: 20px; }
+        .urgent { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚨 Health Check Diario - Error Detectado</h1>
+        <div class="error-icon">⚠️</div>
+    </div>
+    
+    <div class="content">
+        <div class="error-details">
+            <p class="urgent">⚠️ ATENCIÓN: Se detectó un problema en el health check diario de {{appName}}.</p>
+            <p>El sistema automatizado no pudo completar las pruebas de funcionamiento básicas.</p>
+        </div>
+        
+        <table class="info-table">
+            <tr>
+                <td>🌐 Aplicación:</td>
+                <td>{{appName}}</td>
+            </tr>
+            <tr>
+                <td>🔗 URL:</td>
+                <td><a href="{{url}}">{{url}}</a></td>
+            </tr>
+            <tr>
+                <td>📅 Fecha/Hora:</td>
+                <td>{{timestamp}}</td>
+            </tr>
+            <tr>
+                <td>🤖 Agente Testado:</td>
+                <td><code>{{agentId}}</code></td>
+            </tr>
+        </table>
+        
+        <h3>❌ Detalle del Error:</h3>
+        <div class="error-code">
+            {{errorMessage}}
+        </div>
+        
+        <div class="causes-list">
+            <h3>🔍 Posibles Causas:</h3>
+            <ul>
+                <li><strong>Rate Limit API (429):</strong> Demasiadas solicitudes a Gemini/OpenAI</li>
+                <li><strong>Problemas de Conectividad:</strong> Red o DNS no disponible</li>
+                <li><strong>Servicio Fuera de Línea:</strong> LibreChat no responde</li>
+                <li><strong>Error de Configuración:</strong> Credenciales o agente inválido</li>
+                <li><strong>Timeout:</strong> Respuesta del servidor demasiado lenta</li>
+                <li><strong>Error de Base de Datos:</strong> MongoDB no disponible</li>
+                <li><strong>Error del Proveedor de IA:</strong> Gemini/OpenAI con problemas</li>
+            </ul>
+        </div>
+        
+        <div class="action-required">
+            <h3>🚨 Acción Requerida:</h3>
+            <p><strong>Por favor revisa el estado del servicio inmediatamente:</strong></p>
+            <ol>
+                <li>Verifica que <a href="{{url}}">{{url}}</a> esté accesible</li>
+                <li>Revisa los logs del contenedor API</li>
+                <li>Confirma que MongoDB esté funcionando</li>
+                <li>Verifica el estado de las APIs de IA (Gemini, OpenAI)</li>
+                <li>Prueba login manual en la interfaz web</li>
+            </ol>
+        </div>
+        
+        <h3>📋 Comandos de Diagnóstico:</h3>
+        <div class="error-code">
+# Verificar estado de contenedores
+docker ps
+
+# Ver logs del API
+docker logs LibreChat-API-local -f
+
+# Probar health check manual
+docker exec -it LibreChat-API-local /bin/sh
+cd /app/api && npm run daily-health-check
+        </div>
+        
+        <p><em>Este es un reporte automático de error generado por el sistema de monitoreo de {{appName}}.</em></p>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; {{year}} {{appName}} - Sistema de Monitoreo Automático</p>
+        <p style="color: #dc3545;"><strong>Este email requiere atención inmediata.</strong></p>
+    </div>
+</body>
+</html> 
