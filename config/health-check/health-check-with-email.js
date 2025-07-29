@@ -212,6 +212,9 @@ class HealthCheckWithEmail {
         throw new Error(`Chat falló: status ${response.status}`);
       }
 
+      // Guardar respuesta completa antes de validar
+      this.testResults.details.fullResponseContent = JSON.stringify(response.data);
+      
       // Validar contenido de la respuesta para detectar errores
       this.validateResponseContent(response.data);
 
@@ -266,8 +269,8 @@ class HealthCheckWithEmail {
   validateResponseContent(data) {
     const dataStr = JSON.stringify(data).toLowerCase();
     
-    // Guardar la respuesta completa del agente para debugging
-    this.testResults.details.fullAgentResponse = data.text || JSON.stringify(data);
+    // Guardar la respuesta completa del agente para debugging (contenido completo como health-check-audit original)
+    this.testResults.details.fullResponseContent = JSON.stringify(data);
     
     // Detectar errores comunes en las respuestas
     const errorPatterns = [

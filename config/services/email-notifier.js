@@ -84,17 +84,17 @@ class EmailNotifier {
 
     let errorHTML = '';
     if (!isSuccess && error) {
-      const errorType = testResults?.details?.errorType || 'UNKNOWN_ERROR';
       const detectedPattern = testResults?.details?.detectedErrorPattern || 'no específico';
-      const agentResponse = testResults?.details?.fullAgentResponse || 'No disponible';
+      const fullResponseContent = testResults?.details?.fullResponseContent || 'No disponible';
       
       errorHTML = `
         <h3>❌ Detalles del Error:</h3>
-        <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 15px; margin: 10px 0; font-family: monospace; font-size: 13px;">
-          <div style="margin-bottom: 8px;"><strong>┌─ Error Detectado:</strong> ${detectedPattern}</div>
-          <div style="margin-bottom: 8px;"><strong>├─ Tipo de Error:</strong> ${errorType}</div>
-          <div style="margin-bottom: 0;"><strong>├─ Respuesta del Agente:</strong> "${agentResponse.substring(0, 200)}${agentResponse.length > 200 ? '...' : ''}"</div>
-        </div>
+        <ul style="line-height: 1.6;">
+          <li><strong>Error Detectado:</strong> ${detectedPattern}</li>
+          <li><strong>Contenido de Respuesta:</strong>
+            <pre style="background-color: #f1f1f1; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 11px; margin-top: 5px; max-height: 400px; overflow-y: auto; white-space: pre-wrap;">${fullResponseContent}</pre>
+          </li>
+        </ul>
       `;
     }
 
@@ -163,14 +163,12 @@ DETALLE DE PASOS:
     }
 
     if (!isSuccess && error) {
-      const errorType = testResults?.details?.errorType || 'UNKNOWN_ERROR';
       const detectedPattern = testResults?.details?.detectedErrorPattern || 'no específico';
-      const agentResponse = testResults?.details?.fullAgentResponse || 'No disponible';
+      const fullResponseContent = testResults?.details?.fullResponseContent || 'No disponible';
       
       text += `\nDETALLES DEL ERROR:\n`;
-      text += `Error Detectado: ${detectedPattern}\n`;
-      text += `Tipo de Error: ${errorType}\n`;
-      text += `Respuesta del Agente: "${agentResponse.substring(0, 300)}${agentResponse.length > 300 ? '...' : ''}"\n`;
+      text += `• Error Detectado: ${detectedPattern}\n`;
+      text += `• Contenido de Respuesta: \n${fullResponseContent}\n`;
     }
 
     text += `\n---\nNotificación automática - Sistema de Health Check LibreChat AVI`;
