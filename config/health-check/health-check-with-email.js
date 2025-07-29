@@ -266,6 +266,9 @@ class HealthCheckWithEmail {
   validateResponseContent(data) {
     const dataStr = JSON.stringify(data).toLowerCase();
     
+    // Guardar la respuesta completa del agente para debugging
+    this.testResults.details.fullAgentResponse = data.text || JSON.stringify(data);
+    
     // Detectar errores comunes en las respuestas
     const errorPatterns = [
       'error occurred while processing',
@@ -293,6 +296,20 @@ class HealthCheckWithEmail {
     // Buscar patrones de error en la respuesta
     for (const pattern of errorPatterns) {
       if (dataStr.includes(pattern)) {
+        // Determinar tipo de error
+        let errorType = 'UNKNOWN_ERROR';
+        if (pattern.includes('not found') || pattern.includes('404')) {
+          errorType = 'MODEL_NOT_FOUND';
+        } else if (pattern.includes('rate limit') || pattern.includes('quota')) {
+          errorType = 'API_LIMIT_EXCEEDED';
+        } else if (pattern.includes('unauthorized') || pattern.includes('forbidden')) {
+          errorType = 'AUTHENTICATION_ERROR';
+        } else if (pattern.includes('googlegenerativeai') || pattern.includes('generative')) {
+          errorType = 'GEMINI_API_ERROR';
+        } else if (pattern.includes('processing') || pattern.includes('went wrong')) {
+          errorType = 'PROCESSING_ERROR';
+        }
+        
         // Extraer mensaje de error más específico si es posible
         let errorMessage = `Error detectado en respuesta: ${pattern}`;
         
@@ -310,6 +327,8 @@ class HealthCheckWithEmail {
         // Guardar detalles del error para el reporte
         this.testResults.details.errorDetected = true;
         this.testResults.details.errorMessage = errorMessage;
+        this.testResults.details.detectedErrorPattern = pattern;
+        this.testResults.details.errorType = errorType;
         this.testResults.details.responseContent = JSON.stringify(data);
         
         throw new Error(errorMessage);
@@ -323,6 +342,8 @@ class HealthCheckWithEmail {
         const errorMessage = `Error reportado en respuesta: ${data.message || 'Error no especificado'}`;
         this.testResults.details.errorDetected = true;
         this.testResults.details.errorMessage = errorMessage;
+        this.testResults.details.detectedErrorPattern = 'response_error_flag';
+        this.testResults.details.errorType = 'RESPONSE_ERROR';
         this.testResults.details.responseContent = JSON.stringify(data);
         throw new Error(errorMessage);
       }
@@ -338,6 +359,8 @@ class HealthCheckWithEmail {
           const errorMessage = `Error en respuesta del chat: ${data.text}`;
           this.testResults.details.errorDetected = true;
           this.testResults.details.errorMessage = errorMessage;
+          this.testResults.details.detectedErrorPattern = 'error_in_text_response';
+          this.testResults.details.errorType = 'CHAT_RESPONSE_ERROR';
           this.testResults.details.responseContent = JSON.stringify(data);
           throw new Error(errorMessage);
         }
@@ -348,6 +371,8 @@ class HealthCheckWithEmail {
         const errorMessage = 'Respuesta vacía del agente - posible error en el servicio';
         this.testResults.details.errorDetected = true;
         this.testResults.details.errorMessage = errorMessage;
+        this.testResults.details.detectedErrorPattern = 'empty_response';
+        this.testResults.details.errorType = 'EMPTY_RESPONSE';
         this.testResults.details.responseContent = JSON.stringify(data);
         throw new Error(errorMessage);
       }

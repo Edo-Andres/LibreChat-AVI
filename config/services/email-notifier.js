@@ -84,10 +84,16 @@ class EmailNotifier {
 
     let errorHTML = '';
     if (!isSuccess && error) {
+      const errorType = testResults?.details?.errorType || 'UNKNOWN_ERROR';
+      const detectedPattern = testResults?.details?.detectedErrorPattern || 'no específico';
+      const agentResponse = testResults?.details?.fullAgentResponse || 'No disponible';
+      
       errorHTML = `
         <h3>❌ Detalles del Error:</h3>
-        <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px; margin: 10px 0;">
-          <code>${error}</code>
+        <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 15px; margin: 10px 0; font-family: monospace; font-size: 13px;">
+          <div style="margin-bottom: 8px;"><strong>┌─ Error Detectado:</strong> ${detectedPattern}</div>
+          <div style="margin-bottom: 8px;"><strong>├─ Tipo de Error:</strong> ${errorType}</div>
+          <div style="margin-bottom: 0;"><strong>├─ Respuesta del Agente:</strong> "${agentResponse.substring(0, 200)}${agentResponse.length > 200 ? '...' : ''}"</div>
         </div>
       `;
     }
@@ -157,7 +163,14 @@ DETALLE DE PASOS:
     }
 
     if (!isSuccess && error) {
-      text += `\nERROR:\n${error}\n`;
+      const errorType = testResults?.details?.errorType || 'UNKNOWN_ERROR';
+      const detectedPattern = testResults?.details?.detectedErrorPattern || 'no específico';
+      const agentResponse = testResults?.details?.fullAgentResponse || 'No disponible';
+      
+      text += `\nDETALLES DEL ERROR:\n`;
+      text += `Error Detectado: ${detectedPattern}\n`;
+      text += `Tipo de Error: ${errorType}\n`;
+      text += `Respuesta del Agente: "${agentResponse.substring(0, 300)}${agentResponse.length > 300 ? '...' : ''}"\n`;
     }
 
     text += `\n---\nNotificación automática - Sistema de Health Check LibreChat AVI`;
