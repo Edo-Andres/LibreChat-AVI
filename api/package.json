@@ -23,7 +23,8 @@
     "health-check-simple": "node ../config/health-check/simple-health-check.js",
     "health-check-with-notifications": "node ../config/health-check/health-check-with-email.js",
     "health-check-audit": "npm run health-check-with-notifications",
-    "test-health-email": "node ../config/health-check/test-email.js"
+    "test-health-email": "node ../config/health-check/test-email.js",
+    "debug-email": "node ../config/health-check/debug-email.js"
   },
   "repository": {
     "type": "git",

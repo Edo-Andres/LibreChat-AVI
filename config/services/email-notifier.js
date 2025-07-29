@@ -30,7 +30,7 @@ class EmailNotifier {
       };
     }
 
-    this.transporter = nodemailer.createTransporter(emailConfig);
+    this.transporter = nodemailer.createTransport(emailConfig);
   }
 
   async sendNotification(emailData) {
