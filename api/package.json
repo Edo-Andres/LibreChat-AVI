@@ -19,7 +19,6 @@
     "export-all-chats": "node ../config/export-all-chats.js",
     "upload-to-sheets": "node ../config/upload-to-sheets.js",
     "sync-chats-to-sheets": "npm run export-all-chats && npm run upload-to-sheets",
-    "daily-health-check": "node ../config/daily-health-check.js",
     "show-export-commands": "node ../config/show-export-commands.js"
   },
   "repository": {
