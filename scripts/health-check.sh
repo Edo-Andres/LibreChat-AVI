@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 echo "🚀 Iniciando Health Check Audit LibreChat - $(date)"
