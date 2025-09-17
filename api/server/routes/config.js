@@ -85,7 +85,15 @@ router.get('/', async function (req, res) {
       bundlerURL: process.env.SANDPACK_BUNDLER_URL,
       staticBundlerURL: process.env.SANDPACK_STATIC_BUNDLER_URL,
       elevenLabsAgentId: process.env.ELEVENLABS_AGENT_ID,
+      posthogKey: process.env.POSTHOG_API_KEY,
+      posthogHost: process.env.POSTHOG_HOST,
     };
+    
+    // Log temporal para verificar variables PostHog
+    console.log('🔍 Backend - POSTHOG_API_KEY:', process.env.POSTHOG_API_KEY ? 'SET' : 'NOT SET')
+    console.log('🔍 Backend - POSTHOG_HOST:', process.env.POSTHOG_HOST || 'NOT SET')
+    console.log('🔍 Backend - ELEVENLABS_AGENT_ID:', process.env.ELEVENLABS_AGENT_ID ? 'SET' : 'NOT SET')
+    
     /** @type {TCustomConfig['webSearch']} */
     const webSearchConfig = req.app.locals.webSearch;
     if (
