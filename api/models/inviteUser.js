@@ -50,10 +50,17 @@ const getInvite = async (encodedToken, email) => {
   try {
     const token = decodeURIComponent(encodedToken);
     const hash = await hashToken(token);
+    
+    // First, check if token exists at all
+    const tokenExists = await findToken({ token: hash });
+    if (!tokenExists) {
+      throw new Error('Token not found or expired');
+    }
+    
+    // Then check if email matches
     const invite = await findToken({ token: hash, email });
-
     if (!invite) {
-      throw new Error('Invite not found or email does not match');
+      throw new Error('Email does not match the invitation');
     }
 
     return invite;
