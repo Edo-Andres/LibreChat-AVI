@@ -10,6 +10,7 @@ export interface IUser extends Document {
   avatar?: string;
   provider: string;
   role?: string;
+  ccmRol: Schema.Types.ObjectId;
   googleId?: string;
   facebookId?: string;
   openidId?: string;
@@ -96,6 +97,11 @@ const User = new Schema<IUser>(
     role: {
       type: String,
       default: SystemRoles.USER,
+    },
+    ccmRol: {
+      type: Schema.Types.ObjectId,
+      ref: 'CcmRol',
+      required: true,
     },
     googleId: {
       type: String,

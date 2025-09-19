@@ -66,3 +66,6 @@ export type { ITransaction } from './schema/transaction';
 
 export { default as userSchema } from './schema/user';
 export type { IUser } from './schema/user';
+
+export { default as ccmRolSchema } from './schema/ccmRol';
+export type { ICcmRol } from './schema/ccmRol';
