@@ -140,13 +140,29 @@ async function updateToken(query, updateData) {
  */
 async function deleteTokens(query) {
   try {
+    const conditions = [];
+    if (query.userId != null) {
+      conditions.push({ userId: query.userId });
+    }
+    if (query.token != null) {
+      conditions.push({ token: query.token });
+    }
+    if (query.email != null) {
+      conditions.push({ email: query.email });
+    }
+    if (query.identifier != null) {
+      conditions.push({ identifier: query.identifier });
+    }
+
+    /**
+     * If no conditions are specified, throw an error to prevent accidental deletion of all tokens
+     */
+    if (conditions.length === 0) {
+      throw new Error('At least one query parameter must be provided');
+    }
+
     return await Token.deleteMany({
-      $or: [
-        { userId: query.userId },
-        { token: query.token },
-        { email: query.email },
-        { identifier: query.identifier },
-      ],
+      $and: conditions,
     });
   } catch (error) {
     logger.debug('An error occurred while deleting tokens:', error);
