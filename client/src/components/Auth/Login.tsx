@@ -111,6 +111,17 @@ function Login() {
           </a>
         </p>
       )}
+
+      {/* CCM Footer Image */}
+      <div className="mt-8 flex justify-center">
+        <div className="rounded-lg p-2">
+          <img
+            src="/assets/ccm.png"
+            alt="CCM - Corporación Crecer Mejor"
+            className="h-16 w-auto object-contain"
+          />
+        </div>
+      </div>
     </>
   );
 }
