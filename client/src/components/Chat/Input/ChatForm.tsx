@@ -246,26 +246,35 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
 
       console.log('Configurando widget de ElevenLabs...');
 
+      if (elevenLabsObserverRef.current) {
+        elevenLabsObserverRef.current.disconnect();
+        elevenLabsObserverRef.current = null;
+        console.log('Observer anterior desconectado');
+      }
+
+      let endConfigured = false;
+
       // Función para activar automáticamente el botón "Llamar a AVI"
       const activateCallButton = () => {
         try {
-          // Buscar el botón "Llamar a AVI" específicamente
-          const aviButton = elevenLabsWidget.shadowRoot?.querySelector('button[aria-label="Llamar a AVI"]') as HTMLButtonElement;
+          const aviButton = elevenLabsWidget.shadowRoot?.querySelector(
+            'button[aria-label="Llamar a AVI"]',
+          ) as HTMLButtonElement;
           if (aviButton) {
             aviButton.click();
             console.log('Botón "Llamar a AVI" activado automáticamente');
             return;
           }
 
-          // Fallback: buscar cualquier botón de llamada
-          const callButton = elevenLabsWidget.shadowRoot?.querySelector('button[aria-label*="Llamar"], button[aria-label*="Call"]') as HTMLButtonElement;
+          const callButton = elevenLabsWidget.shadowRoot?.querySelector(
+            'button[aria-label*="Llamar"], button[aria-label*="Call"]',
+          ) as HTMLButtonElement;
           if (callButton) {
             callButton.click();
             console.log('Botón de llamada activado automáticamente (fallback)');
             return;
           }
 
-          // Último fallback: hacer clic en el primer botón disponible
           const anyButton = elevenLabsWidget.shadowRoot?.querySelector('button') as HTMLButtonElement;
           if (anyButton) {
             anyButton.click();
@@ -276,12 +285,255 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
         }
       };
 
-      // Activar botón inmediatamente
-      setTimeout(() => {
-        activateCallButton();
-        console.log('Widget de ElevenLabs configurado exitosamente');
-      }, 100);
+      const hideCollapseButton = () => {
+        try {
+          let hiddenCount = 0;
 
+          const collapseButton = elevenLabsWidget.shadowRoot?.querySelector(
+            'button[aria-label="Collapse"]',
+          ) as HTMLButtonElement;
+          if (collapseButton) {
+            collapseButton.style.display = 'none';
+            collapseButton.style.visibility = 'hidden';
+            collapseButton.style.opacity = '0';
+            collapseButton.style.position = 'absolute';
+            collapseButton.style.left = '-9999px';
+            collapseButton.style.width = '0';
+            collapseButton.style.height = '0';
+            collapseButton.style.overflow = 'hidden';
+            collapseButton.style.pointerEvents = 'none';
+            collapseButton.setAttribute('hidden', 'true');
+            collapseButton.setAttribute('aria-hidden', 'true');
+            hiddenCount++;
+          }
+
+          const collapseContainer = elevenLabsWidget.shadowRoot?.querySelector(
+            'div:nth-child(2) > div.transition-\\[border-radius\\].flex.flex-col.p-2.rounded-compact-sheet.bg-base.shadow-md.pointer-events-auto.overflow-hidden.cursor-pointer',
+          ) as HTMLElement;
+          if (collapseContainer) {
+            collapseContainer.style.display = 'none';
+            collapseContainer.style.visibility = 'hidden';
+            collapseContainer.style.opacity = '0';
+            collapseContainer.style.position = 'absolute';
+            collapseContainer.style.left = '-9999px';
+            collapseContainer.style.width = '0';
+            collapseContainer.style.height = '0';
+            collapseContainer.style.overflow = 'hidden';
+            collapseContainer.style.pointerEvents = 'none';
+            collapseContainer.setAttribute('hidden', 'true');
+            collapseContainer.setAttribute('aria-hidden', 'true');
+            hiddenCount++;
+          }
+
+          const alternativeContainers = elevenLabsWidget.shadowRoot?.querySelectorAll(
+            'div.transition-\\[border-radius\\]',
+          ) as NodeListOf<HTMLElement>;
+          if (alternativeContainers && alternativeContainers.length > 0) {
+            alternativeContainers.forEach((container) => {
+              const hasCollapseButton = container.querySelector('button[aria-label="Collapse"]');
+              if (hasCollapseButton) {
+                container.style.display = 'none';
+                container.style.visibility = 'hidden';
+                container.style.opacity = '0';
+                container.setAttribute('hidden', 'true');
+                container.setAttribute('aria-hidden', 'true');
+                hiddenCount++;
+              }
+            });
+          }
+
+          if (hiddenCount > 0) {
+            console.log(`Botón "Collapse" y contenedor(es) ocultados completamente - ${hiddenCount} elementos`);
+            return true;
+          }
+        } catch (error) {
+          console.error('Error al ocultar botón Collapse y contenedor:', error);
+        }
+        return false;
+      };
+
+      const aggressiveHideCollapse = (attempts = 0, maxAttempts = 20) => {
+        if (attempts >= maxAttempts) {
+          console.log('Máximo de intentos alcanzado para ocultar botón Collapse');
+          return;
+        }
+
+        const success = hideCollapseButton();
+        if (!success) {
+          setTimeout(() => {
+            aggressiveHideCollapse(attempts + 1, maxAttempts);
+          }, 100);
+        } else {
+          setTimeout(() => {
+            aggressiveHideCollapse(attempts + 1, maxAttempts);
+          }, 200);
+        }
+      };
+
+      const hideWidget = () => {
+        if (elevenLabsObserverRef.current) {
+          elevenLabsObserverRef.current.disconnect();
+          elevenLabsObserverRef.current = null;
+          console.log('Observer desconectado antes de ocultar widget');
+        }
+
+        setTimeout(() => {
+          setShowElevenLabsWidget(false);
+          console.log('Widget ocultado');
+        }, 100);
+      };
+
+      const blockNewCallTemporarily = () => {
+        try {
+          const shadowRoot = elevenLabsWidget.shadowRoot;
+          if (!shadowRoot) {
+            return;
+          }
+
+          const spans = shadowRoot.querySelectorAll('span');
+          spans.forEach((span) => {
+            if (span.textContent?.includes('New call')) {
+              const button = span.closest('button') as HTMLButtonElement | null;
+              if (button) {
+                button.disabled = true;
+                button.style.opacity = '0.5';
+                button.style.cursor = 'not-allowed';
+                button.style.pointerEvents = 'none';
+                console.log('Botón "New call" bloqueado temporalmente por 1,2 segundos');
+
+                setTimeout(() => {
+                  button.disabled = false;
+                  button.style.opacity = '';
+                  button.style.cursor = '';
+                  button.style.pointerEvents = '';
+                  console.log('Botón "New call" desbloqueado');
+                }, 1200);
+              }
+            }
+          });
+
+          const specificSpan = shadowRoot.querySelector(
+            'span.block.whitespace-nowrap.max-w-64.truncate.px-1\\.5',
+          );
+          if (specificSpan && specificSpan.textContent?.includes('New call')) {
+            const button = specificSpan.closest('button') as HTMLButtonElement | null;
+            if (button) {
+              button.disabled = true;
+              button.style.opacity = '0.5';
+              button.style.cursor = 'not-allowed';
+              button.style.pointerEvents = 'none';
+
+              setTimeout(() => {
+                button.disabled = false;
+                button.style.opacity = '';
+                button.style.cursor = '';
+                button.style.pointerEvents = '';
+              }, 3000);
+            }
+          }
+        } catch (error) {
+          console.error('Error al bloquear botón New call:', error);
+        }
+      };
+
+      const setupEndButton = (endButton: HTMLButtonElement) => {
+        if (endConfigured) {
+          return true;
+        }
+
+        try {
+          endButton.addEventListener(
+            'click',
+            () => {
+              console.log('Botón End clickeado - bloqueando New call temporalmente');
+
+              blockNewCallTemporarily();
+
+              setTimeout(() => {
+                blockNewCallTemporarily();
+              }, 100);
+
+              setTimeout(() => {
+                blockNewCallTemporarily();
+              }, 500);
+
+              setTimeout(() => {
+                hideWidget();
+                console.log('Widget ocultado por botón End');
+              }, 200);
+            },
+            { once: true },
+          );
+
+          endConfigured = true;
+          console.log('Botón "End" configurado con bloqueo temporal de New call');
+          return true;
+        } catch (error) {
+          console.error('Error al configurar botón End:', error);
+          return false;
+        }
+      };
+
+      activateCallButton();
+
+      setTimeout(() => {
+        aggressiveHideCollapse();
+      }, 300);
+
+      const immediateEndButton = elevenLabsWidget.shadowRoot?.querySelector(
+        'button[aria-label="End"]',
+      ) as HTMLButtonElement;
+      if (immediateEndButton) {
+        setupEndButton(immediateEndButton);
+        console.log('Configuración inicial completada (End encontrado inmediatamente)');
+        return;
+      }
+
+      console.log('Configuración inicial del widget (sin botón Collapse)...');
+
+      const observer = new MutationObserver((mutations) => {
+        if (endConfigured) {
+          observer.disconnect();
+          elevenLabsObserverRef.current = null;
+          console.log('Observer desconectado - configuración End completa');
+          return;
+        }
+
+        for (const mutation of mutations) {
+          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            aggressiveHideCollapse();
+
+            if (!endConfigured) {
+              const endButton = elevenLabsWidget.shadowRoot?.querySelector(
+                'button[aria-label="End"]',
+              ) as HTMLButtonElement;
+              if (endButton) {
+                setupEndButton(endButton);
+                console.log('Configuración End completada via observer, desconectando');
+                observer.disconnect();
+                elevenLabsObserverRef.current = null;
+                return;
+              }
+            }
+          }
+        }
+      });
+
+      elevenLabsObserverRef.current = observer;
+
+      observer.observe(elevenLabsWidget.shadowRoot, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+      });
+
+      setTimeout(() => {
+        if (elevenLabsObserverRef.current === observer) {
+          observer.disconnect();
+          elevenLabsObserverRef.current = null;
+          console.log('Observer limpiado por timeout');
+        }
+      }, 10000);
     } catch (error) {
       console.error('Error al configurar el widget de ElevenLabs:', error);
     }
