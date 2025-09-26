@@ -36,6 +36,18 @@ import Mention from './Mention';
 import PhoneButton from './PhoneButton';
 import store from '~/store';
 
+// Declarar el elemento personalizado de ElevenLabs
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'elevenlabs-convai': {
+        'agent-id'?: string;
+        children?: React.ReactNode;
+      };
+    }
+  }
+}
+
 const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -203,7 +215,13 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   }, [backupBadges, setBadges, setIsEditingBadges]);
 
   const handlePhoneClick = useCallback(() => {
-    console.log('Botón de teléfono clickeado');
+    console.log('Botón de teléfono clickeado');    
+    console.log('Config disponible:', config);
+    console.log('ElevenLabs Agent ID desde config:', (config as any)?.elevenLabsAgentId);
+    console.log('ElevenLabs Agent ID desde Vite:', import.meta.env.VITE_ELEVENLABS_AGENT_ID);
+    
+    const agentId = (config as any)?.elevenLabsAgentId || import.meta.env.VITE_ELEVENLABS_AGENT_ID;
+    console.log('Agent ID final:', agentId);
     
     // Si el widget está oculto, mostrarlo y configurar la funcionalidad
     if (!showElevenLabsWidget) {
@@ -215,7 +233,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
       }, 100);
     }
     // Si ya está visible, no hacer nada (según requerimientos)
-  }, [showElevenLabsWidget]);
+  }, [showElevenLabsWidget, config]);
 
   // Función auxiliar para configurar el widget de ElevenLabs
   const setupElevenLabsWidget = useCallback(() => {
@@ -227,16 +245,6 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
       }
 
       console.log('Configurando widget de ElevenLabs...');
-
-      // Limpiar observer anterior si existe
-      if (elevenLabsObserverRef.current) {
-        elevenLabsObserverRef.current.disconnect();
-        elevenLabsObserverRef.current = null;
-        console.log('Observer anterior desconectado');
-      }
-
-      // Flag para evitar reconfiguración múltiple
-      let endConfigured = false;
 
       // Función para activar automáticamente el botón "Llamar a AVI"
       const activateCallButton = () => {
@@ -268,263 +276,11 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
         }
       };
 
-      // Función para ocultar visualmente el botón "Collapse" y su contenedor
-      const hideCollapseButton = () => {
-        try {
-          let hiddenCount = 0;
-          
-          // 1. Ocultar el botón "Collapse" directamente
-          const collapseButton = elevenLabsWidget.shadowRoot?.querySelector('button[aria-label="Collapse"]') as HTMLButtonElement;
-          if (collapseButton) {
-            // Múltiples métodos para asegurar ocultación completa del botón
-            collapseButton.style.display = 'none';
-            collapseButton.style.visibility = 'hidden';
-            collapseButton.style.opacity = '0';
-            collapseButton.style.position = 'absolute';
-            collapseButton.style.left = '-9999px';
-            collapseButton.style.width = '0';
-            collapseButton.style.height = '0';
-            collapseButton.style.overflow = 'hidden';
-            collapseButton.style.pointerEvents = 'none';
-            collapseButton.setAttribute('hidden', 'true');
-            collapseButton.setAttribute('aria-hidden', 'true');
-            hiddenCount++;
-          }
-          
-          // 2. Ocultar el div contenedor específico
-          const collapseContainer = elevenLabsWidget.shadowRoot?.querySelector('div:nth-child(2) > div.transition-\\[border-radius\\].flex.flex-col.p-2.rounded-compact-sheet.bg-base.shadow-md.pointer-events-auto.overflow-hidden.cursor-pointer') as HTMLElement;
-          if (collapseContainer) {
-            // Ocultar completamente el contenedor
-            collapseContainer.style.display = 'none';
-            collapseContainer.style.visibility = 'hidden';
-            collapseContainer.style.opacity = '0';
-            collapseContainer.style.position = 'absolute';
-            collapseContainer.style.left = '-9999px';
-            collapseContainer.style.width = '0';
-            collapseContainer.style.height = '0';
-            collapseContainer.style.overflow = 'hidden';
-            collapseContainer.style.pointerEvents = 'none';
-            collapseContainer.setAttribute('hidden', 'true');  
-            collapseContainer.setAttribute('aria-hidden', 'true');
-            hiddenCount++;
-          }
-          
-          // 3. Búsqueda alternativa por clases CSS (fallback)
-          const alternativeContainers = elevenLabsWidget.shadowRoot?.querySelectorAll('div.transition-\\[border-radius\\]') as NodeListOf<HTMLElement>;
-          if (alternativeContainers && alternativeContainers.length > 0) {
-            alternativeContainers.forEach((container, index) => {
-              // Verificar si este contenedor tiene el botón collapse
-              const hasCollapseButton = container.querySelector('button[aria-label="Collapse"]');
-              if (hasCollapseButton) {
-                container.style.display = 'none';
-                container.style.visibility = 'hidden';
-                container.style.opacity = '0';
-                container.setAttribute('hidden', 'true');
-                container.setAttribute('aria-hidden', 'true');
-                hiddenCount++;
-              }
-            });
-          }
-          
-          if (hiddenCount > 0) {
-            console.log(`Botón "Collapse" y contenedor(es) ocultados completamente - ${hiddenCount} elementos`);
-            return true;
-          }
-        } catch (error) {
-          console.error('Error al ocultar botón Collapse y contenedor:', error);
-        }
-        return false;
-      };
-
-      // Función para ocultar repetidamente el botón Collapse (más agresiva)
-      const aggressiveHideCollapse = (attempts = 0, maxAttempts = 20) => {
-        if (attempts >= maxAttempts) {
-          console.log('Máximo de intentos alcanzado para ocultar botón Collapse');
-          return;
-        }
-
-        const success = hideCollapseButton();
-        if (!success) {
-          // Si no lo encontró, reintentar después de un tiempo
-          setTimeout(() => {
-            aggressiveHideCollapse(attempts + 1, maxAttempts);
-          }, 100); // Cada 100ms
-        } else {
-          // Aún si lo ocultó, verificar de nuevo por si aparece otra vez
-          setTimeout(() => {
-            aggressiveHideCollapse(attempts + 1, maxAttempts);
-          }, 200);
-        }
-      };
-
-      // Función común para ocultar widget
-      const hideWidget = () => {
-        // Limpiar observer antes de ocultar
-        if (elevenLabsObserverRef.current) {
-          elevenLabsObserverRef.current.disconnect();
-          elevenLabsObserverRef.current = null;
-        }
-        
-        setTimeout(() => {
-          setShowElevenLabsWidget(false);
-          console.log('Widget ocultado');
-        }, 100);
-      };
-
-      // Función para bloquear temporalmente el botón "New call"
-      const blockNewCallTemporarily = () => {
-        try {
-          const shadowRoot = elevenLabsWidget.shadowRoot;
-          if (!shadowRoot) return;
-
-          // Buscar todos los spans que contengan "New call"
-          const spans = shadowRoot.querySelectorAll('span');
-          spans.forEach(span => {
-            if (span.textContent?.includes('New call')) {
-              const button = span.closest('button') as HTMLButtonElement;
-              if (button) {
-                // Deshabilitar el botón temporalmente
-                button.disabled = true;
-                button.style.opacity = '0.5';
-                button.style.cursor = 'not-allowed';
-                button.style.pointerEvents = 'none';
-                console.log('Botón "New call" bloqueado temporalmente por 1,2 segundos');
-                
-                // Restaurar después de 3 segundos
-                setTimeout(() => {
-                  button.disabled = false;
-                  button.style.opacity = '';
-                  button.style.cursor = '';
-                  button.style.pointerEvents = '';
-                  console.log('Botón "New call" desbloqueado');
-                }, 1200);
-              }
-            }
-          });
-
-          // También buscar el span específico con las clases mencionadas
-          const specificSpan = shadowRoot.querySelector('span.block.whitespace-nowrap.max-w-64.truncate.px-1\\.5');
-          if (specificSpan && specificSpan.textContent?.includes('New call')) {
-            const button = specificSpan.closest('button') as HTMLButtonElement;
-            if (button) {
-              button.disabled = true;
-              button.style.opacity = '0.5';
-              button.style.cursor = 'not-allowed';
-              button.style.pointerEvents = 'none';
-              
-              setTimeout(() => {
-                button.disabled = false;
-                button.style.opacity = '';
-                button.style.cursor = '';
-                button.style.pointerEvents = '';
-              }, 1200);
-            }
-          }
-        } catch (error) {
-          console.error('Error al bloquear botón New call:', error);
-        }
-      };
-
-      // Función para configurar el botón "End"
-      const setupEndButton = (endButton: HTMLButtonElement) => {
-        try {
-          console.log('Configurando botón "End"...');
-          
-          // Bloquear temporalmente el botón "New call" cuando se haga click en "End"
-          endButton.addEventListener('click', () => {
-            console.log('Botón "End" clickeado');
-            
-            // Bloquear "New call" por 1.2 segundos
-            setTimeout(() => {
-              blockNewCallTemporarily();
-            }, 500);
-            
-            // Mantener la funcionalidad original de cerrar el widget
-            setTimeout(() => {
-              hideWidget();
-              console.log('Widget ocultado por botón End');
-            }, 200);
-            
-          }, { once: true });
-          
-          endConfigured = true;
-          console.log('Botón "End" configurado con bloqueo temporal de New call');
-          return true;
-        } catch (error) {
-          console.error('Error al configurar botón End:', error);
-          return false;
-        }
-      };
-
-      // Activar el botón de llamada inmediatamente
-      activateCallButton();
-
-      // Usar la función agresiva para ocultar el botón "Collapse"
+      // Activar botón inmediatamente
       setTimeout(() => {
-        aggressiveHideCollapse();
-      }, 300); // Comenzar después de 300ms
-
-      // Buscar el botón "End" inmediatamente
-      const immediateEndButton = elevenLabsWidget.shadowRoot?.querySelector('button[aria-label="End"]') as HTMLButtonElement;
-      if (immediateEndButton) {
-        setupEndButton(immediateEndButton);
-        console.log('Configuración inicial completada (End encontrado inmediatamente)');
-        return; // Salir temprano si ya encontramos el botón End
-      }
-
-      console.log('Configuración inicial del widget (sin botón Collapse)...');
-
-      // MutationObserver para configurar botón "End"
-      const observer = new MutationObserver((mutations) => {
-        // Verificar si ya configuramos el botón End
-        if (endConfigured) {
-          observer.disconnect();
-          elevenLabsObserverRef.current = null;
-          console.log('Observer desconectado - configuración End completa');
-          return;
-        }
-
-        for (const mutation of mutations) {
-          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-            
-            // Intentar ocultar el botón Collapse de forma agresiva si aparece
-            aggressiveHideCollapse();
-            
-            // Solo buscar y configurar botón "End"
-            if (!endConfigured) {
-              const endButton = elevenLabsWidget.shadowRoot?.querySelector('button[aria-label="End"]') as HTMLButtonElement;
-              if (endButton) {
-                setupEndButton(endButton);
-                
-                // Desconectar observer una vez que configuramos el botón End
-                console.log('Configuración End completada via observer, desconectando');
-                observer.disconnect();
-                elevenLabsObserverRef.current = null;
-                return;
-              }
-            }
-          }
-        }
-      });
-
-      // Guardar referencia del observer
-      elevenLabsObserverRef.current = observer;
-
-      // Iniciar observación del shadowRoot solo para nuevos nodos
-      observer.observe(elevenLabsWidget.shadowRoot, { 
-        childList: true, 
-        subtree: true,
-        attributes: false // No observar cambios de atributos
-      });
-
-      // Limpiar el observer después de 10 segundos para evitar memory leaks
-      setTimeout(() => {
-        if (elevenLabsObserverRef.current === observer) {
-          observer.disconnect();
-          elevenLabsObserverRef.current = null;
-          console.log('Observer limpiado por timeout');
-        }
-      }, 10000);
+        activateCallButton();
+        console.log('Widget de ElevenLabs configurado exitosamente');
+      }, 100);
 
     } catch (error) {
       console.error('Error al configurar el widget de ElevenLabs:', error);
@@ -700,12 +456,9 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
       </div>
     </form>
     {/* Widget de ElevenLabs ConvAI */}
-    <div 
-      style={{ display: showElevenLabsWidget ? 'block' : 'none' }}
-      dangerouslySetInnerHTML={{
-        __html: `<elevenlabs-convai agent-id="${(config as any)?.elevenLabsAgentId || ''}"></elevenlabs-convai>`
-      }}
-    />
+    <div style={{ display: showElevenLabsWidget ? 'block' : 'none' }}>
+      <elevenlabs-convai agent-id={(config as any)?.elevenLabsAgentId || import.meta.env.VITE_ELEVENLABS_AGENT_ID}></elevenlabs-convai>
+    </div>
     </>
   );
 });
