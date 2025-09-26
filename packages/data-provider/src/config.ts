@@ -651,6 +651,7 @@ export type TStartupConfig = {
     scraperType?: ScraperTypes;
     rerankerType?: RerankerTypes;
   };
+  elevenLabsAgentId?: string;
   mcpServers?: Record<
     string,
     {
