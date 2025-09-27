@@ -14,7 +14,13 @@
     "create-user": "node ./create-user.js",
     "invite-user": "node ./invite-user.js",
     "ban-user": "node ./ban-user.js",
-    "delete-user": "node ./delete-user.js"
+    "delete-user": "node ./delete-user.js",
+    "health-check-simple": "node ../config/health-check/simple-health-check.js",
+    "health-check-with-notifications": "node ../config/health-check/health-check-with-email.js",
+    "health-check-audit": "npm run health-check-with-notifications",
+    "test-health-email": "node ../config/health-check/test-email.js",
+    "debug-email": "node ../config/health-check/debug-email.js",
+    "debug-email-parsing": "node ../config/health-check/debug-test-parsing.js"
   },
   "repository": {
     "type": "git",
