@@ -75,6 +75,10 @@ COPY config ./config
 COPY ./emails.txt ./emails.txt
 COPY ./enviar-invitaciones.sh ./enviar-invitaciones.sh
 RUN chmod +x ./enviar-invitaciones.sh
+# ✅ Scripts para sincronización con Google Sheets
+COPY ./config/upload-to-sheets.js ./config/upload-to-sheets.js
+COPY ./scripts/sync-chats.sh ./scripts/sync-chats.sh
+RUN chmod +x ./scripts/sync-chats.sh
 # ✅ Scripts para Health Check Audit
 COPY ./config/health-check/ ./config/health-check/
 COPY ./config/services/ ./config/services/
