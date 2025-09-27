@@ -2,7 +2,7 @@ name: 🚀 Professional Docker Build & Push Pipeline
 
 on:
   push:
-    branches: [master, master_dev, dev, develop]
+    branches: [master, dev, develop]
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -11,7 +11,7 @@ on:
       - 'deploy-compose*.yml'
       - 'docker-compose*.yml'
   pull_request:
-    branches: [master, master_dev]
+    branches: [master]
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -53,6 +53,7 @@ jobs:
       packages_changed: ${{ steps.changes.outputs.packages }}
       dependencies_changed: ${{ steps.changes.outputs.dependencies }}
       dockerfile_changed: ${{ steps.changes.outputs.dockerfile }}
+      root_assets_changed: ${{ steps.changes.outputs.root_assets }}
       
       # Cache keys
       deps_cache_key: ${{ steps.cache-keys.outputs.deps_cache_key }}
@@ -91,6 +92,12 @@ jobs:
             dockerfile:
               - 'Dockerfile*'
               - '.dockerignore'
+            root_assets:
+              - 'emails.txt'
+              - 'enviar-invitaciones.sh'
+              - 'scripts/sync-chats.sh'
+              - 'scripts/health-check.sh'
+              - 'scripts/**/*.sh'
 
       - name: 🔑 Generate cache keys
         id: cache-keys
@@ -129,7 +136,8 @@ jobs:
              [ "${{ steps.changes.outputs.client }}" == "false" ] && \
              [ "${{ steps.changes.outputs.packages }}" == "false" ] && \
              [ "${{ steps.changes.outputs.dependencies }}" == "false" ] && \
-             [ "${{ steps.changes.outputs.dockerfile }}" == "false" ]; then
+             [ "${{ steps.changes.outputs.dockerfile }}" == "false" ] && \
+             [ "${{ steps.changes.outputs.root_assets }}" == "false" ]; then
             SHOULD_BUILD="false"
             echo "📋 No significant changes detected, skipping build"
           fi
@@ -193,6 +201,7 @@ jobs:
             build.strategy=${{ needs.analyze.outputs.cache_strategy }}
             build.api-changed=${{ needs.analyze.outputs.api_changed }}
             build.client-changed=${{ needs.analyze.outputs.client_changed }}
+            build.root-assets-changed=${{ needs.analyze.outputs.root_assets_changed }}
 
       - name: 🎯 Prepare build args
         id: build-args
@@ -239,6 +248,7 @@ jobs:
           echo "- **API Changed**: ${{ needs.analyze.outputs.api_changed }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Client Changed**: ${{ needs.analyze.outputs.client_changed }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Dependencies Changed**: ${{ needs.analyze.outputs.dependencies_changed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Root Assets Changed**: ${{ needs.analyze.outputs.root_assets_changed }}" >> $GITHUB_STEP_SUMMARY
           echo "### 🎉 Build Pipeline Completed Successfully" >> $GITHUB_STEP_SUMMARY
           echo "- **Total Build Time**: Estimated 3-5 minutes (down from 30 minutes)" >> $GITHUB_STEP_SUMMARY
           echo "- **Performance Improvement**: ~85-90%" >> $GITHUB_STEP_SUMMARY
