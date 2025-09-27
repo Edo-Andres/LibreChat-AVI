@@ -141,42 +141,8 @@ async function deleteTokens(query: TokenQuery): Promise<TokenDeleteResult> {
 - ❌ **NO IMPLEMENTADO** en proyecto local
 - ✅ **SISTEMA COMPLETO** en rama master
 
-#### Archivos Faltantes
-```
-config/services/email-notifier.js      -> CREAR
-config/email-templates/               -> CREAR DIRECTORIO
-├── invitation.html
-├── notification.html  
-└── welcome.html
-```
-
-#### Implementación Requerida
-
-**1. Crear `config/services/email-notifier.js`:**
-```javascript
-const nodemailer = require('nodemailer');
-
-class EmailNotifier {
-  constructor() {
-    this.transporter = nodemailer.createTransporter({
-      service: 'gmail', // o tu servicio SMTP
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-  }
-
-  async sendInvitation(email, inviteCode) {
-    // Implementación completa de invitación
-  }
-
-  async sendNotification(email, subject, message) {
-    // Implementación de notificaciones generales
-  }
-}
-
-module.exports = EmailNotifier;
+```env
+Se debe personalizar los email de api\server\utils\emails de proyecto local, al igual como estan en repo remoto rama master
 ```
 
 **2. Variables de Entorno Requeridas:**
@@ -547,10 +513,10 @@ client/src/components/Auth/          -> Mejorar UI
 
 ### **FASE 3: Notificaciones Email (PRIORIDAD MEDIA)**
 ```bash
-# 1. Crear email-notifier.js
-# 2. Diseñar templates HTML
+# 1. Script invitacion ya creado
+# 2. Personalizar templates HTML
 # 3. Configurar SMTP
-# 4. Integrar con sistema de invitaciones
+# 4. Integrar con sistema de invitaciones (crear script sh invitaciones)
 ```
 
 ### **FASE 4: Health Check Audit System (PRIORIDAD ALTA)**
@@ -569,7 +535,7 @@ client/src/components/Auth/          -> Mejorar UI
 
 ### **FASE 5: Scripts de Shell Avanzados (PRIORIDAD MEDIA)**
 ```bash
-# 1. Implementar enviar-invitaciones.sh (ya existe simple)
+# 1. Implementar enviar-invitaciones.sh (ya existe para una invitacion, falta para enviar masivo usando archivo de emails.txt)
 # 2. Mejorar scripts de sincronización existentes
 # 3. Añadir debug y logging avanzado
 # 4. Testing de automatización
