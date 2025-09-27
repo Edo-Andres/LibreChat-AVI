@@ -2,9 +2,8 @@ const path = require('path');
 const fs = require('fs');
 require('module-alias')({ base: path.resolve(__dirname, '..', 'api') });
 const { askQuestion, silentExit } = require('./helpers');
-const Conversation = require('~/models/schema/convoSchema');
-const Message = require('~/models/schema/messageSchema');
-const User = require('~/models/User');
+const { Conversation, Message } = require('~/db/models');
+const { User } = require('~/db/models');
 const connect = require('./connect');
 
 /**
