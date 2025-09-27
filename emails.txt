@@ -1,0 +1,2 @@
+usuario1@email.com
+usuario2@email.com
