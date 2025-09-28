@@ -116,7 +116,15 @@ router.get('/', async function (req, res) {
       sharePointPickerSharePointScope: process.env.SHAREPOINT_PICKER_SHAREPOINT_SCOPE,
       openidReuseTokens,
       elevenLabsAgentId: process.env.ELEVENLABS_AGENT_ID,
+      posthogKey: process.env.POSTHOG_API_KEY,
+      posthogHost: process.env.POSTHOG_HOST,
     };
+
+    logger.debug(
+      'PostHog configuration - key: %s, host: %s',
+      process.env.POSTHOG_API_KEY ? 'SET' : 'NOT SET',
+      process.env.POSTHOG_HOST || 'NOT SET',
+    );
 
     const minPasswordLength = parseInt(process.env.MIN_PASSWORD_LENGTH, 10);
     if (minPasswordLength && !isNaN(minPasswordLength)) {
