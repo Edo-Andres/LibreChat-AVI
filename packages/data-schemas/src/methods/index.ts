@@ -13,6 +13,9 @@ import { createAccessRoleMethods, type AccessRoleMethods } from './accessRole';
 import { createUserGroupMethods, type UserGroupMethods } from './userGroup';
 import { createAclEntryMethods, type AclEntryMethods } from './aclEntry';
 import { createShareMethods, type ShareMethods } from './share';
+/* AVI Roles System */
+import { createAviRolMethods, type AviRolMethods } from './aviRol';
+import { createAviSubrolMethods, type AviSubrolMethods } from './aviSubrol';
 
 export type AllMethods = UserMethods &
   SessionMethods &
@@ -24,7 +27,9 @@ export type AllMethods = UserMethods &
   AclEntryMethods &
   ShareMethods &
   AccessRoleMethods &
-  PluginAuthMethods;
+  PluginAuthMethods &
+  AviRolMethods &
+  AviSubrolMethods;
 
 /**
  * Creates all database methods for all collections
@@ -42,6 +47,8 @@ export function createMethods(mongoose: typeof import('mongoose')): AllMethods {
     ...createAclEntryMethods(mongoose),
     ...createShareMethods(mongoose),
     ...createPluginAuthMethods(mongoose),
+    ...createAviRolMethods(mongoose),
+    ...createAviSubrolMethods(mongoose),
   };
 }
 
@@ -57,4 +64,6 @@ export type {
   ShareMethods,
   AccessRoleMethods,
   PluginAuthMethods,
+  AviRolMethods,
+  AviSubrolMethods,
 };

@@ -279,6 +279,132 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
       });
   };
 
+  /**
+   * Assign AVI role and subrol to a user with validation
+   */
+  async function assignUserAviRoles(
+    userId: string,
+    aviRolId: string,
+    aviSubrolId?: string,
+  ): Promise<IUser | null> {
+    const User = mongoose.models.User;
+    const AviRol = mongoose.models.AviRol;
+    const AviSubrol = mongoose.models.AviSubrol;
+
+    // Validate role exists
+    const aviRole = await AviRol.findById(aviRolId);
+    if (!aviRole) {
+      throw new Error('AVI Role not found');
+    }
+
+    let updateData: any = { aviRol_id: aviRolId };
+
+    // If subrol is provided, validate it belongs to the role
+    if (aviSubrolId) {
+      const aviSubrol = await AviSubrol.findById(aviSubrolId);
+      if (!aviSubrol) {
+        throw new Error('AVI Subrol not found');
+      }
+
+      if (aviSubrol.parentRolId.toString() !== aviRolId.toString()) {
+        throw new Error('Subrol does not belong to the specified role');
+      }
+
+      updateData.aviSubrol_id = aviSubrolId;
+    } else {
+      // If no subrol provided, clear any existing subrol
+      updateData.aviSubrol_id = null;
+    }
+
+    return await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, lean: true }
+    ) as IUser | null;
+  }
+
+  /**
+   * Get user with populated AVI roles
+   */
+  async function getUserWithAviRoles(userId: string): Promise<IUser | null> {
+    const User = mongoose.models.User;
+    return await User.findById(userId)
+      .populate('aviRol_id', 'name')
+      .populate('aviSubrol_id', 'name')
+      .lean() as IUser | null;
+  }
+
+  /**
+   * Remove AVI roles from user
+   */
+  async function removeUserAviRoles(userId: string): Promise<IUser | null> {
+    const User = mongoose.models.User;
+    return await User.findByIdAndUpdate(
+      userId,
+      { 
+        $unset: { 
+          aviRol_id: 1, 
+          aviSubrol_id: 1 
+        } 
+      },
+      { new: true, lean: true }
+    ) as IUser | null;
+  }
+
+  /**
+   * Get users by AVI role
+   */
+  async function getUsersByAviRole(aviRolId: string): Promise<any[]> {
+    const User = mongoose.models.User;
+    return await User.find({ aviRol_id: aviRolId })
+      .populate('aviRol_id', 'name')
+      .populate('aviSubrol_id', 'name')
+      .lean();
+  }
+
+  /**
+   * Validate user's subrol belongs to their role
+   */
+  async function validateUserAviRoles(userId: string): Promise<{ isValid: boolean; error?: string }> {
+    const User = mongoose.models.User;
+    const user = await User.findById(userId).lean() as any;
+    
+    if (!user) {
+      return { isValid: false, error: 'User not found' };
+    }
+
+    // If user has no AVI roles, it's valid (optional)
+    if (!user.aviRol_id && !user.aviSubrol_id) {
+      return { isValid: true };
+    }
+
+    // If user has only role but no subrol, it's valid
+    if (user.aviRol_id && !user.aviSubrol_id) {
+      return { isValid: true };
+    }
+
+    // If user has subrol but no role, it's invalid
+    if (!user.aviRol_id && user.aviSubrol_id) {
+      return { isValid: false, error: 'User has subrol but no role assigned' };
+    }
+
+    // If user has both, validate they match
+    if (user.aviRol_id && user.aviSubrol_id) {
+      const AviSubrol = mongoose.models.AviSubrol;
+      const subrol = await AviSubrol.findById(user.aviSubrol_id);
+      
+      if (!subrol) {
+        return { isValid: false, error: 'Invalid subrol reference' };
+      }
+
+      if (subrol.parentRolId.toString() !== user.aviRol_id.toString()) {
+        return { isValid: false, error: 'Subrol does not belong to user\'s role' };
+      }
+    }
+
+    return { isValid: true };
+  }
+
   return {
     findUser,
     countUsers,
@@ -289,6 +415,11 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
     generateToken,
     deleteUserById,
     toggleUserMemories,
+    assignUserAviRoles,
+    getUserWithAviRoles,
+    removeUserAviRoles,
+    getUsersByAviRole,
+    validateUserAviRoles,
   };
 }
 
