@@ -110,6 +110,15 @@ export const register = (payload: t.TRegisterUser) => {
 export const userKeyQuery = (name: string): Promise<t.TCheckUserKeyResponse> =>
   request.get(endpoints.userKeyQuery(name));
 
+// AVI Roles services
+export const getAviRoles = (): Promise<t.TAviRolesResponse> => {
+  return request.get(endpoints.aviRoles());
+};
+
+export const getAviSubroles = (roleId: string): Promise<t.TAviSubrolesResponse> => {
+  return request.get(endpoints.aviSubroles(roleId));
+};
+
 export const getLoginGoogle = () => {
   return request.get(endpoints.loginGoogle());
 };
