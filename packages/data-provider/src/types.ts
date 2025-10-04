@@ -206,6 +206,8 @@ export type TUser = {
   };
   createdAt: string;
   updatedAt: string;
+  aviRol?: string;
+  aviSubrol?: string;
 };
 
 export type TGetConversationsResponse = {

@@ -18,6 +18,7 @@ const { getProviderConfig } = require('~/server/services/Endpoints');
 const { processFiles } = require('~/server/services/Files/process');
 const { getFiles, getToolFilesByIds } = require('~/models/File');
 const { getConvoFiles } = require('~/models/Conversation');
+const { getUserWithAviRoles } = require('~/models');
 
 /**
  * @param {object} params
@@ -182,9 +183,29 @@ const initializeAgent = async ({
   }
 
   if (agent.instructions && agent.instructions !== '') {
+    // Prepare user object with AVI roles for variable replacement
+    let userWithRoles = req.user;
+    
+    // If user has AVI roles, populate them for variable replacement
+    if (req.user && (req.user.aviRol_id || req.user.aviSubrol_id)) {
+      try {
+        const populatedUser = await getUserWithAviRoles(req.user.id || req.user._id);
+        if (populatedUser) {
+          userWithRoles = {
+            ...req.user,
+            aviRol: populatedUser.aviRol_id?.name || '',
+            aviSubrol: populatedUser.aviSubrol_id?.name || '',
+          };
+        }
+      } catch (error) {
+        // If populate fails, continue with original user (roles will be empty strings)
+        console.error('[agent.js] Error populating AVI roles:', error);
+      }
+    }
+
     agent.instructions = replaceSpecialVars({
       text: agent.instructions,
-      user: req.user,
+      user: userWithRoles,
     });
   }
 
