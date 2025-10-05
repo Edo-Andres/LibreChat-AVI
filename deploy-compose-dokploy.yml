@@ -4,7 +4,7 @@ services:
     #   context: .
     #   dockerfile: Dockerfile.multi
     #   target: api-build
-    image: ghcr.io/edo-andres/librechat-avi-api:dev
+    image: ghcr.io/edo-andres/librechat-avi-api:master
     #container_name: LibreChat-API
     expose:
       - 3080
