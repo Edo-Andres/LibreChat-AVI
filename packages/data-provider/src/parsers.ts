@@ -432,5 +432,18 @@ export function replaceSpecialVars({ text, user }: { text: string; user?: t.TUse
     result = result.replace(/{{current_user}}/gi, user.name);
   }
 
+  // Replace AVI role variables
+  if (user && user.aviRol) {
+    result = result.replace(/{{user_avi_rol}}/gi, user.aviRol);
+  } else {
+    result = result.replace(/{{user_avi_rol}}/gi, '');
+  }
+
+  if (user && user.aviSubrol) {
+    result = result.replace(/{{user_avi_subrol}}/gi, user.aviSubrol);
+  } else {
+    result = result.replace(/{{user_avi_subrol}}/gi, '');
+  }
+
   return result;
 }
