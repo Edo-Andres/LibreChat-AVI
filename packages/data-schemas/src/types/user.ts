@@ -10,6 +10,8 @@ export interface IUser extends Document {
   avatar?: string;
   provider: string;
   role?: string;
+  aviRol_id?: Types.ObjectId;
+  aviSubrol_id?: Types.ObjectId;
   googleId?: string;
   facebookId?: string;
   openidId?: string;
@@ -58,6 +60,8 @@ export interface UpdateUserRequest {
   username?: string;
   email?: string;
   role?: string;
+  aviRol_id?: Types.ObjectId | string;
+  aviSubrol_id?: Types.ObjectId | string;
   emailVerified?: boolean;
   avatar?: string;
   plugins?: string[];

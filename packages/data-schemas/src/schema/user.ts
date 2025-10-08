@@ -66,6 +66,18 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: SystemRoles.USER,
     },
+    aviRol_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'AviRol',
+      required: false,
+      index: true,
+    },
+    aviSubrol_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'AviSubrol',
+      required: false,
+      index: true,
+    },
     googleId: {
       type: String,
       unique: true,
