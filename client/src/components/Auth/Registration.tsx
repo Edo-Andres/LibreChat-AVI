@@ -279,55 +279,6 @@ const Registration: React.FC = () => {
               </div>
             )}
 
-            {/* AVI Roles Selectors */}
-            <div className="mb-4">
-              <div className="relative">
-                <select
-                  id="aviRol_id"
-                  {...register('aviRol_id')}
-                  className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none"
-                >
-                  <option value="">{localize('Seleccionar Rol AVI')}</option>
-                  {aviRoles.map((role) => (
-                    <option key={role._id} value={role._id}>
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
-                <label
-                  htmlFor="aviRol_id"
-                  className="absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-surface-primary px-2 text-sm text-text-secondary-alt duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-green-500"
-                >
-                  Rol AVI (Opcional)
-                </label>
-              </div>
-            </div>
-
-            {selectedAviRol && aviSubroles.length > 0 && (
-              <div className="mb-4">
-                <div className="relative">
-                  <select
-                    id="aviSubrol_id"
-                    {...register('aviSubrol_id')}
-                    className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none"
-                  >
-                    <option value="">{localize('Seleccionar Subrol AVI')}</option>
-                    {aviSubroles.map((subrol) => (
-                      <option key={subrol._id} value={subrol._id}>
-                        {subrol.name}
-                      </option>
-                    ))}
-                  </select>
-                  <label
-                    htmlFor="aviSubrol_id"
-                    className="absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-surface-primary px-2 text-sm text-text-secondary-alt duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-green-500"
-                  >
-                    Subrol AVI (Opcional)
-                  </label>
-                </div>
-              </div>
-            )}
-
             {startupConfig?.turnstile?.siteKey && (
               <div className="my-4 flex justify-center">
                 <Turnstile
