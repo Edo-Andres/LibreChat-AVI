@@ -42,18 +42,32 @@ async function getCustomConfigSpeech(req, res) {
       settings.advancedMode = speechTab.advancedMode;
     }
 
-    if (speechTab.speechToText) {
-      for (const key in speechTab.speechToText) {
-        if (speechTab.speechToText[key] !== undefined) {
-          settings[key] = speechTab.speechToText[key];
+    if (speechTab.conversationMode !== undefined) {
+      settings.conversationMode = speechTab.conversationMode;
+    }
+
+    // Handle speechToText: can be boolean or object
+    if (speechTab.speechToText !== undefined) {
+      if (typeof speechTab.speechToText === 'boolean') {
+        settings.speechToText = speechTab.speechToText;
+      } else if (typeof speechTab.speechToText === 'object') {
+        for (const key in speechTab.speechToText) {
+          if (speechTab.speechToText[key] !== undefined) {
+            settings[key] = speechTab.speechToText[key];
+          }
         }
       }
     }
 
-    if (speechTab.textToSpeech) {
-      for (const key in speechTab.textToSpeech) {
-        if (speechTab.textToSpeech[key] !== undefined) {
-          settings[key] = speechTab.textToSpeech[key];
+    // Handle textToSpeech: can be boolean or object
+    if (speechTab.textToSpeech !== undefined) {
+      if (typeof speechTab.textToSpeech === 'boolean') {
+        settings.textToSpeech = speechTab.textToSpeech;
+      } else if (typeof speechTab.textToSpeech === 'object') {
+        for (const key in speechTab.textToSpeech) {
+          if (speechTab.textToSpeech[key] !== undefined) {
+            settings[key] = speechTab.textToSpeech[key];
+          }
         }
       }
     }

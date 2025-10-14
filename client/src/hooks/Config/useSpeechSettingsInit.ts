@@ -38,7 +38,11 @@ export default function useSpeechSettingsInit(isAuthenticated: boolean) {
     Object.entries(data).forEach(([key, value]) => {
       if (key === 'sttExternal' || key === 'ttsExternal') return;
 
-      if (localStorage.getItem(key) !== null) return;
+      // Special handling: force textToSpeech and speechToText when explicitly set to false
+      const shouldForceOverride = 
+        (key === 'textToSpeech' || key === 'speechToText') && typeof value === 'boolean' && value === false;
+
+      if (!shouldForceOverride && localStorage.getItem(key) !== null) return;
 
       const setter = setters[key as keyof typeof setters];
       if (setter) {
