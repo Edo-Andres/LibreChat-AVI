@@ -1,18 +1,16 @@
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
 import { Spinner, Button } from '@librechat/client';
-import { Eye, EyeOff } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useResetPasswordMutation } from 'librechat-data-provider/react-query';
+import { Eye, EyeOff } from 'lucide-react';
+import React, { useState } from 'react';
 import type { TResetPassword } from 'librechat-data-provider';
 import type { TLoginLayoutContext } from '~/common';
 import { useLocalize } from '~/hooks';
 
 function ResetPassword() {
   const localize = useLocalize();
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const {
     register,
     handleSubmit,
@@ -24,6 +22,7 @@ function ResetPassword() {
   const password = watch('password');
   const resetPassword = useResetPasswordMutation();
   const { setError, setHeaderText, startupConfig } = useOutletContext<TLoginLayoutContext>();
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const onSubmit = (data: TResetPassword) => {
     resetPassword.mutate(data, {
@@ -130,7 +129,7 @@ function ResetPassword() {
       <div className="mb-2">
         <div className="relative">
           <input
-            type={showConfirmPassword ? 'text' : 'password'}
+            type={showPassword ? 'text' : 'password'}
             id="confirm_password"
             aria-label={localize('com_auth_password_confirm')}
             {...register('confirm_password', {
@@ -148,15 +147,15 @@ function ResetPassword() {
           </label>
           <button
             type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-text-secondary transition-colors hover:text-text-primary focus:outline-none"
-            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             <span className="flex h-5 w-5 items-center justify-center">
-              {showConfirmPassword ? (
-                <EyeOff key="eye-off-confirm" className="h-5 w-5" />
+              {showPassword ? (
+                <EyeOff key="eye-off" className="h-5 w-5" />
               ) : (
-                <Eye key="eye-on-confirm" className="h-5 w-5" />
+                <Eye key="eye-on" className="h-5 w-5" />
               )}
             </span>
           </button>

@@ -33,7 +33,6 @@ const Registration: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState<number>(3);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const location = useLocation();
@@ -226,8 +225,8 @@ const Registration: React.FC = () => {
                   value === password || localize('com_auth_password_not_match'),
               },
               true,
-              showConfirmPassword,
-              () => setShowConfirmPassword(!showConfirmPassword),
+              showPassword,
+              () => setShowPassword(!showPassword),
             )}
 
             {/* AVI Roles Selectors */}
