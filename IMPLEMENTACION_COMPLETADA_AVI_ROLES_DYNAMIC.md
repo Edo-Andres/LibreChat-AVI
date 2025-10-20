@@ -2,8 +2,7 @@
 
 **Fecha de Implementación:** 17 de Octubre, 2025  
 **Estado:** Completado ✅  
-**Proyecto:** LibreChat-AVI  
-**Rama:** ldev_local_copy
+**Proyecto:** LibreChat-AVI
 
 ---
 
@@ -34,7 +33,31 @@ Se ha implementado exitosamente el **Sistema AVI Roles Dinámico** según el pla
 
 ---
 
-## 🎯 Funcionalidades Implementadas
+## 🐳 Despliegue con Docker
+
+Este sistema está diseñado para ejecutarse en **contenedores Docker** usando `deploy-compose.yml` y `Dockerfile.multi`. Todos los comandos del script AVI Roles se ejecutan **dentro del contenedor** `LibreChat-API`.
+
+### Comando de Inicio
+```bash
+# Iniciar todos los servicios
+docker-compose -f deploy-compose.yml up -d
+```
+
+### Acceso al Contenedor
+```bash
+# Acceder al contenedor API para ejecutar comandos
+docker exec -it LibreChat-API bash
+
+# Una vez dentro del contenedor, estarás en /app
+/app #
+```
+
+### Ubicación de Scripts en el Contenedor
+- Scripts: `/app/scripts/`
+- Configuración: `/app/librechat.yaml`
+- API: `/app/api/`
+
+---
 
 ### ✅ Configuración Dinámica
 - Lectura desde `librechat.yaml` (vía `getAppConfig`)
@@ -139,9 +162,12 @@ docker exec LibreChat-API node -e "require('mongoose').connect('mongodb://mongod
 
 ### **PASO 5: Primera Ejecución (Modo Interactivo)**
 
-```powershell
-# Ejecutar primera migración con vista previa
-.\scripts\invoke-reload-avi-roles.ps1 -Interactive
+```bash
+# Acceder al contenedor API
+docker exec -it LibreChat-API bash
+
+# Dentro del contenedor, ejecutar el script en modo interactivo
+/app/scripts # sh reload-avi-roles.sh --interactive
 ```
 
 **Resultado esperado:**
@@ -155,10 +181,10 @@ docker exec LibreChat-API node -e "require('mongoose').connect('mongodb://mongod
 
 ### **PASO 6: Testing**
 
-```powershell
+```bash
 # Test 1: Migración idempotente (ejecutar 2 veces, mismo resultado)
-.\scripts\invoke-reload-avi-roles.ps1
-.\scripts\invoke-reload-avi-roles.ps1
+docker exec -it LibreChat-API bash -c "cd /app && sh scripts/reload-avi-roles.sh"
+docker exec -it LibreChat-API bash -c "cd /app && sh scripts/reload-avi-roles.sh"
 
 # Test 2: Verificar roles en MongoDB
 docker exec chat-mongodb mongosh LibreChat --eval "db.avirols.find().pretty()"
@@ -194,13 +220,13 @@ aviRoles:
       generico: usuario_basico
 ```
 
-2. Ejecutar:
-```powershell
-.\scripts\invoke-reload-avi-roles.ps1 -Interactive
+2. Ejecutar dentro del contenedor:
+```bash
+docker exec -it LibreChat-API bash -c "cd /app && sh scripts/reload-avi-roles.sh --interactive"
 ```
 
 3. Verificar en MongoDB:
-```powershell
+```bash
 docker exec chat-mongodb mongosh LibreChat --eval "db.avirols.find({name: 'usuario_basico'}).pretty()"
 ```
 
@@ -215,7 +241,12 @@ aviRoles:
       Lector: Ver
 ```
 
-2. Ejecutar y verificar
+2. Ejecutar dentro del contenedor:
+```bash
+docker exec -it LibreChat-API bash -c "cd /app && sh scripts/reload-avi-roles.sh --interactive"
+```
+
+3. Verificar en MongoDB
 
 ### ✅ Test 4: Eliminar Subrol
 
@@ -228,7 +259,12 @@ aviRoles:
       Asistente: null
 ```
 
-2. Ejecutar y verificar usuarios afectados
+2. Ejecutar dentro del contenedor:
+```bash
+docker exec -it LibreChat-API bash -c "cd /app && sh scripts/reload-avi-roles.sh --interactive"
+```
+
+3. Verificar usuarios afectados
 
 ---
 
@@ -270,19 +306,26 @@ aviRoles:
 
 ### Comandos Rápidos
 
-```powershell
-# Ver ayuda
-Get-Help .\scripts\invoke-reload-avi-roles.ps1 -Full
+```bash
+# Acceder al contenedor API
+docker exec -it LibreChat-API bash
+
+# Dentro del contenedor (/app/scripts):
+
+# Ver ayuda del script
+/app/scripts # ./reload-avi-roles.sh --help
 
 # Ejecución automática
-.\scripts\invoke-reload-avi-roles.ps1
+/app/scripts # sh reload-avi-roles.sh
 
 # Ejecución interactiva
-.\scripts\invoke-reload-avi-roles.ps1 -Interactive
+/app/scripts # sh reload-avi-roles.sh --interactive
 
 # Ver logs
-docker logs -f LibreChat-API | Select-String "AVI Roles"
+docker logs -f LibreChat-API | grep "AVI Roles"
 ```
+
+**Nota:** Todos los comandos del script AVI Roles se ejecutan dentro del contenedor Docker usando `docker exec -it LibreChat-API bash`.
 
 ---
 
