@@ -27,7 +27,6 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
   const [showResendLink, setShowResendLink] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const { data: config } = useGetStartupConfig();
   const useUsernameLogin = config?.ldap?.username;
