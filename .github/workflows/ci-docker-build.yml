@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+      - 'Docs_AVI/**'
       - '.github/**'
       - '!.github/workflows/ci-docker-build.yml'
       - 'deploy-compose*.yml'
@@ -15,6 +16,7 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+      - 'Docs_AVI/**'
       - '!.github/workflows/ci-docker-build.yml'
       - 'deploy-compose*.yml'
       - 'docker-compose*.yml'
