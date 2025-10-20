@@ -389,3 +389,60 @@ endpoints:
 #     # instructions: "You are a memory management assistant. Store and manage user information accurately."
 #     # model_parameters:
 #     #   temperature: 0.1
+
+
+# AVI Roles Dynamic Configuration
+# Sistema dinámico de roles y subroles para LibreChat-AVI
+aviRoles:
+  roles:
+    # Rol AviRol (usuarios básicos)
+    - name: AviRol
+      subroles:
+        - Subrol_1
+        - Subrol_2
+        - Subrol_3
+    # Rol genérico (usuarios básicos) - NUEVO NOMBRE
+    - name: Generico
+      subroles:
+        - Lector
+        - Comentarista
+        - Colaborador
+        - Invitado
+
+    # Rol cuidador (personal de cuidado)
+    # - name: Cuidador
+    #   subroles:
+    #     - Cuidador Principal
+    #     - Cuidador Secundario
+    #     - Asistente
+
+    # Rol administrativo (administradores del sistema) - NUEVO NOMBRE
+    - name: Admin
+      subroles:
+        - name: Programador
+          answer: "Desarrolla y mantiene el software del sistema."
+        - name: Configuración
+          answer: "Desarrolla y mantiene el software del sistema."
+        - name: Supervisor
+          answer: "Desarrolla y mantiene el software del sistema."
+
+  # Configuración de migraciones (opcional)
+  # Permite renombrar roles y subroles sin perder datos
+  migrations:
+    # Mapeo de roles antiguos a nuevos nombres
+    # Formato: "nombre_antiguo": "nombre_nuevo"
+    roles:
+      cuidador: Cuidador
+      # administrativo: Admin
+
+    # Mapeo de subroles antiguos a nuevos nombres
+    # Usar null para eliminar un subrol
+    # Si no se pasa cambios se debe colocar {} ejmplo --> suroles: {}
+    # Cuando se pasan subroles se quitanlos {}
+    subroles: {}
+      # Ejemplo adicional:
+      # Lector: Ver
+      # Asistente: null  # Eliminar este subrol
+
+    # Rol por defecto para usuarios huérfanos (opcional)
+    defaultRoleForOrphans: generico

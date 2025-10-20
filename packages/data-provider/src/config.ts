@@ -804,6 +804,21 @@ export type TMemoryConfig = z.infer<typeof memorySchema>;
 
 const customEndpointsSchema = z.array(endpointSchema.partial()).optional();
 
+// Schema para AVI Roles dinámico
+const aviRolesSchema = z.object({
+  roles: z.array(
+    z.object({
+      name: z.string(),
+      subroles: z.array(z.string()).optional(),
+    })
+  ),
+  migrations: z.object({
+    roles: z.record(z.string()).optional(),
+    subroles: z.record(z.string().nullable()).optional(),
+    defaultRoleForOrphans: z.string().optional(),
+  }).optional(),
+}).optional();
+
 export const configSchema = z.object({
   version: z.string(),
   cache: z.boolean().default(true),
@@ -842,6 +857,7 @@ export const configSchema = z.object({
   rateLimits: rateLimitSchema.optional(),
   fileConfig: fileConfigSchema.optional(),
   modelSpecs: specsConfigSchema.optional(),
+  aviRoles: aviRolesSchema,
   endpoints: z
     .object({
       all: baseEndpointSchema.optional(),

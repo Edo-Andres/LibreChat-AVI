@@ -1,21 +1,41 @@
 // Factory function that takes mongoose instance and returns the methods
 export function createAviRolMethods(mongoose: typeof import('mongoose')) {
   /**
-   * Initialize default AVI roles in the system.
-   * Creates the 3 main roles: generico, cuidador, administrativo
+   * Initialize AVI roles in the system.
+   * Now uses dynamic configuration from librechat.yaml via avi-roles-config
+   * 
+   * NOTA: Esta función solo se debe ejecutar manualmente o en primera instalación.
+   * Para migraciones, usar scripts/reload-avi-roles.sh
    */
   async function initializeAviRoles() {
     const AviRol = mongoose.models.AviRol;
     
-    const defaultRoles = ['generico', 'cuidador', 'administrativo'];
+    // Verificar si ya existen roles en la BD
+    const existingRolesCount = await AviRol.countDocuments({});
     
-    for (const roleName of defaultRoles) {
-      const existingRole = await AviRol.findOne({ name: roleName });
-      if (!existingRole) {
+    if (existingRolesCount > 0) {
+      console.log(`[AVI Roles] ${existingRolesCount} roles ya existen. Omitiendo inicialización automática.`);
+      console.log('[AVI Roles] Para actualizar roles, use: scripts/reload-avi-roles.sh');
+      return;
+    }
+    
+    console.log('[AVI Roles] Base de datos vacía. Inicializando roles por primera vez...');
+    
+    try {
+      // Cargar roles desde configuración dinámica
+      const { getConfiguredRoles } = require('../../../../../config/avi-roles-config');
+      const configuredRoles = await getConfiguredRoles();
+      
+      console.log(`[AVI Roles] Inicializando ${configuredRoles.length} roles desde configuración`);
+      
+      for (const roleName of configuredRoles) {
         const newRole = new AviRol({ name: roleName });
         await newRole.save();
-        console.log(`Created AVI role: ${roleName}`);
+        console.log(`[AVI Roles] Creado rol: ${roleName}`);
       }
+    } catch (error) {
+      console.error('[AVI Roles] Error al inicializar roles:', error);
+      console.error('[AVI Roles] Por favor ejecute manualmente: scripts/reload-avi-roles.sh');
     }
   }
 

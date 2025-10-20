@@ -1,48 +1,56 @@
 // Factory function that takes mongoose instance and returns the methods
 export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
   /**
-   * Initialize default AVI subroles in the system.
-   * Creates the 9 subroles grouped by their parent roles
+   * Initialize AVI subroles in the system.
+   * Now uses dynamic configuration from librechat.yaml via avi-roles-config
+   * 
+   * NOTA: Esta función solo se debe ejecutar manualmente o en primera instalación.
+   * Para migraciones, usar scripts/reload-avi-roles.sh
    */
   async function initializeAviSubroles() {
     const AviRol = mongoose.models.AviRol;
     const AviSubrol = mongoose.models.AviSubrol;
 
-    // First ensure parent roles exist
-    const genericoRole = await AviRol.findOne({ name: 'generico' });
-    const cuidadorRole = await AviRol.findOne({ name: 'cuidador' });
-    const administrativoRole = await AviRol.findOne({ name: 'administrativo' });
-
-    if (!genericoRole || !cuidadorRole || !administrativoRole) {
-      throw new Error('Parent AVI roles must be initialized before creating subroles');
+    // Verificar si ya existen subroles en la BD
+    const existingSubrolesCount = await AviSubrol.countDocuments({});
+    
+    if (existingSubrolesCount > 0) {
+      console.log(`[AVI Subroles] ${existingSubrolesCount} subroles ya existen. Omitiendo inicialización automática.`);
+      console.log('[AVI Subroles] Para actualizar subroles, use: scripts/reload-avi-roles.sh');
+      return;
     }
+    
+    console.log('[AVI Subroles] Base de datos vacía. Inicializando subroles por primera vez...');
 
-    const defaultSubroles = [
-      // Subroles for "generico"
-      { name: 'Lector', parentRolId: genericoRole._id },
-      { name: 'Comentarista', parentRolId: genericoRole._id },
-      { name: 'Colaborador', parentRolId: genericoRole._id },
-      // Subroles for "cuidador"
-      { name: 'Cuidador Principal', parentRolId: cuidadorRole._id },
-      { name: 'Cuidador Secundario', parentRolId: cuidadorRole._id },
-      { name: 'Asistente', parentRolId: cuidadorRole._id },
-      // Subroles for "administrativo"
-      { name: 'Gestor de Usuarios', parentRolId: administrativoRole._id },
-      { name: 'Configuración', parentRolId: administrativoRole._id },
-      { name: 'Supervisor', parentRolId: administrativoRole._id },
-    ];
-
-    for (const subrolData of defaultSubroles) {
-      const existingSubrol = await AviSubrol.findOne({
-        name: subrolData.name,
-        parentRolId: subrolData.parentRolId,
-      });
+    try {
+      // Cargar configuración dinámica
+      const { getAviRolesFromConfig } = require('../../../../../config/avi-roles-config');
+      const config = await getAviRolesFromConfig();
       
-      if (!existingSubrol) {
-        const newSubrol = new AviSubrol(subrolData);
-        await newSubrol.save();
-        console.log(`Created AVI subrol: ${subrolData.name} for parent role: ${subrolData.parentRolId}`);
+      console.log(`[AVI Subroles] Inicializando subroles desde configuración`);
+
+      // Procesar cada rol configurado
+      for (const roleConfig of config.roles) {
+        const parentRole = await AviRol.findOne({ name: roleConfig.name });
+        
+        if (!parentRole) {
+          console.warn(`[AVI Subroles] Rol padre "${roleConfig.name}" no encontrado, omitiendo subroles`);
+          continue;
+        }
+
+        // Crear subroles para este rol
+        for (const subrolName of roleConfig.subroles || []) {
+          const newSubrol = new AviSubrol({
+            name: subrolName,
+            parentRolId: parentRole._id,
+          });
+          await newSubrol.save();
+          console.log(`[AVI Subroles] Creado subrol: ${subrolName} (rol: ${roleConfig.name})`);
+        }
       }
+    } catch (error) {
+      console.error('[AVI Subroles] Error al inicializar subroles:', error);
+      console.error('[AVI Subroles] Por favor ejecute manualmente: scripts/reload-avi-roles.sh');
     }
   }
 
