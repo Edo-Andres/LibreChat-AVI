@@ -303,9 +303,11 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
     rolesToRename: [],
     rolesToCreate: [],
     rolesToDelete: [],
+    rolesToUpdate: [],        // ✅ NUEVO: Roles con cambios en knowledge/behavior
     subrolesToRename: [],
     subrolesToCreate: [],
     subrolesToDelete: [],
+    subrolesToUpdate: [],     // ✅ NUEVO: Subroles con cambios (preparado para futuro)
     warnings: [],
   };
 
@@ -322,11 +324,55 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
   }
 
   // Roles nuevos
-  for (const roleName of configRoleNames) {
+  for (const roleConfig of config.roles) {
+    const roleName = roleConfig.name;
     const isRenamed = Object.values(migrations.roles || {}).includes(roleName);
-    const exists = currentRoleNames.includes(roleName);
+    const exists = currentRoles.find(r => r.name === roleName);
+    
     if (!exists && !isRenamed) {
-      changes.rolesToCreate.push(roleName);
+      changes.rolesToCreate.push({
+        name: roleName,
+        knowledge: roleConfig.knowledge || null,
+        behavior: roleConfig.behavior || null,
+      });
+    }
+  }
+
+  // ✅ NUEVO: Detectar roles que se actualizarán (knowledge/behavior)
+  for (const roleConfig of config.roles) {
+    const existingRole = currentRoles.find(r => r.name === roleConfig.name);
+    
+    if (existingRole) {
+      const updates = {};
+      
+      // Comparar knowledge
+      const currentKnowledge = existingRole.knowledge || null;
+      const newKnowledge = roleConfig.knowledge || null;
+      if (currentKnowledge !== newKnowledge) {
+        updates.knowledge = {
+          from: currentKnowledge,
+          to: newKnowledge
+        };
+      }
+      
+      // Comparar behavior
+      const currentBehavior = existingRole.behavior || null;
+      const newBehavior = roleConfig.behavior || null;
+      if (currentBehavior !== newBehavior) {
+        updates.behavior = {
+          from: currentBehavior,
+          to: newBehavior
+        };
+      }
+      
+      // Si hay cambios, agregar a la lista
+      if (Object.keys(updates).length > 0) {
+        changes.rolesToUpdate.push({
+          name: roleConfig.name,
+          id: existingRole._id,
+          updates: updates
+        });
+      }
     }
   }
 
@@ -339,7 +385,7 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
     }
   }
 
-  // Analizar subroles
+  // Analizar subroles - Renombres
   for (const [oldName, newName] of Object.entries(migrations.subroles || {})) {
     if (newName === null) {
       changes.subrolesToDelete.push(oldName);
@@ -348,7 +394,39 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
     }
   }
 
+  // ✅ NUEVO: Detectar subroles nuevos a crear
+  for (const roleConfig of config.roles) {
+    const dbRole = currentRoles.find(r => r.name === roleConfig.name);
+    if (dbRole && roleConfig.subroles) {
+      const currentRolSubroles = currentSubroles.filter(
+        s => s.parentRolId.toString() === dbRole._id.toString()
+      );
+      
+      for (const subrolName of roleConfig.subroles) {
+        const exists = currentRolSubroles.find(s => s.name === subrolName);
+        const wasRenamed = Object.values(migrations.subroles || {}).includes(subrolName);
+        
+        if (!exists && !wasRenamed) {
+          changes.subrolesToCreate.push({
+            name: subrolName,
+            parentRole: roleConfig.name,
+            parentRoleId: dbRole._id
+          });
+        }
+      }
+    }
+  }
+
   return changes;
+}
+
+/**
+ * Trunca texto para mejor legibilidad en logs
+ */
+function truncateText(text, maxLength = 60) {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
 }
 
 /**
@@ -367,7 +445,44 @@ async function mostrarResumenYConfirmar(changes) {
 
   if (changes.rolesToCreate.length > 0) {
     console.log('➕ ROLES NUEVOS:');
-    changes.rolesToCreate.forEach(r => console.log(`   • ${r}`));
+    changes.rolesToCreate.forEach(r => {
+      console.log(`   • ${r.name}`);
+      if (r.knowledge) {
+        console.log(`     - knowledge: "${truncateText(r.knowledge, 60)}"`);
+      }
+      if (r.behavior) {
+        console.log(`     - behavior: "${truncateText(r.behavior, 60)}"`);
+      }
+    });
+    console.log('');
+  }
+
+  // ✅ NUEVO: Mostrar roles a actualizar
+  if (changes.rolesToUpdate.length > 0) {
+    console.log(`🔄 ROLES A ACTUALIZAR (${changes.rolesToUpdate.length}):`);
+    changes.rolesToUpdate.forEach(r => {
+      console.log(`   • ${r.name} (ID: ${r.id.toString().substring(0, 8)}...)`);
+      
+      if (r.updates.knowledge) {
+        const fromText = r.updates.knowledge.from 
+          ? `"${truncateText(r.updates.knowledge.from, 60)}"`
+          : 'null';
+        const toText = r.updates.knowledge.to 
+          ? `"${truncateText(r.updates.knowledge.to, 60)}"`
+          : 'null';
+        console.log(`     - knowledge: ${fromText} → ${toText}`);
+      }
+      
+      if (r.updates.behavior) {
+        const fromText = r.updates.behavior.from 
+          ? `"${truncateText(r.updates.behavior.from, 60)}"`
+          : 'null';
+        const toText = r.updates.behavior.to 
+          ? `"${truncateText(r.updates.behavior.to, 60)}"`
+          : 'null';
+        console.log(`     - behavior: ${fromText} → ${toText}`);
+      }
+    });
     console.log('');
   }
 
@@ -380,6 +495,15 @@ async function mostrarResumenYConfirmar(changes) {
   if (changes.subrolesToRename.length > 0) {
     console.log('🔄 RENOMBRES DE SUBROLES:');
     changes.subrolesToRename.forEach(s => console.log(`   • "${s.oldName}" → "${s.newName}"`));
+    console.log('');
+  }
+
+  // ✅ NUEVO: Mostrar subroles nuevos
+  if (changes.subrolesToCreate.length > 0) {
+    console.log(`➕ SUBROLES NUEVOS (${changes.subrolesToCreate.length}):`);
+    changes.subrolesToCreate.forEach(s => {
+      console.log(`   • ${s.name} (rol padre: ${s.parentRole})`);
+    });
     console.log('');
   }
 
