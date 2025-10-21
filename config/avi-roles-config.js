@@ -435,18 +435,42 @@ async function migrateRoles(config, currentRoles, sessionOpt) {
 
   // Crear roles nuevos
   const renamedTargets = Object.values(migrations.roles || {});
-  for (const roleName of configRoleNames) {
+  for (const roleConfig of config.roles) {
+    const roleName = roleConfig.name;
     const exists = currentRoles.find(r => r.name === roleName);
     const isRenamed = renamedTargets.includes(roleName);
     
     if (!exists && !isRenamed) {
-      const newRole = new AviRol({ name: roleName });
+      const newRole = new AviRol({
+        name: roleName,
+        knowledge: roleConfig.knowledge || null,
+        behavior: roleConfig.behavior || null,
+      });
       if (sessionOpt && sessionOpt.session) {
         await newRole.save({ session: sessionOpt.session });
       } else {
         await newRole.save();
       }
-      logger.info(`   ➕ Creado: "${roleName}"`);
+      logger.info(`   ➕ Creado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'})`);
+    } else if (exists) {
+      // Actualizar knowledge y behavior si el rol ya existe
+      const updateFields = {};
+      if (roleConfig.knowledge !== undefined) {
+        updateFields.knowledge = roleConfig.knowledge || null;
+      }
+      if (roleConfig.behavior !== undefined) {
+        updateFields.behavior = roleConfig.behavior || null;
+      }
+      
+      if (Object.keys(updateFields).length > 0) {
+        updateFields.updatedAt = new Date();
+        await AviRol.updateOne(
+          { _id: exists._id },
+          { $set: updateFields },
+          sessionOpt || {}
+        );
+        logger.info(`   🔄 Actualizado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'})`);
+      }
     }
   }
 
@@ -517,6 +541,8 @@ async function migrateSubroles(config, currentRoles, currentSubroles, sessionOpt
         const newSubrol = new AviSubrol({
           name: subrolName,
           parentRolId: roleData.id,
+          knowledge: null,  // Subroles no tienen knowledge propio (Opción 1)
+          behavior: null,   // Subroles no tienen behavior propio (Opción 1)
         });
         if (sessionOpt && sessionOpt.session) {
           await newSubrol.save({ session: sessionOpt.session });

@@ -1,6 +1,6 @@
 # ✅ Implementación Completada: Campos `knowledge` y `behavior` en AVI Roles
 
-**Fecha de Implementación:** 20 de Octubre, 2025  
+**Fecha de Implementación:** 25 de Enero, 2025  
 **Estado:** Completado ✅  
 **Proyecto:** LibreChat-AVI  
 **Rama:** dev_feat_mostrar_ocultar_pass_ok  
@@ -11,6 +11,42 @@
 ## 📋 Resumen Ejecutivo
 
 Se han agregado exitosamente dos nuevos campos opcionales (`knowledge` y `behavior`) a las colecciones `avirols` y `avisubrols` de MongoDB, permitiendo almacenar información descriptiva sobre el conocimiento requerido y comportamiento esperado para cada rol y subrol en el sistema AVI.
+
+**⚠️ DECISIÓN DE DISEÑO - OPCIÓN 1 IMPLEMENTADA:**
+- ✅ **Roles**: Incluyen campos `knowledge` y `behavior` (opcionales, máximo 10,000 caracteres)
+- ✅ **Subroles**: Se mantienen como **strings simples** en `librechat.yaml` (NO se documentan knowledge/behavior en configuración)
+- ✅ **Ventajas**: 
+  - Compatibilidad con validación Zod existente
+  - Simplicidad en estructura de datos
+  - Menos complejidad en migraciones
+  - Heredar comportamiento de rol padre (implícito)
+- ⚠️ **Limitación**: Si necesitas documentar conocimientos/comportamientos específicos por subrol, debes crear roles independientes o usar documentación externa
+
+### 🔍 ¿Por qué Opción 1?
+
+Durante las pruebas con `reload-avi-roles.sh`, se detectó un error de validación Zod:
+
+```json
+{
+  "code": "invalid_type",
+  "expected": "string",
+  "received": "object",
+  "path": ["aviRoles", "roles", 0, "subroles", 0]
+}
+```
+
+**Causa**: El schema de validación Zod en `librechat.yaml` esperaba subroles como array de strings (`["Cuidador", "Psicologo"]`), pero se intentó pasar objetos (`{name: "Cuidador", knowledge: null}`).
+
+**Solución**: Mantener subroles como strings simples y solo agregar campos descriptivos a roles principales. Esto evita:
+- Modificaciones complejas en schemas Zod
+- Cambios en lógica de validación del backend
+- Posibles incompatibilidades con sistema ACL existente
+
+### 💡 Casos de Uso de Subroles sin Knowledge/Behavior
+
+1. **Herencia implícita**: Subrol "Cuidador" hereda knowledge/behavior del rol padre "AviRol"
+2. **Documentación externa**: Crear guía de usuario que documente responsabilidades de cada subrol
+3. **Roles independientes**: Si un subrol requiere documentación propia, elevarlo a rol completo
 
 ---
 
