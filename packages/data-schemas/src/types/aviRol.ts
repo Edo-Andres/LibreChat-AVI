@@ -4,16 +4,22 @@ import { CursorPaginationParams } from '~/common';
 export interface IAviRol extends Document {
   _id: Types.ObjectId;
   name: string;
+  knowledge?: string | null;
+  behavior?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export interface CreateAviRolRequest {
   name: string;
+  knowledge?: string | null;
+  behavior?: string | null;
 }
 
 export interface UpdateAviRolRequest {
   name?: string;
+  knowledge?: string | null;
+  behavior?: string | null;
 }
 
 export interface AviRolFilterOptions extends CursorPaginationParams {

@@ -14,6 +14,20 @@ const aviSubrolSchema: Schema<IAviSubrol> = new Schema(
       required: true,
       index: true,
     },
+    knowledge: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 10000,
+      trim: true,
+    },
+    behavior: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 10000,
+      trim: true,
+    },
   },
   {
     timestamps: true,

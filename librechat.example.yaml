@@ -416,15 +416,16 @@ aviRoles:
     #     - Cuidador Secundario
     #     - Asistente
 
-    # Rol administrativo (administradores del sistema) - NUEVO NOMBRE
-    - name: Admin
-      subroles:
-        - name: Programador
-          answer: "Desarrolla y mantiene el software del sistema."
-        - name: Configuración
-          answer: "Desarrolla y mantiene el software del sistema."
-        - name: Supervisor
-          answer: "Desarrolla y mantiene el software del sistema."
+# Example new configuration add knowledge and behavior fields
+# aviRoles:
+#   roles:
+#     - name: Admin
+#       knowledge: "Conocimiento técnico avanzado en sistemas"
+#       behavior: "Ético, responsable, transparente"
+#       subroles:
+#         - name: Programador
+#           knowledge: "Desarrollo de software, debugging"
+#           behavior: "Innovador, proactivo, orientado a soluciones"
 
   # Configuración de migraciones (opcional)
   # Permite renombrar roles y subroles sin perder datos

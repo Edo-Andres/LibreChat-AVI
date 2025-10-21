@@ -5,6 +5,8 @@ export interface IAviSubrol extends Document {
   _id: Types.ObjectId;
   name: string;
   parentRolId: Types.ObjectId;
+  knowledge?: string | null;
+  behavior?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -12,11 +14,15 @@ export interface IAviSubrol extends Document {
 export interface CreateAviSubrolRequest {
   name: string;
   parentRolId: string | Types.ObjectId;
+  knowledge?: string | null;
+  behavior?: string | null;
 }
 
 export interface UpdateAviSubrolRequest {
   name?: string;
   parentRolId?: string | Types.ObjectId;
+  knowledge?: string | null;
+  behavior?: string | null;
 }
 
 export interface AviSubrolFilterOptions extends CursorPaginationParams {

@@ -109,7 +109,7 @@ export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
   /**
    * Create a new AVI subrol
    */
-  async function createAviSubrol(data: { name: string; parentRolId: string }) {
+  async function createAviSubrol(data: { name: string; parentRolId: string; knowledge?: string | null; behavior?: string | null }) {
     const AviRol = mongoose.models.AviRol;
     const AviSubrol = mongoose.models.AviSubrol;
     
@@ -126,7 +126,7 @@ export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
   /**
    * Update an AVI subrol
    */
-  async function updateAviSubrol(id: string, updates: { name?: string; parentRolId?: string }) {
+  async function updateAviSubrol(id: string, updates: { name?: string; parentRolId?: string; knowledge?: string | null; behavior?: string | null }) {
     const AviRol = mongoose.models.AviRol;
     const AviSubrol = mongoose.models.AviSubrol;
     
