@@ -1,10 +1,15 @@
 # ✅ Implementación Completada: Campos `knowledge` y `behavior` en AVI Roles
 
-**Fecha de Implementación:** 25 de Enero, 2025  
-**Estado:** Completado ✅  
+**Fecha de Implementación:** 25 de Enero, 2025 (Actualizado: 21 de Octubre, 2025)  
+**Estado:** Fase 1 Completada ✅ | Fase 2 Pendiente 🔜  
 **Proyecto:** LibreChat-AVI  
-**Rama:** dev_feat_mostrar_ocultar_pass_ok  
+**Rama:** `dev_feat_mostrar_ocultar_pass_ok` → `dev_add_knowledge_behavior`  
 **Versión:** 1.0.0
+
+**Fases:**
+- ✅ **Fase 1**: Schemas MongoDB y lógica de migración
+- ✅ **Fase 2**: Deployment y testing en producción
+- 🔜 **Fase 3**: Variables de contexto para prompts de agentes
 
 ---
 
@@ -645,17 +650,29 @@ docker exec chat-mongodb mongosh LibreChat --eval "db.avirols.find({ behavior: n
 
 ## ✅ Checklist de Validación
 
+### **Fase 1: Implementación de Schemas** ✅
 - [x] Schema `aviRol.ts` modificado correctamente
 - [x] Schema `aviSubrol.ts` modificado correctamente
 - [x] Types `aviRol.ts` actualizados
 - [x] Types `aviSubrol.ts` actualizados
 - [x] Métodos CRUD actualizados para ambos
 - [x] `librechat.yaml` con ejemplos completos
-- [ ] Packages rebuildeados (pendiente)
-- [ ] Docker rebuildeado (pendiente)
-- [ ] Servicios reiniciados (pendiente)
-- [ ] Tests de verificación ejecutados (pendiente)
-- [ ] Documentación creada (✅ este archivo)
+- [x] `config/avi-roles-config.js` actualizado con detección de cambios
+- [x] Función `analyzeChanges()` con análisis detallado
+- [x] Función `migrateRoles()` con actualización de knowledge/behavior
+- [x] Documentación creada (✅ este archivo)
+
+### **Fase 2: Deployment y Testing** ✅
+- [x] Docker rebuildeado
+- [x] Servicios reiniciados
+- [x] Script de migración ejecutado
+- [x] Tests de verificación en MongoDB ejecutados
+- [x] Campos `knowledge` y `behavior` actualizados en BD
+
+### **Fase 3: Variables de Contexto** 🔜
+- [ ] Variables de prompts implementadas
+- [ ] Tests con agentes utilizando nuevas variables
+- [ ] Documentación de variables actualizada
 
 ---
 
@@ -684,7 +701,7 @@ docker exec chat-mongodb mongosh LibreChat --eval "db.avirols.find({ behavior: n
 
 ## 👥 Créditos
 
-**Implementado por:** GitHub Copilot  
+**Implementado por:** GitHub Copilot (y el programador humano que supervisó 🤝)
 **Fecha:** 20 de Octubre, 2025  
 **Proyecto:** LibreChat-AVI  
 **Estado:** ✅ Completado
@@ -700,4 +717,36 @@ Para dudas o problemas relacionados con esta implementación, consultar:
 
 ---
 
-**🎉 Implementación Completada Exitosamente**
+## 🔜 Próxima Fase: Variables de Contexto
+
+### **Fase 2 - Variables de Prompts**
+
+**Objetivo:** Exponer campos `knowledge` y `behavior` como variables de contexto en prompts de agentes.
+
+**Nuevas Variables a Implementar:**
+```typescript
+{{user_avi_rol_knowledge}}    → aviRol.knowledge
+{{user_avi_rol_behavior}}     → aviRol.behavior
+{{user_avi_subrol_knowledge}} → aviSubrol.knowledge (null en Opción 1)
+{{user_avi_subrol_behavior}}  → aviSubrol.behavior (null en Opción 1)
+```
+
+**Archivos a Modificar (4):**
+1. `api/server/services/Endpoints/agents/agent.js` - Extender población de datos
+2. `packages/data-provider/src/types.ts` - Agregar tipos TypeScript
+3. `packages/data-provider/src/parsers.ts` - Agregar patrones de reemplazo
+4. `packages/data-provider/src/config.ts` - Registrar nuevas variables
+
+**Casos de Uso:**
+- Prompts adaptativos según nivel de conocimiento del usuario
+- Recordatorios automáticos de comportamiento esperado por rol
+- Instrucciones personalizadas basadas en competencias
+
+**Documentación Completa:**  
+Ver [`IMPLEMENTACION_VARIABLES_AVI.md`](IMPLEMENTACION_VARIABLES_AVI.md) - Sección 10: "Próxima Implementación"
+
+**Estado:** 🔜 Pendiente (Fase 1 de variables completada: `{{user_avi_rol}}` y `{{user_avi_subrol}}`)
+
+---
+
+**🎉 Implementación Fase 1 Completada Exitosamente**
