@@ -10,6 +10,20 @@ const aviRolSchema: Schema<IAviRol> = new Schema(
       index: true,
       trim: true,
     },
+    knowledge: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 10000,
+      trim: true,
+    },
+    behavior: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 10000,
+      trim: true,
+    },
   },
   {
     timestamps: true,

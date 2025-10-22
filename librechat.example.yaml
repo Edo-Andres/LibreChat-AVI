@@ -397,34 +397,61 @@ aviRoles:
   roles:
     # Rol AviRol (usuarios básicos)
     - name: AviRol
+      knowledge: "Conocimiento básico en el uso de asistentes virtuales y herramientas digitales"
+      behavior: "Debe seguir las políticas de privacidad y uso ético de la información"
       subroles:
-        - Subrol_1
-        - Subrol_2
-        - Subrol_3
-    # Rol genérico (usuarios básicos) - NUEVO NOMBRE
+        - Cuidador
+        - Psicologo
+        - Administrativo
+    
+    # Rol genérico (usuarios básicos)
     - name: Generico
+      knowledge: "Conocimiento general del sistema"
+      behavior: "Usuario estándar con acceso básico"
       subroles:
         - Lector
         - Comentarista
         - Colaborador
-        - Invitado
 
     # Rol cuidador (personal de cuidado)
-    # - name: Cuidador
-    #   subroles:
-    #     - Cuidador Principal
-    #     - Cuidador Secundario
-    #     - Asistente
-
-    # Rol administrativo (administradores del sistema) - NUEVO NOMBRE
-    - name: Admin
+    - name: Cuidador
+      knowledge: "Conocimiento especializado en técnicas de cuidado, primeros auxilios y desarrollo infantil"
+      behavior: "Responsable, atento, proactivo en la protección y cuidado de niños"
       subroles:
-        - name: Programador
-          answer: "Desarrolla y mantiene el software del sistema."
-        - name: Configuración
-          answer: "Desarrolla y mantiene el software del sistema."
-        - name: Supervisor
-          answer: "Desarrolla y mantiene el software del sistema."
+        - Cuidador Principal
+        - Cuidador Secundario
+        - Asistente
+
+    # Rol administrativo (administradores del sistema)
+    - name: Admin
+      knowledge: "Conocimiento técnico avanzado en sistemas, bases de datos y gestión de plataformas"
+      behavior: "Ético, responsable, transparente y comprometido con la seguridad de los datos"
+      subroles:
+        - Programador
+        - Configuración
+        - Supervisor
+
+# Nota Importante sobre knowledge y behavior:
+# - Los campos knowledge y behavior son OPCIONALES en los roles
+# - Los subroles NO soportan knowledge ni behavior (se guardan como null)
+# - Si necesitas documentar conocimientos/comportamientos por subrol, 
+#   considera hacerlo en documentación externa o usar solo roles
+#
+# Ejemplo sin knowledge/behavior:
+# aviRoles:
+#   roles:
+#     - name: MiRol
+#       subroles:
+#         - Subrol1
+#         - Subrol2
+#
+# Ejemplo solo con behavior:
+# aviRoles:
+#   roles:
+#     - name: MiRol
+#       behavior: "Descripción del comportamiento esperado"
+#       subroles:
+#         - Subrol1
 
   # Configuración de migraciones (opcional)
   # Permite renombrar roles y subroles sin perder datos

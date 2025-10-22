@@ -66,7 +66,7 @@ export function createAviRolMethods(mongoose: typeof import('mongoose')) {
   /**
    * Create a new AVI role
    */
-  async function createAviRol(data: { name: string }) {
+  async function createAviRol(data: { name: string; knowledge?: string | null; behavior?: string | null }) {
     const AviRol = mongoose.models.AviRol;
     const newRole = new AviRol(data);
     return await newRole.save();
@@ -75,7 +75,7 @@ export function createAviRolMethods(mongoose: typeof import('mongoose')) {
   /**
    * Update an AVI role
    */
-  async function updateAviRol(id: string, updates: { name?: string }) {
+  async function updateAviRol(id: string, updates: { name?: string; knowledge?: string | null; behavior?: string | null }) {
     const AviRol = mongoose.models.AviRol;
     return await AviRol.findByIdAndUpdate(id, updates, { new: true, lean: true });
   }
