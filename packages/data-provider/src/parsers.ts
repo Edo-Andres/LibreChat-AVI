@@ -445,5 +445,33 @@ export function replaceSpecialVars({ text, user }: { text: string; user?: t.TUse
     result = result.replace(/{{user_avi_subrol}}/gi, '');
   }
 
+  // Replace AVI role knowledge variables
+  if (user && user.aviRolKnowledge) {
+    result = result.replace(/{{user_avi_rol_knowledge}}/gi, user.aviRolKnowledge);
+  } else {
+    result = result.replace(/{{user_avi_rol_knowledge}}/gi, '');
+  }
+
+  // Replace AVI role behavior variables
+  if (user && user.aviRolBehavior) {
+    result = result.replace(/{{user_avi_rol_behavior}}/gi, user.aviRolBehavior);
+  } else {
+    result = result.replace(/{{user_avi_rol_behavior}}/gi, '');
+  }
+
+  // Replace AVI subrol knowledge variables
+  if (user && user.aviSubrolKnowledge) {
+    result = result.replace(/{{user_avi_subrol_knowledge}}/gi, user.aviSubrolKnowledge);
+  } else {
+    result = result.replace(/{{user_avi_subrol_knowledge}}/gi, '');
+  }
+
+  // Replace AVI subrol behavior variables
+  if (user && user.aviSubrolBehavior) {
+    result = result.replace(/{{user_avi_subrol_behavior}}/gi, user.aviSubrolBehavior);
+  } else {
+    result = result.replace(/{{user_avi_subrol_behavior}}/gi, '');
+  }
+
   return result;
 }

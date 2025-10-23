@@ -195,6 +195,10 @@ const initializeAgent = async ({
             ...req.user,
             aviRol: populatedUser.aviRol_id?.name || '',
             aviSubrol: populatedUser.aviSubrol_id?.name || '',
+            aviRolKnowledge: populatedUser.aviRol_id?.knowledge || null,
+            aviRolBehavior: populatedUser.aviRol_id?.behavior || null,
+            aviSubrolKnowledge: populatedUser.aviSubrol_id?.knowledge || null,
+            aviSubrolBehavior: populatedUser.aviSubrol_id?.behavior || null,
           };
         }
       } catch (error) {

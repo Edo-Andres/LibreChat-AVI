@@ -1704,6 +1704,10 @@ export const specialVariables = {
   current_datetime: true,
   user_avi_rol: true,
   user_avi_subrol: true,
+  user_avi_rol_knowledge: true,
+  user_avi_rol_behavior: true,
+  user_avi_subrol_knowledge: true,
+  user_avi_subrol_behavior: true,
 };
 
 export type TSpecialVarLabel = `com_ui_special_var_${keyof typeof specialVariables}`;

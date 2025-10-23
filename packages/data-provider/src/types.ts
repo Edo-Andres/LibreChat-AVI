@@ -208,6 +208,10 @@ export type TUser = {
   updatedAt: string;
   aviRol?: string;
   aviSubrol?: string;
+  aviRolKnowledge?: string | null;
+  aviRolBehavior?: string | null;
+  aviSubrolKnowledge?: string | null;
+  aviSubrolBehavior?: string | null;
 };
 
 export type TGetConversationsResponse = {
