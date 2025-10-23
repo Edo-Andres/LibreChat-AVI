@@ -329,8 +329,8 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
   async function getUserWithAviRoles(userId: string): Promise<IUser | null> {
     const User = mongoose.models.User;
     return await User.findById(userId)
-      .populate('aviRol_id', 'name')
-      .populate('aviSubrol_id', 'name')
+      .populate('aviRol_id', 'name knowledge behavior')
+      .populate('aviSubrol_id', 'name knowledge behavior')
       .lean() as IUser | null;
   }
 
@@ -357,8 +357,8 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
   async function getUsersByAviRole(aviRolId: string): Promise<any[]> {
     const User = mongoose.models.User;
     return await User.find({ aviRol_id: aviRolId })
-      .populate('aviRol_id', 'name')
-      .populate('aviSubrol_id', 'name')
+      .populate('aviRol_id', 'name knowledge behavior')
+      .populate('aviSubrol_id', 'name knowledge behavior')
       .lean();
   }
 
