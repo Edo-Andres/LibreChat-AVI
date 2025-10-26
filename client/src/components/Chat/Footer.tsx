@@ -78,7 +78,7 @@ export default function Footer({ className }: { className?: string }) {
     </React.Fragment>
   ));
 
-  const footerElements = [...mainContentRender, privacyPolicyRender].filter(
+  const footerElements = [...mainContentRender, privacyPolicyRender, termsOfServiceRender].filter(
     Boolean,
   );
 
