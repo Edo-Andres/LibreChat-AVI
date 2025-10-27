@@ -199,6 +199,8 @@ const initializeAgent = async ({
             aviRolBehavior: populatedUser.aviRol_id?.behavior || null,
             aviSubrolKnowledge: populatedUser.aviSubrol_id?.knowledge || null,
             aviSubrolBehavior: populatedUser.aviSubrol_id?.behavior || null,
+            aviRolRegisterAnswer: populatedUser.aviRol_id?.registerAnswer || null,
+            aviSubrolRegisterAnswer: populatedUser.aviSubrol_id?.registerAnswer || null,
           };
         }
       } catch (error) {

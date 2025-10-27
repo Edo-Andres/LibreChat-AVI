@@ -147,7 +147,45 @@ await AviRol.findOneAndUpdate(
 
 **📌 Nota**: El script `scripts/reload-avi-roles.sh` es el oficial para Docker y producción.
 
-#### D. Recargar Roles en MongoDB
+#### D. Actualizar Schema de Validación Zod (IMPORTANTE)
+
+**Archivo**: `packages/data-provider/src/config.ts`
+
+Si vas a agregar campos a roles/subroles, debes actualizar el schema de validación:
+
+```typescript
+const aviRolesSchema = z.object({
+  roles: z.array(
+    z.object({
+      name: z.string(),
+      knowledge: z.string().optional(),
+      behavior: z.string().optional(),
+      NOMBRE_CAMPO: z.string().optional(),  // ✅ AGREGAR nuevo campo
+      subroles: z.array(
+        z.union([
+          z.string(),
+          z.object({
+            name: z.string(),
+            knowledge: z.string().optional(),
+            behavior: z.string().optional(),
+            NOMBRE_CAMPO: z.string().optional(),  // ✅ AGREGAR nuevo campo
+          })
+        ])
+      ).optional(),
+    })
+  ),
+  // ... resto del schema
+}).optional();
+```
+
+**⚠️ CRÍTICO**: Si no actualizas este schema, `librechat.yaml` fallará la validación con error "Expected string, received object".
+
+**Recompilar**:
+```powershell
+cd packages/data-provider; npm run build; cd ../..
+```
+
+#### E. Recargar Roles en MongoDB
 
 ```powershell
 # Desarrollo local (via Docker)

@@ -329,8 +329,8 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
   async function getUserWithAviRoles(userId: string): Promise<IUser | null> {
     const User = mongoose.models.User;
     return await User.findById(userId)
-      .populate('aviRol_id', 'name knowledge behavior')
-      .populate('aviSubrol_id', 'name knowledge behavior')
+      .populate('aviRol_id', 'name knowledge behavior registerAnswer')
+      .populate('aviSubrol_id', 'name knowledge behavior registerAnswer')
       .lean() as IUser | null;
   }
 

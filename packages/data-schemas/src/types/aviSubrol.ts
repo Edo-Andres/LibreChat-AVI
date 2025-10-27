@@ -7,6 +7,7 @@ export interface IAviSubrol extends Document {
   parentRolId: Types.ObjectId;
   knowledge?: string | null;
   behavior?: string | null;
+  registerAnswer?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -16,6 +17,7 @@ export interface CreateAviSubrolRequest {
   parentRolId: string | Types.ObjectId;
   knowledge?: string | null;
   behavior?: string | null;
+  registerAnswer?: string | null;
 }
 
 export interface UpdateAviSubrolRequest {
@@ -23,6 +25,7 @@ export interface UpdateAviSubrolRequest {
   parentRolId?: string | Types.ObjectId;
   knowledge?: string | null;
   behavior?: string | null;
+  registerAnswer?: string | null;
 }
 
 export interface AviSubrolFilterOptions extends CursorPaginationParams {

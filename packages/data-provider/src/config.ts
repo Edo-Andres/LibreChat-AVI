@@ -809,7 +809,20 @@ const aviRolesSchema = z.object({
   roles: z.array(
     z.object({
       name: z.string(),
-      subroles: z.array(z.string()).optional(),
+      knowledge: z.string().optional(),
+      behavior: z.string().optional(),
+      registerAnswer: z.string().optional(),
+      subroles: z.array(
+        z.union([
+          z.string(),
+          z.object({
+            name: z.string(),
+            knowledge: z.string().optional(),
+            behavior: z.string().optional(),
+            registerAnswer: z.string().optional(),
+          })
+        ])
+      ).optional(),
     })
   ),
   migrations: z.object({
@@ -1708,6 +1721,8 @@ export const specialVariables = {
   user_avi_rol_behavior: true,
   user_avi_subrol_knowledge: true,
   user_avi_subrol_behavior: true,
+  user_avi_rol_registerAnswer: true,
+  user_avi_subrol_registerAnswer: true,
 };
 
 export type TSpecialVarLabel = `com_ui_special_var_${keyof typeof specialVariables}`;

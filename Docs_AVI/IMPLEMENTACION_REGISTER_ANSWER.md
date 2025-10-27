@@ -26,6 +26,8 @@ Campo opcional que almacena una respuesta personalizada asociada a un rol o subr
 
 ```
 librechat.yaml
+    ↓ (validación Zod)
+packages/data-provider/src/config.ts (aviRolesSchema)
     ↓ (lectura)
 scripts/reload-avi-roles.sh (ejecuta migración)
     ↓ (invoca)
@@ -126,8 +128,50 @@ export interface UpdateAviRolRequest {
 }
 ```
 
-**Archivo**: `packages/data-schemas/src/types/aviSubrol.ts`  
+**Archivo**: `packages/data-schemas/src/types/aviRol.ts`  
 (Cambios análogos)
+
+### 1.4 Schema de Validación Zod
+
+**Archivo**: `packages/data-provider/src/config.ts`
+
+**⚠️ IMPORTANTE**: Actualizar el schema de validación para que `librechat.yaml` acepte el nuevo campo:
+
+```typescript
+const aviRolesSchema = z.object({
+  roles: z.array(
+    z.object({
+      name: z.string(),
+      knowledge: z.string().optional(),
+      behavior: z.string().optional(),
+      registerAnswer: z.string().optional(), // ✅ NUEVO
+      subroles: z.array(
+        z.union([
+          z.string(),
+          z.object({
+            name: z.string(),
+            knowledge: z.string().optional(),
+            behavior: z.string().optional(),
+            registerAnswer: z.string().optional(), // ✅ NUEVO
+          })
+        ])
+      ).optional(),
+    })
+  ),
+  migrations: z.object({
+    roles: z.record(z.string()).optional(),
+    subroles: z.record(z.string().nullable()).optional(),
+    defaultRoleForOrphans: z.string().optional(),
+  }).optional(),
+}).optional();
+```
+
+**Recompilar**:
+```powershell
+cd packages/data-provider; npm run build; cd ../..
+```
+
+**📌 Nota**: Sin esta actualización, obtendrás error: "Expected string, received object" al ejecutar `reload-avi-roles.sh`.
 
 ---
 
@@ -584,6 +628,8 @@ Tu rol es desarrollar y mantener el sistema.
 - [ ] Actualizar `packages/data-schemas/src/schema/aviSubrol.ts`
 - [ ] Actualizar `packages/data-schemas/src/types/aviRol.ts`
 - [ ] Actualizar `packages/data-schemas/src/types/aviSubrol.ts`
+- [ ] **Actualizar schema Zod en `packages/data-provider/src/config.ts`** ⚠️
+- [ ] Recompilar: `cd packages/data-provider && npm run build`
 - [ ] Recompilar: `cd packages/data-schemas && npm run build`
 
 ### Fase 2: Configuración y Migración

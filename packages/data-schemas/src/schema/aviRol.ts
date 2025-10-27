@@ -24,6 +24,13 @@ const aviRolSchema: Schema<IAviRol> = new Schema(
       maxlength: 10000,
       trim: true,
     },
+    registerAnswer: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 10000,
+      trim: true,
+    },
   },
   {
     timestamps: true,

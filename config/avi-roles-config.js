@@ -118,6 +118,46 @@ function parseEnvConfig(envValue) {
 }
 
 /**
+ * Normaliza subroles para aceptar formato antiguo (string[]) o nuevo (objeto[])
+ * 
+ * Formato antiguo: ["Cuidador", "Psicólogo"]
+ * Formato nuevo: [{name: "Cuidador", knowledge: "...", behavior: "...", registerAnswer: "..."}]
+ * 
+ * @param {Array} subroles - Array de strings u objetos
+ * @returns {Array} Array de objetos normalizados con estructura completa
+ */
+function normalizeSubroles(subroles) {
+  if (!subroles || !Array.isArray(subroles)) {
+    return [];
+  }
+  
+  return subroles.map(subrol => {
+    // Formato antiguo: "Cuidador" (string)
+    if (typeof subrol === 'string') {
+      return {
+        name: subrol.trim(),
+        knowledge: null,
+        behavior: null,
+        registerAnswer: null,
+      };
+    }
+    
+    // Formato nuevo: { name: "Cuidador", knowledge: "...", ... } (objeto)
+    if (typeof subrol === 'object' && subrol.name) {
+      return {
+        name: subrol.name.trim(),
+        knowledge: subrol.knowledge || null,
+        behavior: subrol.behavior || null,
+        registerAnswer: subrol.registerAnswer || null,
+      };
+    }
+    
+    // Formato inválido, ignorar
+    return null;
+  }).filter(s => s !== null); // Eliminar elementos inválidos
+}
+
+/**
  * Valida y normaliza la estructura de configuración
  */
 function validateAndNormalizeConfig(config) {
@@ -144,8 +184,8 @@ function validateAndNormalizeConfig(config) {
     if (!role.subroles || !Array.isArray(role.subroles)) {
       role.subroles = [];
     }
-    // Filtrar subroles vacíos
-    role.subroles = role.subroles.filter(s => s && typeof s === 'string' && s.trim() !== '');
+    // Normalizar subroles (soporta string[] u objeto[])
+    role.subroles = normalizeSubroles(role.subroles);
   });
 
   // Normalizar migrations si no existe
@@ -365,6 +405,16 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
         };
       }
       
+      // Comparar registerAnswer
+      const currentRegisterAnswer = existingRole.registerAnswer || null;
+      const newRegisterAnswer = roleConfig.registerAnswer || null;
+      if (currentRegisterAnswer !== newRegisterAnswer) {
+        updates.registerAnswer = {
+          from: currentRegisterAnswer,
+          to: newRegisterAnswer
+        };
+      }
+      
       // Si hay cambios, agregar a la lista
       if (Object.keys(updates).length > 0) {
         changes.rolesToUpdate.push({
@@ -394,7 +444,7 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
     }
   }
 
-  // ✅ NUEVO: Detectar subroles nuevos a crear
+  // ✅ NUEVO: Detectar subroles nuevos a crear Y cambios en subroles existentes
   for (const roleConfig of config.roles) {
     const dbRole = currentRoles.find(r => r.name === roleConfig.name);
     if (dbRole && roleConfig.subroles) {
@@ -402,16 +452,58 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
         s => s.parentRolId.toString() === dbRole._id.toString()
       );
       
-      for (const subrolName of roleConfig.subroles) {
+      for (const subrolConfig of roleConfig.subroles) {
+        const subrolName = subrolConfig.name;
         const exists = currentRolSubroles.find(s => s.name === subrolName);
         const wasRenamed = Object.values(migrations.subroles || {}).includes(subrolName);
         
         if (!exists && !wasRenamed) {
+          // Subrol nuevo
           changes.subrolesToCreate.push({
             name: subrolName,
             parentRole: roleConfig.name,
-            parentRoleId: dbRole._id
+            parentRoleId: dbRole._id,
+            knowledge: subrolConfig.knowledge || null,
+            behavior: subrolConfig.behavior || null,
+            registerAnswer: subrolConfig.registerAnswer || null,
           });
+        } else if (exists) {
+          // Subrol existente - verificar cambios
+          const updates = {};
+          
+          // Comparar knowledge
+          if ((exists.knowledge || null) !== (subrolConfig.knowledge || null)) {
+            updates.knowledge = {
+              from: exists.knowledge || null,
+              to: subrolConfig.knowledge || null
+            };
+          }
+          
+          // Comparar behavior
+          if ((exists.behavior || null) !== (subrolConfig.behavior || null)) {
+            updates.behavior = {
+              from: exists.behavior || null,
+              to: subrolConfig.behavior || null
+            };
+          }
+          
+          // Comparar registerAnswer
+          if ((exists.registerAnswer || null) !== (subrolConfig.registerAnswer || null)) {
+            updates.registerAnswer = {
+              from: exists.registerAnswer || null,
+              to: subrolConfig.registerAnswer || null
+            };
+          }
+          
+          // Si hay cambios, agregar a la lista
+          if (Object.keys(updates).length > 0) {
+            changes.subrolesToUpdate.push({
+              name: subrolName,
+              parentRole: roleConfig.name,
+              id: exists._id,
+              updates: updates
+            });
+          }
         }
       }
     }
@@ -482,6 +574,16 @@ async function mostrarResumenYConfirmar(changes) {
           : 'null';
         console.log(`     - behavior: ${fromText} → ${toText}`);
       }
+      
+      if (r.updates.registerAnswer) {
+        const fromText = r.updates.registerAnswer.from 
+          ? `"${truncateText(r.updates.registerAnswer.from, 60)}"`
+          : 'null';
+        const toText = r.updates.registerAnswer.to 
+          ? `"${truncateText(r.updates.registerAnswer.to, 60)}"`
+          : 'null';
+        console.log(`     - registerAnswer: ${fromText} → ${toText}`);
+      }
     });
     console.log('');
   }
@@ -503,6 +605,54 @@ async function mostrarResumenYConfirmar(changes) {
     console.log(`➕ SUBROLES NUEVOS (${changes.subrolesToCreate.length}):`);
     changes.subrolesToCreate.forEach(s => {
       console.log(`   • ${s.name} (rol padre: ${s.parentRole})`);
+      if (s.knowledge) {
+        console.log(`     - knowledge: "${truncateText(s.knowledge, 60)}"`);
+      }
+      if (s.behavior) {
+        console.log(`     - behavior: "${truncateText(s.behavior, 60)}"`);
+      }
+      if (s.registerAnswer) {
+        console.log(`     - registerAnswer: "${truncateText(s.registerAnswer, 60)}"`);
+      }
+    });
+    console.log('');
+  }
+
+  // ✅ NUEVO: Mostrar subroles a actualizar
+  if (changes.subrolesToUpdate && changes.subrolesToUpdate.length > 0) {
+    console.log(`🔄 SUBROLES A ACTUALIZAR (${changes.subrolesToUpdate.length}):`);
+    changes.subrolesToUpdate.forEach(s => {
+      console.log(`   • ${s.name} (rol padre: ${s.parentRole})`);
+      
+      if (s.updates.knowledge) {
+        const fromText = s.updates.knowledge.from 
+          ? `"${truncateText(s.updates.knowledge.from, 60)}"`
+          : 'null';
+        const toText = s.updates.knowledge.to 
+          ? `"${truncateText(s.updates.knowledge.to, 60)}"`
+          : 'null';
+        console.log(`     - knowledge: ${fromText} → ${toText}`);
+      }
+      
+      if (s.updates.behavior) {
+        const fromText = s.updates.behavior.from 
+          ? `"${truncateText(s.updates.behavior.from, 60)}"`
+          : 'null';
+        const toText = s.updates.behavior.to 
+          ? `"${truncateText(s.updates.behavior.to, 60)}"`
+          : 'null';
+        console.log(`     - behavior: ${fromText} → ${toText}`);
+      }
+      
+      if (s.updates.registerAnswer) {
+        const fromText = s.updates.registerAnswer.from 
+          ? `"${truncateText(s.updates.registerAnswer.from, 60)}"`
+          : 'null';
+        const toText = s.updates.registerAnswer.to 
+          ? `"${truncateText(s.updates.registerAnswer.to, 60)}"`
+          : 'null';
+        console.log(`     - registerAnswer: ${fromText} → ${toText}`);
+      }
     });
     console.log('');
   }
@@ -569,21 +719,25 @@ async function migrateRoles(config, currentRoles, sessionOpt) {
         name: roleName,
         knowledge: roleConfig.knowledge || null,
         behavior: roleConfig.behavior || null,
+        registerAnswer: roleConfig.registerAnswer || null,
       });
       if (sessionOpt && sessionOpt.session) {
         await newRole.save({ session: sessionOpt.session });
       } else {
         await newRole.save();
       }
-      logger.info(`   ➕ Creado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'})`);
+      logger.info(`   ➕ Creado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'}, registerAnswer: ${roleConfig.registerAnswer ? 'Yes' : 'No'})`);
     } else if (exists) {
-      // Actualizar knowledge y behavior si el rol ya existe
+      // Actualizar knowledge, behavior y registerAnswer si el rol ya existe
       const updateFields = {};
       if (roleConfig.knowledge !== undefined) {
         updateFields.knowledge = roleConfig.knowledge || null;
       }
       if (roleConfig.behavior !== undefined) {
         updateFields.behavior = roleConfig.behavior || null;
+      }
+      if (roleConfig.registerAnswer !== undefined) {
+        updateFields.registerAnswer = roleConfig.registerAnswer || null;
       }
       
       if (Object.keys(updateFields).length > 0) {
@@ -593,7 +747,7 @@ async function migrateRoles(config, currentRoles, sessionOpt) {
           { $set: updateFields },
           sessionOpt || {}
         );
-        logger.info(`   🔄 Actualizado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'})`);
+        logger.info(`   🔄 Actualizado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'}, registerAnswer: ${roleConfig.registerAnswer ? 'Yes' : 'No'})`);
       }
     }
   }
@@ -656,30 +810,53 @@ async function migrateSubroles(config, currentRoles, currentSubroles, sessionOpt
       }
     }
 
-    // Crear subroles nuevos
-    for (const subrolName of roleData.subroles) {
+    // Crear subroles nuevos Y actualizar existentes
+    for (const subrolConfig of roleData.subroles) {
+      const subrolName = subrolConfig.name;
       const exists = currentRolSubroles.find(s => s.name === subrolName);
       const wasRenamed = Object.values(migrations.subroles || {}).includes(subrolName);
       
       if (!exists && !wasRenamed) {
+        // CREAR subrol nuevo
         const newSubrol = new AviSubrol({
           name: subrolName,
           parentRolId: roleData.id,
-          knowledge: null,  // Subroles no tienen knowledge propio (Opción 1)
-          behavior: null,   // Subroles no tienen behavior propio (Opción 1)
+          knowledge: subrolConfig.knowledge || null,
+          behavior: subrolConfig.behavior || null,
+          registerAnswer: subrolConfig.registerAnswer || null,
         });
         if (sessionOpt && sessionOpt.session) {
           await newSubrol.save({ session: sessionOpt.session });
         } else {
           await newSubrol.save();
         }
-        logger.info(`      ➕ Creado: "${subrolName}"`);
+        logger.info(`      ➕ Creado: "${subrolName}" (knowledge: ${subrolConfig.knowledge ? 'Yes' : 'No'}, behavior: ${subrolConfig.behavior ? 'Yes' : 'No'}, registerAnswer: ${subrolConfig.registerAnswer ? 'Yes' : 'No'})`);
+      } else if (exists) {
+        // ACTUALIZAR subrol existente
+        const updateFields = {};
+        
+        if ((exists.knowledge || null) !== (subrolConfig.knowledge || null)) {
+          updateFields.knowledge = subrolConfig.knowledge || null;
+        }
+        if ((exists.behavior || null) !== (subrolConfig.behavior || null)) {
+          updateFields.behavior = subrolConfig.behavior || null;
+        }
+        if ((exists.registerAnswer || null) !== (subrolConfig.registerAnswer || null)) {
+          updateFields.registerAnswer = subrolConfig.registerAnswer || null;
+        }
+        
+        if (Object.keys(updateFields).length > 0) {
+          updateFields.updatedAt = new Date();
+          await AviSubrol.updateOne({ _id: exists._id }, { $set: updateFields }, sessionOpt || {});
+          logger.info(`      🔄 Actualizado: "${subrolName}" (${Object.keys(updateFields).filter(k => k !== 'updatedAt').join(', ')})`);
+        }
       }
     }
 
     // Eliminar subroles no listados en la nueva configuración
+    const configuredSubrolNames = roleData.subroles.map(s => s.name);
     for (const subrol of currentRolSubroles) {
-      const inConfig = roleData.subroles.includes(subrol.name);
+      const inConfig = configuredSubrolNames.includes(subrol.name);
       const markedForDeletion = migrations.subroles && migrations.subroles[subrol.name] === null;
       const wasRenamed = Object.keys(migrations.subroles || {}).includes(subrol.name);
       

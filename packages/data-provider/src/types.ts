@@ -212,6 +212,8 @@ export type TUser = {
   aviRolBehavior?: string | null;
   aviSubrolKnowledge?: string | null;
   aviSubrolBehavior?: string | null;
+  aviRolRegisterAnswer?: string | null;
+  aviSubrolRegisterAnswer?: string | null;
 };
 
 export type TGetConversationsResponse = {
