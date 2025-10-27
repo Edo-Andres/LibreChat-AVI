@@ -445,21 +445,29 @@ aviRoles:
 #         - Subrol1
 #         - Subrol2
 #
-# Ejemplo solo con behavior:
-# aviRoles:
-#   roles:
-#     - name: MiRol
-#       behavior: "Descripción del comportamiento esperado"
-#       subroles:
-#         - Subrol1
+# Ejemplo con name, knowledge, behavior y registerAnswer en roles y subroles:
+aviRoles:
+  roles:
+      - name: MiRol
+        behavior: "comportamiento esperado del rol"
+        knowledge: "Conocimiento general de MiRol"
+        registerAnswer: "Respuesta personalizada unica para MiRol (relacion 1 a 1)"
+        subroles:
+        - name: Subrol1
+          behavior: "Comportamiento específico de Subrol1"
+          knowledge: "Conocimiento específico de Subrol1"
+          registerAnswer: "Respuesta personalizada unica para Subrol1 (relacion 1 a 1)"
+        - name: Subrol2
+          behavior: "Comportamiento específico de Subrol2"
+          knowledge: "Conocimiento específico de Subrol2"
+          registerAnswer: "Respuesta personalizada unica para Subrol2 (relacion 1 a 1)"
 
   # Configuración de migraciones (opcional)
   # Permite renombrar roles y subroles sin perder datos
   migrations:
     # Mapeo de roles antiguos a nuevos nombres
     # Formato: "nombre_antiguo": "nombre_nuevo"
-    roles:
-      cuidador: Cuidador
+    roles:      
       # administrativo: Admin
 
     # Mapeo de subroles antiguos a nuevos nombres
