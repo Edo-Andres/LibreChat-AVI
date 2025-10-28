@@ -237,10 +237,10 @@ const Registration: React.FC = () => {
                   {...register('aviRol_id')}
                   className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none"
                 >
-                  <option value="">{localize('Seleccionar Rol AVI')}</option>
+                  <option value="">Pregunta 1</option>
                   {aviRoles.map((role) => (
                     <option key={role._id} value={role._id}>
-                      {role.name}
+                      {role.registerAnswer || role.name}
                     </option>
                   ))}
                 </select>
@@ -261,10 +261,10 @@ const Registration: React.FC = () => {
                     {...register('aviSubrol_id')}
                     className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none"
                   >
-                    <option value="">{localize('Seleccionar Subrol AVI')}</option>
+                    <option value="">Pregunta 2</option>
                     {aviSubroles.map((subrol) => (
                       <option key={subrol._id} value={subrol._id}>
-                        {subrol.name}
+                        {subrol.registerAnswer || subrol.name}
                       </option>
                     ))}
                   </select>

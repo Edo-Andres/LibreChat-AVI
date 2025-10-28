@@ -2,6 +2,7 @@
 export type TAviRol = {
   _id: string;
   name: string;
+  registerAnswer?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -10,6 +11,7 @@ export type TAviSubrol = {
   _id: string;
   name: string;
   parentRolId: string;
+  registerAnswer?: string | null;
   createdAt: string;
   updatedAt: string;
 };
