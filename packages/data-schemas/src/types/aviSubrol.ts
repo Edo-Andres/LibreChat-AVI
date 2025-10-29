@@ -7,6 +7,7 @@ export interface IAviSubrol extends Document {
   parentRolId: Types.ObjectId;
   knowledge?: string | null;
   behavior?: string | null;
+  initial_suggestions?: string[];
   registerAnswer?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
@@ -17,6 +18,7 @@ export interface CreateAviSubrolRequest {
   parentRolId: string | Types.ObjectId;
   knowledge?: string | null;
   behavior?: string | null;
+  initial_suggestions?: string[];
   registerAnswer?: string | null;
 }
 
@@ -25,6 +27,7 @@ export interface UpdateAviSubrolRequest {
   parentRolId?: string | Types.ObjectId;
   knowledge?: string | null;
   behavior?: string | null;
+  initial_suggestions?: string[];
   registerAnswer?: string | null;
 }
 

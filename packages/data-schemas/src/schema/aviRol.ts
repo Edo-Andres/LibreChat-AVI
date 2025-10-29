@@ -24,6 +24,18 @@ const aviRolSchema: Schema<IAviRol> = new Schema(
       maxlength: 10000,
       trim: true,
     },
+    initial_suggestions: {
+      type: [String],
+      default: [],
+      validate: [
+        {
+          validator: function (v: string[]) {
+            return v.length <= 4;
+          },
+          message: 'Maximum 4 initial suggestions allowed'
+        }
+      ],
+    },
     registerAnswer: {
       type: String,
       required: false,

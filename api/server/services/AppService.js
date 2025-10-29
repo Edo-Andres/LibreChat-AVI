@@ -97,6 +97,7 @@ const AppService = async () => {
     interfaceConfig,
     turnstileConfig,
     fileStrategies: config.fileStrategies,
+    conversationSuggestions: config.conversationSuggestions,
   };
 
   const agentsDefaults = agentsConfigSetup(config);

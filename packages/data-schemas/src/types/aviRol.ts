@@ -6,6 +6,7 @@ export interface IAviRol extends Document {
   name: string;
   knowledge?: string | null;
   behavior?: string | null;
+  initial_suggestions?: string[];
   registerAnswer?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
@@ -15,6 +16,7 @@ export interface CreateAviRolRequest {
   name: string;
   knowledge?: string | null;
   behavior?: string | null;
+  initial_suggestions?: string[];
   registerAnswer?: string | null;
 }
 
@@ -22,6 +24,7 @@ export interface UpdateAviRolRequest {
   name?: string;
   knowledge?: string | null;
   behavior?: string | null;
+  initial_suggestions?: string[];
   registerAnswer?: string | null;
 }
 

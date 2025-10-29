@@ -4,12 +4,16 @@
 services:
   api:
     container_name: LibreChat
+    image: librechat
+    build:
+      context: .
+      target: node
     ports:
       - "${PORT}:${PORT}"
     depends_on:
       - mongodb
       - rag_api
-    image: ghcr.io/danny-avila/librechat-dev:latest
+    # image: ghcr.io/danny-avila/librechat-dev:latest
     restart: always
     user: "${UID}:${GID}"
     extra_hosts:
@@ -27,6 +31,9 @@ services:
       - ./images:/app/client/public/images
       - ./uploads:/app/uploads
       - ./logs:/app/api/logs
+      - type: bind
+        source: ./librechat.yaml
+        target: /app/librechat.yaml
   mongodb:
     container_name: chat-mongodb
     image: mongo
@@ -35,6 +42,8 @@ services:
     volumes:
       - ./data-node:/data/db
     command: mongod --noauth
+    ports: # Uncomment this to access mongodb from outside docker, not safe in deployment
+      - 27017:27017
   meilisearch:
     container_name: chat-meilisearch
     image: getmeili/meilisearch:v1.12.3

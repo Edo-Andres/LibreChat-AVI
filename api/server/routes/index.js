@@ -28,6 +28,7 @@ const keys = require('./keys');
 const user = require('./user');
 const mcp = require('./mcp');
 const aviRoles = require('./aviRoles');
+const suggestions = require('./suggestions');
 
 module.exports = {
   mcp,
@@ -60,4 +61,5 @@ module.exports = {
   staticRoute,
   accessPermissions,
   aviRoles,
+  suggestions,
 };

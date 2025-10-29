@@ -832,6 +832,13 @@ const aviRolesSchema = z.object({
   }).optional(),
 }).optional();
 
+// Schema para conversationSuggestions
+const conversationSuggestionsSchema = z.object({
+  enabled: z.boolean().default(true),
+  defaultInitialSuggestions: z.array(z.string()).max(4).default([]),
+  fastModel: z.string().default('gemini-1.5-flash'),
+}).optional();
+
 export const configSchema = z.object({
   version: z.string(),
   cache: z.boolean().default(true),
@@ -871,6 +878,7 @@ export const configSchema = z.object({
   fileConfig: fileConfigSchema.optional(),
   modelSpecs: specsConfigSchema.optional(),
   aviRoles: aviRolesSchema,
+  conversationSuggestions: conversationSuggestionsSchema,
   endpoints: z
     .object({
       all: baseEndpointSchema.optional(),

@@ -7,6 +7,7 @@ import PlaceholderRow from '~/components/Chat/Messages/ui/PlaceholderRow';
 import SiblingSwitch from '~/components/Chat/Messages/SiblingSwitch';
 import HoverButtons from '~/components/Chat/Messages/HoverButtons';
 import MessageIcon from '~/components/Chat/Messages/MessageIcon';
+import FollowUpSuggestions from '~/components/Chat/Messages/FollowUpSuggestions';
 import { useAttachments, useMessageActions } from '~/hooks';
 import SubRow from '~/components/Chat/Messages/SubRow';
 import { cn, logger } from '~/utils';
@@ -183,27 +184,55 @@ const ContentRender = memo(
             {(isSubmittingFamily || isSubmitting) && !(msg.children?.length ?? 0) ? (
               <PlaceholderRow isCard={isCard} />
             ) : (
-              <SubRow classes="text-xs">
-                <SiblingSwitch
-                  siblingIdx={siblingIdx}
-                  siblingCount={siblingCount}
-                  setSiblingIdx={setSiblingIdx}
-                />
-                <HoverButtons
-                  index={index}
-                  isEditing={edit}
-                  message={msg}
-                  enterEdit={enterEdit}
-                  isSubmitting={isSubmitting}
-                  conversation={conversation ?? null}
-                  regenerate={handleRegenerateMessage}
-                  copyToClipboard={copyToClipboard}
-                  handleContinue={handleContinue}
-                  latestMessage={latestMessage}
-                  handleFeedback={handleFeedback}
-                  isLast={isLast}
-                />
-              </SubRow>
+              <>
+                <SubRow classes="text-xs">
+                  <SiblingSwitch
+                    siblingIdx={siblingIdx}
+                    siblingCount={siblingCount}
+                    setSiblingIdx={setSiblingIdx}
+                  />
+                  <HoverButtons
+                    index={index}
+                    isEditing={edit}
+                    message={msg}
+                    enterEdit={enterEdit}
+                    isSubmitting={isSubmitting}
+                    conversation={conversation ?? null}
+                    regenerate={handleRegenerateMessage}
+                    copyToClipboard={copyToClipboard}
+                    handleContinue={handleContinue}
+                    latestMessage={latestMessage}
+                    handleFeedback={handleFeedback}
+                    isLast={isLast}
+                  />
+                </SubRow>
+                {/* Follow-up Suggestions - shown below assistant messages */}
+                {(() => {
+                  const shouldRenderFollowUp =
+                    !msg.isCreatedByUser &&
+                    isLast &&
+                    !isSubmitting &&
+                    !!conversation?.conversationId;
+
+                  console.log('[ContentRender] FollowUpSuggestions conditions:', {
+                    messageId: msg.messageId,
+                    isCreatedByUser: msg.isCreatedByUser,
+                    isLast,
+                    isSubmitting,
+                    hasConversationId: !!conversation?.conversationId,
+                    conversationId: conversation?.conversationId,
+                    shouldRenderFollowUp,
+                  });
+
+                  return shouldRenderFollowUp ? (
+                    <FollowUpSuggestions
+                      conversationId={conversation.conversationId}
+                      messageId={msg.messageId}
+                      isLatestAssistantMessage={true}
+                    />
+                  ) : null;
+                })()}
+              </>
             )}
           </div>
         </div>
@@ -211,5 +240,8 @@ const ContentRender = memo(
     );
   },
 );
+
+// Add display name for debugging
+ContentRender.displayName = 'ContentRender';
 
 export default ContentRender;

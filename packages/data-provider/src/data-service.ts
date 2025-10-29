@@ -968,6 +968,15 @@ export function getGraphApiToken(params: q.GraphTokenParams): Promise<q.GraphTok
   return request.get(endpoints.graphToken(params.scopes));
 }
 
+// Conversation Suggestions
+export function getInitialSuggestions(): Promise<{ suggestions: string[] }> {
+  return request.get(endpoints.initialSuggestions());
+}
+
+export function getFollowUpSuggestions(params: { conversationId: string }): Promise<{ suggestions: string[] }> {
+  return request.post(endpoints.followUpSuggestions(), params);
+}
+
 export function getDomainServerBaseUrl(): string {
   return `${endpoints.apiBaseUrl()}/api`;
 }
