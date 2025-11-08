@@ -157,9 +157,15 @@ const Registration: React.FC = () => {
             className="mt-6"
             aria-label="Registration form"
             method="POST"
-            onSubmit={handleSubmit((data: TRegisterUser) =>
-              registerUser.mutate({ ...data, token: token ?? undefined }),
-            )}
+            onSubmit={handleSubmit((data: TRegisterUser) => {
+              // Normalize email to lowercase
+              const normalizedData = {
+                ...data,
+                email: data.email.toLowerCase(),
+                token: token ?? undefined,
+              };
+              registerUser.mutate(normalizedData);
+            })}
           >
             {renderInput('name', 'com_auth_full_name', 'text', {
               required: localize('com_auth_name_required'),
