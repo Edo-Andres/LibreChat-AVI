@@ -124,29 +124,30 @@ async function callLLMForSuggestions(conversationContext, model) {
     const genModel = genAI.getGenerativeModel({ model });
 
     // Create prompt for suggestion generation
-    const prompt = `You are an expert AI designed to generate conversational suggestions. Your task is to act as a guide for users interacting with AVI, the "Asistente Virtual en Infancia".
+    // IMPROVED PROMPT: Generates suggestions as QUESTIONS THE USER WOULD ASK (not questions the agent would ask)
+    const prompt = `Eres un asistente experto que genera sugerencias para que el usuario continúe conversando con AVI sobre cuidado infantil y desarrollo emocional.
 
-**AVI's Core Purpose:**
-AVI is an AI assistant supporting professionals (caregivers, educators, psychologists) in residential care settings for children and adolescents who have experienced severe trauma and rights violations. AVI provides practical, empathetic, actionable, and rights-based guidance. It is a supportive, non-clinical tool for daily challenges and crisis management.
+**Tu Tarea:**
+Analizar el contexto de la conversación y generar EXACTAMENTE 3 preguntas que UN USUARIO podría hacer para profundizar, hacer seguimiento o explorar temas relacionados derivados de la última respuesta.
 
-**User Profile:**
-The user is a professional working in a high-stress environment who values practical, direct, and supportive advice to better care for the children.
+**Reglas ESTRICTAS:**
+1. Cada sugerencia es una PREGUNTA que el usuario escribiría (no una pregunta que haría el agente para obtener contexto).
+2. Forma: Interrogativa directa (¿Cómo...?, ¿Qué...?, ¿Por qué...?, etc.) o iniciada por verbo si es apropiado.
+3. Longitud: EXACTAMENTE entre 6 y 12 palabras (sin contar signos de puntuación).
+4. Idioma: EXACTAMENTE el mismo idioma del último mensaje del USUARIO.
+5. Contenido: Preguntas PRÁCTICAS y DERIVADAS del contexto, no genéricas.
 
-**Your Task:**
-Based on the last turn of the conversation provided below, generate 3 brief, proactive, and relevant chat suggestions to help the user continue the conversation in a useful direction. The suggestions should prompt the user to ask for practical steps, explore related concepts, or request specific examples.
-
-**Conversation Context:**
+**Contexto de la conversación:**
 
 ${'    ' + conversationContext.replaceAll('\n', '\n    ')}
 
+**Ejemplos de salida VÁLIDA** (preguntas que el usuario haría):
+["¿Cómo manejar una rabieta emocional?", "¿Qué estrategias mejoran la concentración?", "¿Por qué los niños tienen miedos?"]
 
-**Strict Rules:**
-1.  The suggestions must be in the same language as the user's last message in the context.
-2.  Each suggestion must be a maximum of 70 characters.
-3.  Your response MUST be ONLY a JSON array of strings, without any other text, explanation, or markdown.
-
-**Example Output Format:**
-["Sugerencia de ejemplo 1", "Sugerencia de ejemplo 2", "¿Y si pasa esto otro?"]`;
+**IMPORTANTE:**
+- Responde SOLO con el JSON array, sin texto adicional ni explicaciones.
+- NO generes preguntas que el agente haría (como "¿Qué edad tiene?" o "¿Cuánto tiempo lleva así?").
+- Cada pregunta debe ser algo que el usuario escribiría para profundizar en el tema.`;
 
     // Generate content
     const result = await genModel.generateContent(prompt);
