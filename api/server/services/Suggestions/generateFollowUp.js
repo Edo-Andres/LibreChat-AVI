@@ -15,6 +15,11 @@ async function generateFollowUpSuggestions(conversationId, userId, messageCount 
     // 1. Fetch recent messages from conversation
     const messages = await getMessages({ conversationId, user: userId });
 
+    logger.info('=== [Follow-up Suggestions] DEBUG START ===');
+    logger.info(`[Follow-up Suggestions] Total messages found: ${messages?.length || 0}`);
+    logger.info(`[Follow-up Suggestions] ConversationId: ${conversationId}`);
+    logger.info(`[Follow-up Suggestions] UserId: ${userId}`);
+
     if (!messages || messages.length === 0) {
       logger.debug('[Follow-up Suggestions] No messages found');
       return [];
@@ -22,14 +27,52 @@ async function generateFollowUpSuggestions(conversationId, userId, messageCount 
 
     // Get last N messages
     const recentMessages = messages.slice(-messageCount);
+    
+    logger.info(`[Follow-up Suggestions] Recent messages (last ${messageCount}):`);
+    recentMessages.forEach((msg, index) => {
+      const hasText = !!msg.text;
+      const hasContent = msg.content && Array.isArray(msg.content) && msg.content.length > 0;
+      const contentTypes = hasContent ? msg.content.map(c => c.type).join(', ') : 'none';
+      
+      logger.info(`  [${index}] isCreatedByUser: ${msg.isCreatedByUser}, sender: ${msg.sender}`);
+      logger.info(`        hasText: ${hasText}, hasContent: ${hasContent}, contentTypes: [${contentTypes}]`);
+      
+      if (hasText) {
+        logger.info(`        textPreview: "${msg.text?.substring(0, 80)}..."`);
+      } else if (hasContent) {
+        const textContent = msg.content.find(c => c.type === 'text');
+        if (textContent?.text) {
+          logger.info(`        contentTextPreview: "${textContent.text.substring(0, 80)}..."`);
+        }
+      }
+    });
 
     // 2. Format messages for LLM context
     const conversationContext = recentMessages
       .map((msg) => {
         const role = msg.isCreatedByUser ? 'Usuario' : 'Asistente';
-        return `${role}: ${msg.text || ''}`;
+        
+        // Extract text content - prioritize msg.text, but fall back to content array
+        let messageText = msg.text || '';
+        
+        // If text is empty but content array exists (for agents/assistants)
+        if (!messageText && msg.content && Array.isArray(msg.content)) {
+          // Extract text from content array (filter out 'think' type, keep 'text' type)
+          const textParts = msg.content
+            .filter(part => part.type === 'text' && part.text)
+            .map(part => part.text);
+          
+          messageText = textParts.join('\n');
+        }
+        
+        return `${role}: ${messageText}`;
       })
       .join('\n');
+    
+    logger.info('[Follow-up Suggestions] Formatted conversation context:');
+    logger.info('--- CONTEXT START ---');
+    logger.info(conversationContext);
+    logger.info('--- CONTEXT END ---');
 
     if (!conversationContext.trim()) {
       logger.debug('[Follow-up Suggestions] No valid conversation context');
@@ -48,6 +91,10 @@ async function generateFollowUpSuggestions(conversationId, userId, messageCount 
 
     // 4. Call LLM to generate suggestions
     const suggestions = await callLLMForSuggestions(conversationContext, fastModel);
+    
+    logger.info(`[Follow-up Suggestions] Generated ${suggestions.length} suggestions`);
+    logger.info('[Follow-up Suggestions] Suggestions:', JSON.stringify(suggestions));
+    logger.info('=== [Follow-up Suggestions] DEBUG END ===');
 
     return suggestions;
   } catch (error) {
