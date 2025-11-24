@@ -83,13 +83,18 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
         </div>
       )}
       <form
-        className="mt-6"
+        className="mt-10 space-y-6"
         aria-label="Login form"
         method="POST"
         onSubmit={handleSubmit((data) => onSubmit(data))}
       >
-        <div className="mb-4">
-          <div className="relative">
+        <div className="space-y-5">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              {useUsernameLogin
+                ? localize('com_auth_username').replace(/ \(.*$/, '')
+                : localize('com_auth_email_address')}
+            </label>
             <input
               type="text"
               id="email"
@@ -104,70 +109,60 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
                 },
               })}
               aria-invalid={!!errors.email}
-              className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none"
-              placeholder=" "
+              className="w-full px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+              placeholder={useUsernameLogin ? "usuario" : "usuario@ccm.edu"}
             />
-            <label
-              htmlFor="email"
-              className="absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-surface-primary px-2 text-sm text-text-secondary-alt duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-green-600 dark:peer-focus:text-green-500 rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4"
-            >
-              {useUsernameLogin
-                ? localize('com_auth_username').replace(/ \(.*$/, '')
-                : localize('com_auth_email_address')}
-            </label>
+            {renderError('email')}
           </div>
-          {renderError('email')}
-        </div>
-        <div className="mb-2">
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              autoComplete="current-password"
-              aria-label={localize('com_auth_password')}
-              {...register('password', {
-                required: localize('com_auth_password_required'),
-                minLength: {
-                  value: startupConfig?.minPasswordLength || 8,
-                  message: localize('com_auth_password_min_length'),
-                },
-                maxLength: { value: 128, message: localize('com_auth_password_max_length') },
-              })}
-              aria-invalid={!!errors.password}
-              className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 pr-10 text-text-primary duration-200 focus:border-green-500 focus:outline-none [&::-ms-reveal]:hidden"
-              placeholder=" "
-            />
-            <label
-              htmlFor="password"
-              className="absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-surface-primary px-2 text-sm text-text-secondary-alt duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-green-600 dark:peer-focus:text-green-500 rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4"
-            >
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               {localize('com_auth_password')}
             </label>
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-text-secondary transition-colors hover:text-text-primary focus:outline-none"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-            >
-              <span className="flex h-5 w-5 items-center justify-center">
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                autoComplete="current-password"
+                aria-label={localize('com_auth_password')}
+                {...register('password', {
+                  required: localize('com_auth_password_required'),
+                  minLength: {
+                    value: startupConfig?.minPasswordLength || 8,
+                    message: localize('com_auth_password_min_length'),
+                  },
+                  maxLength: { value: 128, message: localize('com_auth_password_max_length') },
+                })}
+                aria-invalid={!!errors.password}
+                className="w-full px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
                 {showPassword ? (
-                  <EyeOff key="eye-off" className="h-5 w-5" />
+                  <EyeOff className="h-5 w-5" />
                 ) : (
-                  <Eye key="eye-on" className="h-5 w-5" />
+                  <Eye className="h-5 w-5" />
                 )}
-              </span>
-            </button>
+              </button>
+            </div>
+            {renderError('password')}
           </div>
-          {renderError('password')}
         </div>
-        {startupConfig.passwordResetEnabled && (
-          <a
-            href="/forgot-password"
-            className="inline-flex p-1 text-sm font-medium text-green-600 transition-colors hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
-          >
-            {localize('com_auth_password_forgot')}
-          </a>
-        )}
+
+        <div className="flex items-center justify-end">
+          {startupConfig.passwordResetEnabled && (
+            <a
+              href="/forgot-password"
+              className="text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
+            >
+              {localize('com_auth_password_forgot')}
+            </a>
+          )}
+        </div>
 
         {requireCaptcha && (
           <div className="my-4 flex justify-center">
@@ -184,18 +179,16 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
           </div>
         )}
 
-        <div className="mt-6">
-          <Button
-            aria-label={localize('com_auth_continue')}
-            data-testid="login-button"
-            type="submit"
-            disabled={(requireCaptcha && !turnstileToken) || isSubmitting}
-            variant="submit"
-            className="h-12 w-full rounded-2xl"
-          >
-            {isSubmitting ? <Spinner /> : localize('com_auth_continue')}
-          </Button>
-        </div>
+        <Button
+          aria-label={localize('com_auth_continue')}
+          data-testid="login-button"
+          type="submit"
+          disabled={(requireCaptcha && !turnstileToken) || isSubmitting}
+          variant="submit"
+          className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg shadow-green-500/30 text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:-translate-y-0.5"
+        >
+          {isSubmitting ? <Spinner /> : localize('com_auth_continue')}
+        </Button>
       </form>
     </>
   );

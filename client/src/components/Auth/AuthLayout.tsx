@@ -1,13 +1,12 @@
 import { ThemeSelector } from '@librechat/client';
 import { TStartupConfig } from 'librechat-data-provider';
 import { TranslationKeys, useLocalize } from '~/hooks';
-import SocialLoginRender from './SocialLoginRender';
 import { BlinkAnimation } from './BlinkAnimation';
 import { Banner } from '../Banners';
-import Footer from './Footer';
+import AuthSlider from './AuthSlider';
 
 const ErrorRender = ({ children }: { children: React.ReactNode }) => (
-  <div className="mt-16 flex justify-center">
+  <div className="mt-4 flex justify-center">
     <div
       role="alert"
       aria-live="assertive"
@@ -58,14 +57,18 @@ function AuthLayout({
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-auth-background bg-cover bg-center bg-no-repeat bg-white dark:bg-gray-900">
-      <Banner />
-      <div className="absolute bottom-0 left-0 md:m-4">
-        <ThemeSelector />
-      </div>
+    <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
+      <AuthSlider />
 
-      <div className="flex flex-grow items-center justify-center">
-        <div className="w-authPageWidth overflow-hidden bg-white/40 px-6 py-4 dark:bg-gray-900 sm:max-w-md sm:rounded-lg">
+      <div className="relative flex w-full items-center justify-center overflow-y-auto bg-gray-50 p-8 dark:bg-gray-800 lg:w-7/12">
+        <div className="absolute left-0 top-0 w-full">
+          <Banner />
+        </div>
+        <div className="absolute right-4 top-4">
+          <ThemeSelector />
+        </div>
+
+        <div className="w-full max-w-md space-y-8 rounded-[2rem] bg-white p-12 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:bg-gray-900">
           <BlinkAnimation active={isFetching}>
             <div className="mb-7 flex justify-center">
               <div style={{ height: '90px', width: 'auto' }}>
@@ -77,23 +80,21 @@ function AuthLayout({
               </div>
             </div>
           </BlinkAnimation>
-          <DisplayError />
-          {!hasStartupConfigError && !isFetching && (
-            <h1
-              className="mb-3 text-center text-3xl font-semibold text-black dark:text-white"
-              style={{ userSelect: 'none' }}
-            >
-              {header}
-            </h1>
-          )}
-          {children}
-          {!pathname.includes('2fa') &&
-            (pathname.includes('login') || pathname.includes('register')) && (
-              <SocialLoginRender startupConfig={startupConfig} />
+          
+          <div className="text-center">
+            {!hasStartupConfigError && !isFetching && (
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {header}
+              </h2>
             )}
+            <p className="mt-2 text-gray-500">Ingresa tus credenciales para continuar</p>
+          </div>
+
+          <DisplayError />
+          
+          {children}
         </div>
       </div>
-      <Footer startupConfig={startupConfig} />
     </div>
   );
 }
