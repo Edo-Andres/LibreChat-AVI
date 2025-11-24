@@ -403,13 +403,7 @@ npm run delete-user
 # ═══════════════════════════════════════
 
 # Recargar roles AVI (con confirmación)
-node config/reload-avi-roles-standalone.js -i
-
-# Recargar roles AVI (automático)
-node config/reload-avi-roles-standalone.js
-
-# Probar variables knowledge/behavior
-node config/test-knowledge-behavior-variables.js
+scripts\reload-avi-roles.sh -i
 
 # ═══════════════════════════════════════
 # DOCKER (DESARROLLO O PRODUCCIÓN)
@@ -513,7 +507,7 @@ npm run build
 # Agregar/modificar roles y subroles
 
 # 2. Aplicar cambios a MongoDB
-node config/reload-avi-roles-standalone.js -i
+scripts\reload-avi-roles.sh -i
 
 # 3. Confirmar migración (y/n)
 # El servidor reiniciará automáticamente
@@ -576,7 +570,7 @@ npm run backend:dev
 npm run frontend:dev
 
 # Recargar roles AVI
-node config/reload-avi-roles-standalone.js -i
+scripts\reload-avi-roles.sh -i
 
 # Compilar TypeScript (si modificas packages/)
 cd packages/data-schemas && npm run build
