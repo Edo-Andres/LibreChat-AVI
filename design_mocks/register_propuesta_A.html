@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Propuesta A - Split Screen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { 
+                        green: { 500: '#10a37f', 600: '#059669', 700: '#047857' },
+                        dark: { 800: '#1e1e1e', 900: '#121212' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .step-content { display: none; }
+        .step-content.active { display: block; animation: slideIn 0.4s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        
+        /* Custom scrollbar for form area if needed */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+    </style>
+</head>
+<body class="h-screen w-full flex overflow-hidden bg-white font-sans">
+
+    <!-- Left Side - Progress & Branding (5/12) -->
+    <div class="hidden lg:flex lg:w-5/12 relative bg-gray-900 overflow-hidden flex-col justify-between">
+        <!-- Background Image & Overlay -->
+        <div class="absolute inset-0 bg-[url('./img_avi/bg_login.jpg')] bg-cover bg-center opacity-40"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-green-900/90 to-black/80"></div>
+
+        <!-- Content Container -->
+        <div class="relative z-10 flex flex-col justify-between p-12 w-full h-full">
+            <!-- Header -->
+            <div class="flex items-center space-x-3">
+                <img src="./img_avi/ccm.png" class="h-10 w-10 object-contain bg-white/10 rounded-lg p-1 backdrop-blur-sm">
+                <span class="text-white font-bold tracking-wide text-xl">CCM ID</span>
+            </div>
+            
+            <!-- Progress Steps -->
+            <div class="space-y-10 relative pl-2">
+                <!-- Vertical Line -->
+                <div class="absolute left-[29px] top-4 bottom-4 w-0.5 bg-white/10 -z-10"></div>
+                
+                <!-- Step 1 -->
+                <div class="step-indicator flex items-center space-x-5 group active" data-step="1">
+                    <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center text-base font-bold shadow-[0_0_20px_rgba(16,163,127,0.4)] transition-all z-10 ring-4 ring-black/20">1</div>
+                    <div>
+                        <p class="text-white text-lg font-semibold tracking-tight">Identidad</p>
+                        <p class="text-gray-400 text-sm font-medium">Información personal</p>
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="step-indicator flex items-center space-x-5 group" data-step="2">
+                    <div class="w-10 h-10 rounded-full bg-white/5 border border-white/20 text-gray-400 flex items-center justify-center text-base font-bold transition-all z-10 backdrop-blur-sm">2</div>
+                    <div>
+                        <p class="text-gray-400 text-lg font-semibold tracking-tight group-[.active]:text-white transition-colors">Académico</p>
+                        <p class="text-gray-500 text-sm font-medium">Rol institucional</p>
+                    </div>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="step-indicator flex items-center space-x-5 group" data-step="3">
+                    <div class="w-10 h-10 rounded-full bg-white/5 border border-white/20 text-gray-400 flex items-center justify-center text-base font-bold transition-all z-10 backdrop-blur-sm">3</div>
+                    <div>
+                        <p class="text-gray-400 text-lg font-semibold tracking-tight group-[.active]:text-white transition-colors">Seguridad</p>
+                        <p class="text-gray-500 text-sm font-medium">Protege tu cuenta</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-sm text-gray-400">
+                <div class="flex items-center space-x-2 mb-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-green-400 font-medium text-xs uppercase tracking-wider">Registro de Usuarios</span>
+                </div>
+                <p class="opacity-60">© 2025 CCM Education</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side - Form (7/12) -->
+    <div class="w-full lg:w-7/12 flex flex-col h-full bg-white relative">
+        
+        <!-- Mobile Header (Visible only on small screens) -->
+        <div class="lg:hidden p-6 flex items-center justify-between border-b border-gray-100 bg-white z-20">
+            <div class="flex items-center space-x-2">
+                <img src="./img_avi/ccm.png" class="h-8 w-8 object-contain">
+                <span class="font-bold text-gray-900">CCM ID</span>
+            </div>
+            <div class="text-sm font-medium text-gray-500">
+                Paso <span id="mobile-step-num" class="text-green-600 font-bold">1</span>/3
+            </div>
+        </div>
+
+        <!-- Scrollable Form Area -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar flex items-center justify-center p-6 md:p-12">
+            <div class="w-full max-w-md mx-auto">
+                
+                <form id="registerForm" class="space-y-6">
+                    
+                    <!-- Step 1: Identidad -->
+                    <div class="step-content active" id="step1">
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Bienvenido</h2>
+                            <p class="text-gray-500 mt-2 text-lg">Comencemos con tu identificación.</p>
+                        </div>
+                        
+                        <div class="space-y-5">
+                            <!-- Nombre Completo -->
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Nombre Completo</label>
+                                <input type="text" name="name" class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all font-medium" placeholder="Ej. Juan Pérez">
+                            </div>
+                            
+                            <!-- Nombre de Usuario (Opcional) -->
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between items-center ml-1">
+                                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Nombre de Usuario</label>
+                                    <span class="text-[10px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">OPCIONAL</span>
+                                </div>
+                                <input type="text" name="username" class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all font-medium" placeholder="Ej. juanperez23">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Académico -->
+                    <div class="step-content" id="step2">
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Perfil Académico</h2>
+                            <p class="text-gray-500 mt-2 text-lg">Vincula tu cuenta institucional.</p>
+                        </div>
+
+                        <div class="space-y-5">
+                            <!-- Correo Electrónico -->
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Correo Institucional</label>
+                                <input type="email" name="email" class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all font-medium" placeholder="usuario@ccm.edu">
+                            </div>
+
+                            <!-- Rol AVI (Select) -->
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Rol AVI</label>
+                                <div class="relative">
+                                    <select name="aviRol_id" id="aviRol_id" onchange="toggleSubrole()" class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all font-medium appearance-none cursor-pointer">
+                                        <option value="" disabled selected>Selecciona tu rol...</option>
+                                        <option value="role_1">Estudiante</option>
+                                        <option value="role_2">Profesor</option>
+                                        <option value="role_3">Administrativo</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subrol AVI (Select - Conditional) -->
+                            <div class="space-y-1.5 transition-all duration-300 opacity-50 pointer-events-none" id="subrole-container">
+                                <div class="flex justify-between items-center ml-1">
+                                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Subrol AVI</label>
+                                    <span class="text-[10px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">OPCIONAL</span>
+                                </div>
+                                <div class="relative">
+                                    <select name="aviSubrol_id" id="aviSubrol_id" class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all font-medium appearance-none cursor-pointer">
+                                        <option value="" disabled selected>Selecciona una opción...</option>
+                                        <option value="subrole_1">Opción A</option>
+                                        <option value="subrole_2">Opción B</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Seguridad -->
+                    <div class="step-content" id="step3">
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Seguridad</h2>
+                            <p class="text-gray-500 mt-2 text-lg">Establece tus credenciales de acceso.</p>
+                        </div>
+
+                        <div class="space-y-5">
+                            <!-- Contraseña -->
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Contraseña</label>
+                                <div class="relative">
+                                    <input type="password" name="password" class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all font-medium" placeholder="••••••••">
+                                    <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Confirmar Contraseña -->
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Confirmar Contraseña</label>
+                                <div class="relative">
+                                    <input type="password" name="confirm_password" class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all font-medium" placeholder="••••••••">
+                                </div>
+                            </div>
+
+                            <!-- Terms Checkbox -->
+                            <div class="pt-4">
+                                <label class="flex items-start cursor-pointer group">
+                                    <div class="relative flex items-center mt-0.5">
+                                        <input type="checkbox" class="peer sr-only">
+                                        <div class="w-5 h-5 border-2 border-gray-300 rounded peer-checked:bg-green-600 peer-checked:border-green-600 transition-all"></div>
+                                        <svg class="absolute w-3 h-3 text-white left-1 opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                    <span class="ml-3 text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
+                                        He leído y acepto los <a href="#" class="text-green-600 font-semibold hover:underline">términos y condiciones</a>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="pt-8 flex justify-between items-center">
+                        <button type="button" id="prevBtn" onclick="changeStep(-1)" class="text-gray-500 hover:text-gray-900 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 transition-all hidden flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            Atrás
+                        </button>
+                        <button type="button" id="nextBtn" onclick="changeStep(1)" class="ml-auto bg-green-600 hover:bg-green-700 text-white text-sm font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-green-500/30 transition-all transform hover:-translate-y-0.5 flex items-center">
+                            Continuar
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+
+                </form>
+                
+                <div class="mt-10 text-center border-t border-gray-100 pt-6">
+                    <p class="text-sm text-gray-500">¿Ya tienes una cuenta? <a href="#" class="font-bold text-green-600 hover:text-green-700 transition-colors">Inicia Sesión</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            if (newStep < 1 || newStep > totalSteps) return;
+
+            // Hide current
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            
+            // Show new
+            document.getElementById(`step${newStep}`).classList.add('active');
+            
+            currentStep = newStep;
+            updateUI();
+        }
+
+        function updateUI() {
+            // Update Mobile Step Number
+            const mobileStep = document.getElementById('mobile-step-num');
+            if(mobileStep) mobileStep.innerText = currentStep;
+
+            // Update Sidebar Indicators
+            document.querySelectorAll('.step-indicator').forEach((el, idx) => {
+                const stepNum = idx + 1;
+                const circle = el.querySelector('div:first-child');
+                const textTitle = el.querySelector('div:last-child p:first-child');
+                const textDesc = el.querySelector('div:last-child p:last-child');
+
+                if (stepNum === currentStep) {
+                    // Active
+                    circle.className = "w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center text-base font-bold shadow-[0_0_20px_rgba(16,163,127,0.4)] transition-all z-10 ring-4 ring-black/20";
+                    circle.innerHTML = stepNum;
+                    textTitle.classList.add('text-white');
+                    textTitle.classList.remove('text-gray-400');
+                } else if (stepNum < currentStep) {
+                    // Completed
+                    circle.className = "w-10 h-10 rounded-full bg-green-900/50 text-green-400 border border-green-500/30 flex items-center justify-center text-base font-bold transition-all z-10 backdrop-blur-sm";
+                    circle.innerHTML = "✓";
+                    textTitle.classList.remove('text-white');
+                    textTitle.classList.add('text-gray-400');
+                } else {
+                    // Inactive
+                    circle.className = "w-10 h-10 rounded-full bg-white/5 border border-white/20 text-gray-400 flex items-center justify-center text-base font-bold transition-all z-10 backdrop-blur-sm";
+                    circle.innerHTML = stepNum;
+                    textTitle.classList.remove('text-white');
+                    textTitle.classList.add('text-gray-400');
+                }
+            });
+
+            // Update Buttons
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (currentStep === 1) {
+                prevBtn.classList.add('hidden');
+                prevBtn.classList.remove('flex');
+            } else {
+                prevBtn.classList.remove('hidden');
+                prevBtn.classList.add('flex');
+            }
+
+            if (currentStep === totalSteps) {
+                nextBtn.innerHTML = 'Crear Cuenta';
+                nextBtn.classList.remove('bg-green-600', 'hover:bg-green-700', 'text-white', 'shadow-green-500/30');
+                nextBtn.classList.add('bg-gray-900', 'hover:bg-black', 'text-white', 'shadow-lg');
+            } else {
+                nextBtn.innerHTML = 'Continuar <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>';
+                nextBtn.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white', 'shadow-green-500/30');
+                nextBtn.classList.remove('bg-gray-900', 'hover:bg-black', 'shadow-lg');
+            }
+        }
+
+        function toggleSubrole() {
+            const roleSelect = document.getElementById('aviRol_id');
+            const subroleContainer = document.getElementById('subrole-container');
+            
+            if (roleSelect.value) {
+                subroleContainer.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                subroleContainer.classList.add('opacity-50', 'pointer-events-none');
+            }
+        }
+    </script>
+</body>
+</html>
