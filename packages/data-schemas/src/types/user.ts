@@ -4,6 +4,7 @@ import { CursorPaginationParams } from '~/common';
 export interface IUser extends Document {
   name?: string;
   username?: string;
+  phone?: string;
   email: string;
   emailVerified: boolean;
   password?: string;

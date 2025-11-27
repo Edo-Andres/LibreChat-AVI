@@ -177,7 +177,7 @@ const registerUser = async (user, additionalData = {}) => {
     return { status: 404, message: errorMessage };
   }
 
-  const { email, password, name, username, aviRol_id, aviSubrol_id } = user;
+  const { email, password, name, username, phone, aviRol_id, aviSubrol_id } = user;
 
   let newUserId;
   try {
@@ -212,6 +212,7 @@ const registerUser = async (user, additionalData = {}) => {
       email,
       username,
       name,
+      phone,
       avatar: null,
       role: isFirstRegisteredUser ? SystemRoles.ADMIN : SystemRoles.USER,
       password: bcrypt.hashSync(password, salt),

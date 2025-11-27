@@ -49,6 +49,7 @@ const registerSchema = z
       .transform((value) => (value === '' ? null : value))
       .optional()
       .nullable(),
+    phone: z.string().optional(),
     email: z.string().email(),
     password: z
       .string()
