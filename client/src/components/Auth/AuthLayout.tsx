@@ -56,6 +56,8 @@ function AuthLayout({
     return null;
   };
 
+  const isRegister = pathname === '/register';
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
       <AuthSlider />
@@ -68,32 +70,41 @@ function AuthLayout({
           <ThemeSelector />
         </div>
 
-        <div className="w-full max-w-md space-y-8 rounded-[2rem] bg-white p-12 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:bg-gray-900">
-          <BlinkAnimation active={isFetching}>
-            <div className="mb-7 flex justify-center">
-              <div style={{ height: '90px', width: 'auto' }}>
-                <img
-                  src="/assets/logo.png"
-                  className="h-full w-full object-contain"
-                  alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? 'LibreChat' })}
-                />
-              </div>
-            </div>
-          </BlinkAnimation>
-          
-          <div className="text-center">
-            {!hasStartupConfigError && !isFetching && (
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {header}
-              </h2>
-            )}
-            <p className="mt-2 text-gray-500">Ingresa tus credenciales para continuar</p>
+        {isRegister ? (
+          // Register page: wider container, no card wrapper (Registration component handles its own layout)
+          <div className="w-full max-w-5xl">
+            <DisplayError />
+            {children}
           </div>
+        ) : (
+          // Login/other pages: card container with logo and header
+          <div className="w-full max-w-md space-y-8 rounded-[2rem] bg-white p-12 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:bg-gray-900">
+            <BlinkAnimation active={isFetching}>
+              <div className="mb-7 flex justify-center">
+                <div style={{ height: '90px', width: 'auto' }}>
+                  <img
+                    src="/assets/logo.png"
+                    className="h-full w-full object-contain"
+                    alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? 'LibreChat' })}
+                  />
+                </div>
+              </div>
+            </BlinkAnimation>
+            
+            <div className="text-center">
+              {!hasStartupConfigError && !isFetching && (
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {header}
+                </h2>
+              )}
+              <p className="mt-2 text-gray-500">Ingresa tus credenciales para continuar</p>
+            </div>
 
-          <DisplayError />
-          
-          {children}
-        </div>
+            <DisplayError />
+            
+            {children}
+          </div>
+        )}
       </div>
     </div>
   );
