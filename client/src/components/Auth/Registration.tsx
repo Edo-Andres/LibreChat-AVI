@@ -153,7 +153,7 @@ const Registration: React.FC = () => {
     'absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-surface-primary px-2 text-sm text-text-secondary-alt duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-green-500';
 
   return (
-    <div className="flex h-[600px] w-full max-w-4xl overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900">
+    <div className="mx-auto flex h-[600px] w-full max-w-4xl overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900">
       {/* Sidebar / Progress */}
       <div className="hidden w-[30%] flex-col justify-between border-r border-gray-100 bg-gray-50 p-8 dark:border-gray-800 dark:bg-gray-800/50 md:flex">
         <div>
