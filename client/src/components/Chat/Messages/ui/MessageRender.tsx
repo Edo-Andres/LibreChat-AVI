@@ -98,10 +98,10 @@ const MessageRender = memo(
       () =>
         showCardRender && !isLatestMessage
           ? () => {
-              logger.log(`Message Card click: Setting ${msg?.messageId} as latest message`);
-              logger.dir(msg);
-              setLatestMessage(msg!);
-            }
+            logger.log(`Message Card click: Setting ${msg?.messageId} as latest message`);
+            logger.dir(msg);
+            setLatestMessage(msg!);
+          }
           : undefined,
       [showCardRender, isLatestMessage, msg, setLatestMessage],
     );
@@ -135,6 +135,7 @@ const MessageRender = memo(
           conditionalClasses.cardRender,
           conditionalClasses.focus,
           'message-render',
+          msg.isCreatedByUser ? 'flex-row-reverse' : '',
         )}
         onClick={clickHandler}
         onKeyDown={(e) => {
@@ -149,22 +150,32 @@ const MessageRender = memo(
           <div className="absolute right-0 top-0 m-2 h-3 w-3 rounded-full bg-text-primary" />
         )}
 
-        <div className="relative flex flex-shrink-0 flex-col items-center">
-          <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full">
+        <div className={cn(
+          "relative flex flex-shrink-0 flex-col items-center",
+          msg.isCreatedByUser ? 'ml-3' : 'mr-3'
+        )}>
+          <div className={cn(
+            "flex h-6 w-6 items-center justify-center overflow-hidden rounded-full",
+            msg.isCreatedByUser ? 'bg-gradient-to-br from-chat-user-light to-chat-user-dark' : ''
+          )}>
             <MessageIcon iconData={iconData} assistant={assistant} agent={agent} />
           </div>
         </div>
 
         <div
           className={cn(
-            'relative flex w-11/12 flex-col',
+            'relative flex flex-col',
+            msg.isCreatedByUser ? 'max-w-[85%]' : 'w-11/12',
             msg.isCreatedByUser ? 'user-turn' : 'agent-turn',
           )}
         >
-          <h2 className={cn('select-none font-semibold', fontSize)}>{messageLabel}</h2>
+          <h2 className={cn('select-none font-semibold text-right mr-2', fontSize)}>{messageLabel}</h2>
 
           <div className="flex flex-col gap-1">
-            <div className="flex max-w-full flex-grow flex-col gap-0">
+            <div className={cn(
+              "flex max-w-full flex-grow flex-col gap-0",
+              msg.isCreatedByUser ? 'rounded-tl-3xl rounded-bl-3xl rounded-br-3xl bg-gradient-to-br from-chat-user-light to-chat-user-dark p-6 shadow-lg' : ''
+            )}>
               <MessageContext.Provider
                 value={{
                   messageId: msg.messageId,
@@ -175,20 +186,22 @@ const MessageRender = memo(
                 }}
               >
                 {msg.plugin && <Plugin plugin={msg.plugin} />}
-                <MessageContent
-                  ask={ask}
-                  edit={edit}
-                  isLast={isLast}
-                  text={msg.text || ''}
-                  message={msg}
-                  enterEdit={enterEdit}
-                  error={!!(msg.error ?? false)}
-                  isSubmitting={effectiveIsSubmitting}
-                  unfinished={msg.unfinished ?? false}
-                  isCreatedByUser={msg.isCreatedByUser ?? true}
-                  siblingIdx={siblingIdx ?? 0}
-                  setSiblingIdx={setSiblingIdx ?? (() => ({}))}
-                />
+                <div className={msg.isCreatedByUser ? 'text-white' : ''}>
+                  <MessageContent
+                    ask={ask}
+                    edit={edit}
+                    isLast={isLast}
+                    text={msg.text || ''}
+                    message={msg}
+                    enterEdit={enterEdit}
+                    error={!!(msg.error ?? false)}
+                    isSubmitting={effectiveIsSubmitting}
+                    unfinished={msg.unfinished ?? false}
+                    isCreatedByUser={msg.isCreatedByUser ?? true}
+                    siblingIdx={siblingIdx ?? 0}
+                    setSiblingIdx={setSiblingIdx ?? (() => ({}))}
+                  />
+                </div>
               </MessageContext.Provider>
             </div>
 
@@ -237,7 +250,7 @@ const MessageRender = memo(
 
                   return shouldRenderFollowUp ? (
                     <FollowUpSuggestions
-                      conversationId={conversation.conversationId}
+                      conversationId={conversation.conversationId!}
                       messageId={msg.messageId}
                       isLatestAssistantMessage={true}
                     />

@@ -75,12 +75,12 @@ const FollowUpSuggestions = ({
   }
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="mt-3 flex flex-col items-end gap-2">
       {suggestions.map((text: string, index: number) => (
         <button
           key={index}
           onClick={() => submitMessage({ text })}
-          className="rounded-lg border border-border-medium bg-surface-secondary px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-surface-tertiary focus:outline-none focus:ring-2 focus:ring-offset-1"
+          className="rounded-tl-2xl rounded-bl-2xl rounded-br-2xl bg-gradient-to-br from-chat-user-light to-chat-user-dark px-3 py-2 text-sm text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1"
           disabled={isLoading}
         >
           {text}
