@@ -168,7 +168,7 @@ const Registration: React.FC = () => {
             <div className="absolute bottom-2 left-[15px] top-2 -z-10 w-0.5 bg-gray-200 dark:bg-gray-700" />
 
             {renderStepIndicator(1, 'Identidad', 'Datos básicos')}
-            {renderStepIndicator(2, 'Académico', 'Rol y área')}
+            {renderStepIndicator(2, 'Rol', 'Rol y área')}
             {renderStepIndicator(3, 'Acceso', 'Credenciales')}
           </div>
         </div>
@@ -224,22 +224,24 @@ const Registration: React.FC = () => {
 
                 <div className="space-y-4">
                   {/* Name */}
-                  <div className="relative">
-                    <input
-                      id="name"
-                      type="text"
-                      autoComplete="name"
-                      placeholder=" "
-                      {...register('name', {
-                        required: localize('com_auth_name_required'),
-                        minLength: { value: 3, message: localize('com_auth_name_min_length') },
-                        maxLength: { value: 80, message: localize('com_auth_name_max_length') },
-                      })}
-                      className={inputBaseClass}
-                    />
-                    <label htmlFor="name" className={labelBaseClass}>
-                      {localize('com_auth_full_name')}
-                    </label>
+                  <div>
+                    <div className="relative">
+                      <input
+                        id="name"
+                        type="text"
+                        autoComplete="name"
+                        placeholder=" "
+                        {...register('name', {
+                          required: localize('com_auth_name_required'),
+                          minLength: { value: 3, message: localize('com_auth_name_min_length') },
+                          maxLength: { value: 80, message: localize('com_auth_name_max_length') },
+                        })}
+                        className={inputBaseClass}
+                      />
+                      <label htmlFor="name" className={labelBaseClass}>
+                        {localize('com_auth_full_name')}
+                      </label>
+                    </div>
                     {errors.name && (
                       <span className="mt-1 text-sm text-red-500">
                         {String(errors.name.message)}
@@ -248,22 +250,24 @@ const Registration: React.FC = () => {
                   </div>
 
                   {/* Username */}
-                  <div className="relative">
-                    <input
-                      id="username"
-                      type="text"
-                      autoComplete="username"
-                      placeholder=" "
-                      {...register('username', {
-                        minLength: { value: 2, message: localize('com_auth_username_min_length') },
-                        maxLength: { value: 80, message: localize('com_auth_username_max_length') },
-                      })}
-                      className={inputBaseClass}
-                    />
-                    <label htmlFor="username" className={labelBaseClass}>
-                      {localize('com_auth_username')}{' '}
-                      <span className="text-xs text-gray-400">(opcional)</span>
-                    </label>
+                  <div>
+                    <div className="relative">
+                      <input
+                        id="username"
+                        type="text"
+                        autoComplete="username"
+                        placeholder=" "
+                        {...register('username', {
+                          minLength: { value: 2, message: localize('com_auth_username_min_length') },
+                          maxLength: { value: 80, message: localize('com_auth_username_max_length') },
+                        })}
+                        className={inputBaseClass}
+                      />
+                      <label htmlFor="username" className={labelBaseClass}>
+                        {localize('com_auth_username')}{' '}
+                        <span className="text-xs text-gray-400">(opcional)</span>
+                      </label>
+                    </div>
                     {errors.username && (
                       <span className="mt-1 text-sm text-red-500">
                         {String(errors.username.message)}
@@ -294,7 +298,7 @@ const Registration: React.FC = () => {
               <div className="flex-1">
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Perfil Académico
+                    ¿A qué te dedicas?
                   </h2>
                   <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Define tu rol dentro de la institución.
@@ -303,23 +307,25 @@ const Registration: React.FC = () => {
 
                 <div className="space-y-4">
                   {/* Email */}
-                  <div className="relative">
-                    <input
-                      id="email"
-                      type="email"
-                      autoComplete="email"
-                      placeholder=" "
-                      {...register('email', {
-                        required: localize('com_auth_email_required'),
-                        minLength: { value: 1, message: localize('com_auth_email_min_length') },
-                        maxLength: { value: 120, message: localize('com_auth_email_max_length') },
-                        pattern: { value: /\S+@\S+\.\S+/, message: localize('com_auth_email_pattern') },
-                      })}
-                      className={inputBaseClass}
-                    />
-                    <label htmlFor="email" className={labelBaseClass}>
-                      {localize('com_auth_email')}
-                    </label>
+                  <div>
+                    <div className="relative">
+                      <input
+                        id="email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder=" "
+                        {...register('email', {
+                          required: localize('com_auth_email_required'),
+                          minLength: { value: 1, message: localize('com_auth_email_min_length') },
+                          maxLength: { value: 120, message: localize('com_auth_email_max_length') },
+                          pattern: { value: /\S+@\S+\.\S+/, message: localize('com_auth_email_pattern') },
+                        })}
+                        className={inputBaseClass}
+                      />
+                      <label htmlFor="email" className={labelBaseClass}>
+                        {localize('com_auth_email')}
+                      </label>
+                    </div>
                     {errors.email && (
                       <span className="mt-1 text-sm text-red-500">
                         {String(errors.email.message)}
@@ -392,32 +398,34 @@ const Registration: React.FC = () => {
 
                 <div className="space-y-4">
                   {/* Password */}
-                  <div className="relative">
-                    <input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete="new-password"
-                      placeholder=" "
-                      {...register('password', {
-                        required: localize('com_auth_password_required'),
-                        minLength: {
-                          value: startupConfig?.minPasswordLength || 8,
-                          message: localize('com_auth_password_min_length'),
-                        },
-                        maxLength: { value: 128, message: localize('com_auth_password_max_length') },
-                      })}
-                      className={`${inputBaseClass} pr-10 [&::-ms-reveal]:hidden`}
-                    />
-                    <label htmlFor="password" className={labelBaseClass}>
-                      {localize('com_auth_password')}
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary transition-colors hover:text-text-primary"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
+                  <div>
+                    <div className="relative">
+                      <input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete="new-password"
+                        placeholder=" "
+                        {...register('password', {
+                          required: localize('com_auth_password_required'),
+                          minLength: {
+                            value: startupConfig?.minPasswordLength || 8,
+                            message: localize('com_auth_password_min_length'),
+                          },
+                          maxLength: { value: 128, message: localize('com_auth_password_max_length') },
+                        })}
+                        className={`${inputBaseClass} pr-10 [&::-ms-reveal]:hidden`}
+                      />
+                      <label htmlFor="password" className={labelBaseClass}>
+                        {localize('com_auth_password')}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary transition-colors hover:text-text-primary"
+                      >
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
                     {errors.password && (
                       <span className="mt-1 text-sm text-red-500">
                         {String(errors.password.message)}
@@ -426,28 +434,30 @@ const Registration: React.FC = () => {
                   </div>
 
                   {/* Confirm Password */}
-                  <div className="relative">
-                    <input
-                      id="confirm_password"
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete="new-password"
-                      placeholder=" "
-                      {...register('confirm_password', {
-                        validate: (value) =>
-                          value === password || localize('com_auth_password_not_match'),
-                      })}
-                      className={`${inputBaseClass} pr-10 [&::-ms-reveal]:hidden`}
-                    />
-                    <label htmlFor="confirm_password" className={labelBaseClass}>
-                      {localize('com_auth_password_confirm')}
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary transition-colors hover:text-text-primary"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
+                  <div>
+                    <div className="relative">
+                      <input
+                        id="confirm_password"
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete="new-password"
+                        placeholder=" "
+                        {...register('confirm_password', {
+                          validate: (value) =>
+                            value === password || localize('com_auth_password_not_match'),
+                        })}
+                        className={`${inputBaseClass} pr-10 [&::-ms-reveal]:hidden`}
+                      />
+                      <label htmlFor="confirm_password" className={labelBaseClass}>
+                        {localize('com_auth_password_confirm')}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary transition-colors hover:text-text-primary"
+                      >
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
                     {errors.confirm_password && (
                       <span className="mt-1 text-sm text-red-500">
                         {String(errors.confirm_password.message)}
