@@ -9,14 +9,18 @@ const slides = [
   {
     title: 'Aprendizaje\nAdaptativo',
     description: 'Contenidos personalizados que evolucionan contigo paso a paso.',
-    image: '/assets/img_avi/slide-2-adaptativo.jpg',
+    image: '/assets/img_avi/slide-2-avi-hand2.mp4',
   },
   {
     title: 'Comunidad\nGlobal',
     description: 'Conecta con estudiantes y mentores de todo el mundo.',
-    image: '/assets/img_avi/slide-3-comunidad.jpg',
+    image: '/assets/img_avi/slide-3-avi-child-mountain.mp4',
   },
 ];
+
+const isVideo = (src: string) => {
+  return src.endsWith('.mp4') || src.endsWith('.webm') || src.endsWith('.ogg');
+};
 
 export default function AuthSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -24,29 +28,52 @@ export default function AuthSlider() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 7000); // Change slide every 7 seconds
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div
       id="dynamic-bg"
-      className="relative hidden h-full w-5/12 flex-col justify-between overflow-hidden bg-gray-900 bg-cover bg-center p-16 text-white transition-all duration-1000 ease-in-out lg:flex"
-      style={{
-        backgroundImage: `url('${slides[currentSlide].image}')`,
-        transition: 'background-image 1.2s ease-in-out',
-      }}
+      className="relative hidden h-full w-5/12 flex-col justify-between overflow-hidden bg-gray-900 lg:flex"
     >
+      {/* Background Layer */}
+      {slides.map((slide, index) => (
+        <div
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            index === currentSlide ? 'opacity-100 z-0' : 'opacity-0 z-0'
+          }`}
+        >
+          {isVideo(slide.image) ? (
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="h-full w-full object-cover object-bottom"
+            >
+              <source src={slide.image} type="video/mp4" />
+            </video>
+          ) : (
+            <div
+              className="h-full w-full bg-cover bg-center"
+              style={{ backgroundImage: `url('${slide.image}')` }}
+            />
+          )}
+        </div>
+      ))}
+
       {/* Overlay for readability */}
       <div className="absolute inset-0 z-0 bg-black/50 mix-blend-multiply"></div>
 
       {/* Decorative Gradients */}
       <div
         id="gradient-overlay"
-        className="absolute inset-0 z-0 bg-gradient-to-br from-green-900/80 to-black/80 transition-all duration-1000"
+        className="absolute inset-0 z-0 bg-gradient-to-br from-green-900/80 to-black/80"
       ></div>
 
-      <div className="relative z-10 flex h-full w-full flex-col justify-between">
+      <div className="relative z-10 flex h-full w-full flex-col justify-between p-16 text-white">
         {/* Spacer */}
         <div className="h-16 w-full"></div>
 
