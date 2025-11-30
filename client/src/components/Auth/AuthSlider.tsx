@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 
 const slides = [
   {
-    title: 'Tu Asistente\nInteligente',
-    description: 'Potencia tu aprendizaje con la tecnología más avanzada de CCM.',
+    title: 'Resguardamos la\ninfancia',
+    description: 'Para fomentar entornos más seguros y saludables para los niños, niñas y adolescentes',
     image: '/assets/img_avi/slide-1-inteligencia.jpg',
   },
   {
-    title: 'Aprendizaje\nAdaptativo',
-    description: 'Contenidos personalizados que evolucionan contigo paso a paso.',
+    title: 'Conocimiento\nque Protege',
+    description: 'Respuestas construidas sobre evidencia científica y datos de alta calidad en los que puedes confiar.',
     image: '/assets/img_avi/slide-2-avi-hand2.mp4',
   },
   {
-    title: 'Comunidad\nGlobal',
-    description: 'Conecta con estudiantes y mentores de todo el mundo.',
+    title: 'Sé parte\ndel Cambio',
+    description: 'Tu participación fortalece nuestra comunidad. Juntos construimos un mejor mañana.',
     image: '/assets/img_avi/slide-3-avi-child-mountain.mp4',
   },
 ];
@@ -113,7 +113,7 @@ export default function AuthSlider() {
           </div>
         </div>
         <div className="text-xs uppercase tracking-widest text-gray-400">
-          © 2025 CCM Education
+          © 2025 Corporación Crecer Mejor.
         </div>
       </div>
     </div>
