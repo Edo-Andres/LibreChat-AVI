@@ -93,7 +93,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               {useUsernameLogin
                 ? localize('com_auth_username').replace(/ \(.*$/, '')
-                : localize('com_auth_email_address')}
+                : localize('com_auth_email')}
             </label>
             <input
               type="text"
@@ -110,7 +110,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
               })}
               aria-invalid={!!errors.email}
               className="w-full px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-              placeholder={useUsernameLogin ? "usuario" : "usuario@ccm.edu"}
+              placeholder={useUsernameLogin ? "usuario" : "usuario@corporacionccm.cl"}
             />
             {renderError('email')}
           </div>
@@ -187,7 +187,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
           variant="submit"
           className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg shadow-green-500/30 text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:-translate-y-0.5"
         >
-          {isSubmitting ? <Spinner /> : localize('com_auth_continue')}
+          {isSubmitting ? <Spinner /> : 'ACCEDER AHORA'}
         </Button>
       </form>
     </>

@@ -79,17 +79,6 @@ function AuthLayout({
         ) : (
           // Login/other pages: card container with logo and header
           <div className="w-full max-w-md space-y-8 rounded-[2rem] bg-white p-12 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:bg-gray-900">
-            <BlinkAnimation active={isFetching}>
-              <div className="mb-7 flex justify-center">
-                <div style={{ height: '90px', width: 'auto' }}>
-                  <img
-                    src="/assets/logo.png"
-                    className="h-full w-full object-contain"
-                    alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? 'LibreChat' })}
-                  />
-                </div>
-              </div>
-            </BlinkAnimation>
             
             <div className="text-center">
               {!hasStartupConfigError && !isFetching && (
