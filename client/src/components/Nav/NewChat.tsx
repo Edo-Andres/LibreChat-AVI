@@ -49,42 +49,46 @@ export default function NewChat({
 
   return (
     <>
-      <div className="flex items-center justify-between py-[2px] md:py-2">
-        <TooltipAnchor
-          description={localize('com_nav_close_sidebar')}
-          render={
-            <Button
-              size="icon"
-              variant="outline"
-              data-testid="close-sidebar-button"
-              aria-label={localize('com_nav_close_sidebar')}
-              className="rounded-full border-none bg-transparent p-2 hover:bg-surface-hover md:rounded-xl"
-              onClick={toggleNav}
-            >
-              <Sidebar className="max-md:hidden" />
-              <MobileSidebar className="m-1 inline-flex size-10 items-center justify-center md:hidden" />
-            </Button>
-          }
-        />
-        <div className="flex gap-0.5">
-          {headerButtons}
-
+      <div className="flex flex-col gap-2 py-[2px] md:py-2">
+        <div className="flex items-center justify-between">
           <TooltipAnchor
-            description={localize('com_ui_new_chat')}
+            description={localize('com_nav_close_sidebar')}
             render={
               <Button
                 size="icon"
                 variant="outline"
-                data-testid="nav-new-chat-button"
-                aria-label={localize('com_ui_new_chat')}
+                data-testid="close-sidebar-button"
+                aria-label={localize('com_nav_close_sidebar')}
                 className="rounded-full border-none bg-transparent p-2 hover:bg-surface-hover md:rounded-xl"
-                onClick={clickHandler}
+                onClick={toggleNav}
               >
-                <NewChatIcon className="icon-lg text-text-primary" />
+                <Sidebar className="max-md:hidden" />
+                <MobileSidebar className="m-1 inline-flex size-10 items-center justify-center md:hidden" />
               </Button>
             }
           />
+          <div className="flex gap-0.5">
+            {headerButtons}
+          </div>
         </div>
+
+        <TooltipAnchor
+          description={localize('com_ui_new_chat')}
+          render={
+            <Button
+              variant="default"
+              data-testid="nav-new-chat-button"
+              aria-label={localize('com_ui_new_chat')}
+              className="w-full rounded-lg border-none bg-gradient-to-r from-chat-user-light to-chat-user-dark px-4 py-2.5 text-white transition-opacity hover:opacity-90 shadow-lg"
+              onClick={clickHandler}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <NewChatIcon className="icon-md text-white" />
+                <span className="font-medium">{localize('com_ui_new_chat')}</span>
+              </div>
+            </Button>
+          }
+        />
       </div>
       {subHeaders != null ? subHeaders : null}
     </>
