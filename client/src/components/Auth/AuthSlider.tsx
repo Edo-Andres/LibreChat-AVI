@@ -35,7 +35,7 @@ export default function AuthSlider() {
   return (
     <div
       id="dynamic-bg"
-      className="relative hidden h-full w-5/12 flex-col justify-between overflow-hidden bg-gray-900 lg:flex"
+      className="relative flex h-[35vh] w-full flex-col justify-center overflow-hidden bg-gray-900 lg:h-full lg:w-5/12 lg:justify-between"
     >
       {/* Background Layer */}
       {slides.map((slide, index) => (
@@ -73,32 +73,32 @@ export default function AuthSlider() {
         className="absolute inset-0 z-0 bg-gradient-to-br from-green-900/80 to-black/80"
       ></div>
 
-      <div className="relative z-10 flex h-full w-full flex-col justify-between p-16 text-white">
+      <div className="relative z-10 flex h-full w-full flex-col justify-center items-center p-6 text-center text-white lg:items-start lg:justify-between lg:p-16 lg:text-left">
         {/* Spacer */}
-        <div className="h-16 w-full"></div>
+        <div className="hidden h-16 w-full lg:block"></div>
 
         {/* Text Slider */}
-        <div className="relative w-full">
-          <div id="slider-container" className="relative h-96">
+        <div className="relative w-full max-w-sm lg:max-w-full">
+          <div id="slider-container" className="relative h-32 lg:h-96">
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 flex flex-col justify-center transition-opacity duration-700 ease-in-out ${
+                className={`absolute inset-0 flex flex-col justify-center items-center transition-opacity duration-700 ease-in-out lg:items-start ${
                   index === currentSlide
                     ? 'z-10 opacity-100'
                     : 'pointer-events-none z-0 opacity-0'
                 }`}
               >
-                <h2 className="mb-6 whitespace-pre-line text-5xl font-bold leading-tight">
+                <h2 className="mb-3 whitespace-pre-line text-3xl font-bold leading-tight lg:mb-6 lg:text-5xl">
                   {slide.title}
                 </h2>
-                <p className="text-xl font-light text-gray-200">{slide.description}</p>
+                <p className="text-sm font-light text-gray-200 lg:text-xl">{slide.description}</p>
               </div>
             ))}
           </div>
 
           {/* Indicators */}
-          <div className="relative z-20 mx-auto mt-4 flex w-4/5 justify-center space-x-3">
+          <div className="relative z-20 mx-auto mt-4 hidden w-4/5 justify-center space-x-3 lg:flex">
             {slides.map((_, index) => (
               <button
                 key={index}
@@ -112,7 +112,7 @@ export default function AuthSlider() {
             ))}
           </div>
         </div>
-        <div className="text-xs uppercase tracking-widest text-gray-400">
+        <div className="hidden text-xs uppercase tracking-widest text-gray-400 lg:block">
           © 2025 Corporación Crecer Mejor.
         </div>
       </div>
