@@ -1,0 +1,173 @@
+# For more information, see the Configuration Guide:
+# https://www.librechat.ai/docs/configuration/librechat_yaml
+
+# Configuration version (required)
+version: 1.2.1
+
+# Cache settings: Set to true to enable caching
+cache: false
+
+# Custom interface configuration
+interface:
+  customWelcome: 'Welcome to LibreChat! Enjoy your experience.'
+  # Enable/disable file search as a chatarea selection (default: true)
+  # Note: This setting does not disable the Agents File Search Capability.
+  # To disable the Agents Capability, see the Agents Endpoint configuration instead.
+  fileSearch: true
+  # # Privacy policy settings
+  # privacyPolicy:
+  #   externalUrl: 'https://librechat.ai/privacy-policy'
+  #   openNewTab: true
+
+  # Terms of service
+  termsOfService:
+    externalUrl: 'https://librechat.ai/tos'
+    openNewTab: true
+    modalAcceptance: true
+    modalTitle: 'Terms of Service for LibreChat-AVI'
+    modalContent: |
+      # Términos de Servicio para AVI Asistente Virtual en Infancia
+
+      *Fecha de Vigencia: 18 de agosto de 2025*
+
+      ## ¿Qué es AVI?
+      AVI es un Asistente Virtual en Infancia creado por Corporación Crecer Mejor (https://www.ccmprotege.cl/) para apoyar a profesionales en equipos residenciales. Nuestro propósito es entregar orientaciones prácticas, estructuradas y basadas en derechos, a través de conocimientos teóricos y prácticos basados en evidencia, para el cuidado especializado de niños, niñas y adolescentes (NNA) que han sufrido graves vulneraciones.
+
+      ## ¿Qué hace AVI?
+      - Proporciona consejos prácticos y accionables para fortalecer el rol profesional de los trabajadores/as del sistema residencial.
+      - Ofrece apoyo en el aprendizaje cotidiano sobre el cuidado de NNA.
+      - Facilita estrategias basadas en evidencia para la prevención y el cuidado especializado.
+
+      ## ¿Qué NO hace AVI?
+      - No es una herramienta de atención clínica o psicológica.
+      - No reemplaza a profesionales especializados en salud mental o terapia.
+      - No brinda diagnósticos médicos o tratamientos clínicos.
+
+      ## Seguridad y Confidencialidad
+      Tu información personal y las conversaciones con AVI se mantienen estrictamente confidenciales. No compartimos datos con terceros. Usamos la información solo para mejorar nuestros servicios y garantizar una experiencia segura.
+
+      ## Contacto
+      Si tienes preguntas, contáctanos en contacto@corporacionccm.cl o visita https://www.ccmprotege.cl/.
+
+      Al usar AVI, aceptas estos términos y te comprometes a utilizar la herramienta de manera responsable y ética.
+  endpointsMenu: true
+  modelSelect: true
+  parameters: true
+  sidePanel: true
+  presets: false
+  prompts: true
+  bookmarks: false
+  multiConvo: false
+  agents: true
+  peoplePicker:
+    users: true
+    groups: true
+    roles: true
+  marketplace:
+      use: false
+  fileCitations: true
+
+
+# Speech configuration
+speech:
+  speechTab:
+    # Desactiva el texto a voz para todos los usuarios
+    textToSpeech: false
+
+# Conversation Suggestions Configuration
+# TEMPORALMENTE COMENTADO - Schema en revisión
+conversationSuggestions:
+  enabled: true
+  defaultInitialSuggestions:
+    - "¿Qué puedo hacer para ayudar a un niño a calmarse cuando está frustrado?"
+    - "¿Cómo puedo generar confianza en un niño que recién llega a la residencia?"
+    - "¿Qué actividades cotidianas favorecen la autorregulación?"
+    - "¿Qué prácticas nuevas puedo realizar para enriquecer mi forma de cuidar?"
+  fastModel: "gemini-2.5-flash-lite" # Model for generating follow-up suggestions
+  
+# AVI Roles Dynamic Configuration
+# Sistema dinámico de roles y subroles para LibreChat-AVI
+aviRoles:
+  roles:
+
+    # Rol administrativo (administradores del sistema)
+    # - name: administrativo
+    #   knowledge: "Conocimiento técnico avanzado en sistemas, bases de datos y gestión de plataformas"
+    #   behavior: "Ético, responsable, transparente y comprometido con la seguridad de los datos"
+    #   subroles:
+    #     - Gestor de Usuarios
+    #     - Configurador de Sistema
+    #     - Supervisor General
+    # Rol AviRol (usuarios básicos)
+    - name: Residencia
+      knowledge: "Conocimiento para usuarios AVI"
+      behavior: "Tono: Amable, orientado a cuidado de niños."
+      registerAnswer: "Residencia"
+      instructionSuggestion: "Genera preguntas prácticas sobre cuidado infantil, desarrollo emocional y técnicas de protección para niños y adolescentes en contextos residenciales."
+      subroles:
+        # Formato nuevo: objeto con registerAnswer
+        - name: Cuidador
+          knowledge: "Técnicas de cuidado infantil, primeros auxilios y desarrollo infantil"
+          behavior: "Paciente, atento, protector y afectivo"
+          registerAnswer: "Cuidador"
+          instructionSuggestion: "Enfócate en preguntas sobre rutinas diarias, manejo de comportamientos, técnicas de contención y estrategias de cuidado para NNA."
+        
+        # Formato nuevo: objeto con todos los campos
+        - name: Psicólogo
+          knowledge: "Psicología infantil, técnicas terapéuticas y desarrollo socioemocional"
+          behavior: "Empático, profesional, basado en evidencia científica"
+          registerAnswer: "Psicólogo"
+          instructionSuggestion: "Genera preguntas sobre técnicas terapéuticas, desarrollo socioemocional, trauma infantil y intervenciones psicológicas basadas en evidencia."
+        
+        # Nuevos subroles añadidos según solicitud
+        - name: Administrador
+          knowledge: ""
+          behavior: ""
+          registerAnswer: "Administrador"
+          instructionSuggestion: ""
+
+        - name: Estudiante
+          knowledge: ""
+          behavior: ""
+          registerAnswer: "Estudiante"
+          instructionSuggestion: ""
+    
+    
+  # Configuración de migraciones (opcional)
+  # Permite renombrar roles y subroles sin perder datos
+  migrations:
+    # Mapeo de roles antiguos a nuevos nombres
+    # Formato: "nombre_antiguo": "nombre_nuevo"
+    roles: {}
+      # AviRol: Roles_AVI
+      # Generico: Basico
+      # administrativo: Admin
+
+    # Mapeo de subroles antiguos a nuevos nombres
+    # Usar null para eliminar un subrol
+    # Si no se pasa cambios se debe colocar {} ejmplo --> suroles: {}
+    # Cuando se pasan subroles se quitanlos {}
+    subroles: {}      
+      # Psicologo: Psicólogo
+      # Lector: Ver
+      # Asistente: null  # Eliminar este subrol
+
+    # Rol por defecto para usuarios huérfanos (opcional)
+    defaultRoleForOrphans: generico
+
+# Endpoints Configuration titlePrompt
+endpoints:
+  google:
+    # Configuración básica de Google Gemini
+    titlePrompt: |      
+      {convo}  
+      Responde SOLO con un título DE MAXIMO 5 PALABRAS en el MISMO IDIOMA del MENSAJE DEL USUARIO. Sin explicaciones, sin numeraciones, sin texto adicional.
+  # Configuración para Agents Endpoint
+  agents:
+    # Prompt personalizado para generar títulos
+    titlePrompt: |
+      {convo}
+      Responde SOLO con un título DE MAXIMO 5 PALABRAS en el MISMO IDIOMA del MENSAJE DEL USUARIO. Sin explicaciones, sin numeraciones, sin texto adicional.
+    # Método de generación de título (COMPLETION, FUNCTIONS o STRUCTURED)
+    #titleMethod: "COMPLETION"
+
