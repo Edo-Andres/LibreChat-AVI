@@ -4,17 +4,20 @@ const slides = [
   {
     title: 'Resguardamos la\ninfancia',
     description: 'Para fomentar entornos más seguros y saludables para los niños, niñas y adolescentes',
-    image: '/assets/img_avi/slide-1-inteligencia.jpg',
+    srcDesktop: '/assets/img_avi/slide-1-inteligencia.jpg',
+    srcMobile: '/assets/img_avi/slide-1-inteligencia.jpg', // TODO: Cambiar por imagen vertical/mobile
   },
   {
     title: 'Conocimiento\nque Protege',
     description: 'Respuestas construidas sobre evidencia científica y datos de alta calidad en los que puedes confiar.',
-    image: '/assets/img_avi/slide-2-avi-hand2.mp4',
+    srcDesktop: '/assets/img_avi/slide-2-avi-hand2.mp4',
+    srcMobile: '/assets/img_avi/slide-2-avi-hand2.mp4', // TODO: Cambiar por video vertical/mobile
   },
   {
     title: 'Sé parte\ndel Cambio',
     description: 'Tu participación fortalece nuestra comunidad. Juntos construimos un mejor mañana.',
-    image: '/assets/img_avi/slide-3-avi-child-mountain.mp4',
+    srcDesktop: '/assets/img_avi/slide-3-avi-child-mountain.mp4',
+    srcMobile: '/assets/img_avi/slide-3-avi-child-mountain.mp4', // TODO: Cambiar por video vertical/mobile
   },
 ];
 
@@ -45,22 +48,45 @@ export default function AuthSlider() {
             index === currentSlide ? 'opacity-100 z-0' : 'opacity-0 z-0'
           }`}
         >
-          {isVideo(slide.image) ? (
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="h-full w-full object-cover object-bottom"
-            >
-              <source src={slide.image} type="video/mp4" />
-            </video>
-          ) : (
-            <div
-              className="h-full w-full bg-cover bg-center"
-              style={{ backgroundImage: `url('${slide.image}')` }}
-            />
-          )}
+          {/* Desktop Media */}
+          <div className="hidden h-full w-full lg:block">
+            {isVideo(slide.srcDesktop) ? (
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="h-full w-full object-cover object-bottom"
+              >
+                <source src={slide.srcDesktop} type="video/mp4" />
+              </video>
+            ) : (
+              <div
+                className="h-full w-full bg-cover bg-center"
+                style={{ backgroundImage: `url('${slide.srcDesktop}')` }}
+              />
+            )}
+          </div>
+
+          {/* Mobile Media */}
+          <div className="block h-full w-full lg:hidden">
+            {isVideo(slide.srcMobile) ? (
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="h-full w-full object-cover object-center"
+              >
+                <source src={slide.srcMobile} type="video/mp4" />
+              </video>
+            ) : (
+              <div
+                className="h-full w-full bg-cover bg-center"
+                style={{ backgroundImage: `url('${slide.srcMobile}')` }}
+              />
+            )}
+          </div>
         </div>
       ))}
 
