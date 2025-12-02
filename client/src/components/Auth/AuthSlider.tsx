@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 
 const slides = [
   {
-    title: 'Si estás aquí es porque\nTe Importa Cuidar',
+    title: 'Si estás aquí es porque\nte importa cuidar',
     description: 'Niños, niñas y adolescentes nos necesitan',
     srcDesktop: '/assets/img_avi/slide-1-inteligencia.jpg',
     srcMobile: '/assets/img_avi/slide-1-inteligencia.jpg', // TODO: Cambiar por imagen vertical/mobile
   },
   {
-    title: 'Tu dedicación diaria\nTransforma Vidas',
+    title: 'Tu dedicación diaria\ntransforma vidas',
     description: 'Te acompañamos en la reflexión con conocimiento basados en evidencia',
     srcDesktop: '/assets/img_avi/slide-2-avi-hand2.mp4',
     srcMobile: '/assets/img_avi/slide-2-avi-hand2.mp4', // TODO: Cambiar por video vertical/mobile
   },
   {
-    title: 'AVI Te Acompaña',
+    title: 'AVI te acompaña',
     description: 'Sé parte de una gran comunidad para el cuidado',
     srcDesktop: '/assets/img_avi/slide-3-avi-child-mountain.mp4',
     srcMobile: '/assets/img_avi/slide-3-avi-child-mountain.mp4', // TODO: Cambiar por video vertical/mobile
