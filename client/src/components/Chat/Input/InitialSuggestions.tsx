@@ -51,7 +51,7 @@ const InitialSuggestions = ({ show }: InitialSuggestionsProps) => {
       }`}
     >
       <h3 className="mb-2 text-xs font-medium text-text-secondary">Sugerencias</h3>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {suggestions.slice(0, 4).map((text: string, index: number) => (
           <button
             key={index}
