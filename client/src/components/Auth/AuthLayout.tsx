@@ -79,7 +79,7 @@ function AuthLayout({
         ) : (
           // Login/other pages: card container with logo and header
           <div className="w-full h-full max-w-none space-y-8 rounded-t-[2rem] bg-white px-8 py-10 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] dark:bg-gray-900 lg:h-auto lg:max-w-md lg:rounded-[2rem] lg:p-12 lg:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
-            
+
             <div className="text-center">
               {!hasStartupConfigError && !isFetching && (
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -90,10 +90,15 @@ function AuthLayout({
             </div>
 
             <DisplayError />
-            
+
             {children}
 
-            <div className="mt-8 text-center lg:hidden">
+            <div className="mt-8 flex flex-col items-center text-center lg:hidden">
+              <img
+                src="/assets/img_avi/ccm-logo-black2.png"
+                alt="Corporación Crecer Mejor"
+                className="w-[80px] h-auto opacity-80 mb-2"
+              />
               <p className="text-xs uppercase tracking-widest text-gray-400">© 2025 Corporación Crecer Mejor</p>
             </div>
           </div>

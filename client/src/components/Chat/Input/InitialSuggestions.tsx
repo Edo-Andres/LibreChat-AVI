@@ -46,7 +46,7 @@ const InitialSuggestions = ({ show }: InitialSuggestionsProps) => {
     <div
       className={`px-4 transition-all duration-300 ease-in-out ${
         show && hasSuggestions
-          ? 'max-h-48 opacity-100 pb-3 pt-2'
+          ? 'max-h-96 opacity-100 pb-3 pt-2'
           : 'max-h-0 opacity-0 overflow-hidden pb-0 pt-0'
       }`}
     >
@@ -56,7 +56,7 @@ const InitialSuggestions = ({ show }: InitialSuggestionsProps) => {
           <button
             key={index}
             onClick={() => handleSuggestionClick(text)}
-            className="rounded-lg border border-border-medium bg-surface-secondary px-3 py-2.5 text-left text-sm text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-1 animate-in fade-in slide-in-from-bottom-2"
+            className="rounded-tl-2xl rounded-bl-2xl rounded-br-2xl bg-gradient-to-br from-chat-user-light to-chat-user-dark px-3 py-2 text-left text-sm text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1 animate-in fade-in slide-in-from-bottom-2"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <span className="line-clamp-2">{text}</span>
