@@ -2,20 +2,20 @@ import React, { useState, useEffect } from 'react';
 
 const slides = [
   {
-    title: 'Resguardamos la\ninfancia',
-    description: 'Para fomentar entornos más seguros y saludables para los niños, niñas y adolescentes',
+    title: 'Si estás aquí es porque\nTe Importa Cuidar',
+    description: 'Niños, niñas y adolescentes nos necesitan',
     srcDesktop: '/assets/img_avi/slide-1-inteligencia.jpg',
     srcMobile: '/assets/img_avi/slide-1-inteligencia.jpg', // TODO: Cambiar por imagen vertical/mobile
   },
   {
-    title: 'Conocimiento\nque Protege',
-    description: 'Respuestas construidas sobre evidencia científica y datos de alta calidad en los que puedes confiar.',
+    title: 'Tu dedicación diaria\nTransforma Vidas',
+    description: 'Te acompañamos en la reflexión con conocimiento basados en evidencia',
     srcDesktop: '/assets/img_avi/slide-2-avi-hand2.mp4',
     srcMobile: '/assets/img_avi/slide-2-avi-hand2.mp4', // TODO: Cambiar por video vertical/mobile
   },
   {
-    title: 'Sé parte\ndel Cambio',
-    description: 'Tu participación fortalece nuestra comunidad. Juntos construimos un mejor mañana.',
+    title: 'AVI Te Acompaña',
+    description: 'Sé parte de una gran comunidad para el cuidado',
     srcDesktop: '/assets/img_avi/slide-3-avi-child-mountain.mp4',
     srcMobile: '/assets/img_avi/slide-3-avi-child-mountain.mp4', // TODO: Cambiar por video vertical/mobile
   },
