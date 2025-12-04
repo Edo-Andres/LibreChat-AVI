@@ -66,10 +66,6 @@ function AuthLayout({
         <div className="absolute left-0 top-0 w-full">
           <Banner />
         </div>
-        <div className="absolute right-4 top-4">
-          <ThemeSelector />
-        </div>
-
         {isRegister ? (
           // Register page: wider container, no card wrapper (Registration component handles its own layout)
           <div className="w-full max-w-5xl">
