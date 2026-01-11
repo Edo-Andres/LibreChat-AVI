@@ -136,6 +136,7 @@ Analizar el contexto de la conversación y generar EXACTAMENTE 3 preguntas que U
 3. Longitud: EXACTAMENTE entre 6 y 12 palabras (sin contar signos de puntuación).
 4. Idioma: EXACTAMENTE el mismo idioma del último mensaje del USUARIO.
 5. Contenido: Preguntas PRÁCTICAS y DERIVADAS del contexto, no genéricas.
+6. Fidelidad: NO inventes ni asumas información si no está explícito en el contexto.
 
 **Contexto de la conversación:**
 
