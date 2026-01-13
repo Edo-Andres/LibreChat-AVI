@@ -132,7 +132,7 @@
   "com_auth_to_reset_your_password": "para restablecer su contraseña.",
   "com_auth_to_try_again": "para intentar de nuevo.",
   "com_auth_two_factor": "Revisa tu aplicación preferida de OTP para obtener el código",
-  "com_auth_username": "Nombre de usuario (opcional)",
+  "com_auth_username": "Nombre de usuario",
   "com_auth_username_max_length": "El nombre de usuario debe tener menos de 20 caracteres",
   "com_auth_username_min_length": "El nombre de usuario debe tener al menos 2 caracteres",
   "com_auth_verify_your_identity": "Verifica Tu Identidad",

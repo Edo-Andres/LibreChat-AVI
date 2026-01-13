@@ -1,4 +1,4 @@
-import { ThemeSelector } from '@librechat/client';
+import { ThemeSelector, Spinner } from '@librechat/client';
 import { TStartupConfig } from 'librechat-data-provider';
 import { TranslationKeys, useLocalize } from '~/hooks';
 import { BlinkAnimation } from './BlinkAnimation';
@@ -62,7 +62,7 @@ function AuthLayout({
     <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-gray-900 lg:flex-row">
       <AuthSlider />
 
-      <div className="relative flex flex-1 items-start justify-center overflow-y-auto bg-gray-50 lg:h-full lg:w-7/12 lg:items-center lg:p-8 dark:bg-gray-800">
+      <div className="relative flex flex-1 items-start justify-center overflow-y-auto bg-gray-50 lg:h-full lg:w-7/12 lg:items-center lg:p-8 dark:bg-[rgb(7,43,41)]">
         <div className="absolute left-0 top-0 w-full">
           <Banner />
         </div>
@@ -82,7 +82,12 @@ function AuthLayout({
                   {header}
                 </h2>
               )}
-              <p className="mt-2 text-gray-500">Ingresa tus credenciales para continuar</p>
+              {isFetching && (
+                <div className="flex items-center justify-center gap-2 mt-4 text-gray-500">
+                  <Spinner className="size-5" />
+                  <p>Cargando...</p>
+                </div>
+              )}
             </div>
 
             <DisplayError />
