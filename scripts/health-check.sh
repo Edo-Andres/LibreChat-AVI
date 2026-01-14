@@ -3,8 +3,15 @@ set -e
 
 echo "🚀 Iniciando Health Check Audit LibreChat - $(date)"
 
-# Cambiar al directorio de la API
-cd /app/api
+# Detectar directorio de la API (Docker vs Local)
+if [ -d "/app/api" ]; then
+    # Entorno Docker
+    cd /app/api
+else
+    # Entorno Local: ir a la carpeta api relativa al script
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+    cd "$SCRIPT_DIR/../api"
+fi
 
 # Ejecutar health check completo con notificaciones por email
 echo "📧 Ejecutando Health Check con notificaciones..."
