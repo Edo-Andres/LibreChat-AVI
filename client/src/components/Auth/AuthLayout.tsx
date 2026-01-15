@@ -1,13 +1,12 @@
-import { ThemeSelector } from '@librechat/client';
+import { ThemeSelector, Spinner } from '@librechat/client';
 import { TStartupConfig } from 'librechat-data-provider';
 import { TranslationKeys, useLocalize } from '~/hooks';
-import SocialLoginRender from './SocialLoginRender';
 import { BlinkAnimation } from './BlinkAnimation';
 import { Banner } from '../Banners';
-import Footer from './Footer';
+import AuthSlider from './AuthSlider';
 
 const ErrorRender = ({ children }: { children: React.ReactNode }) => (
-  <div className="mt-16 flex justify-center">
+  <div className="mt-4 flex justify-center">
     <div
       role="alert"
       aria-live="assertive"
@@ -57,43 +56,55 @@ function AuthLayout({
     return null;
   };
 
-  return (
-    <div className="relative flex min-h-screen flex-col bg-auth-background bg-cover bg-center bg-no-repeat bg-white dark:bg-gray-900">
-      <Banner />
-      <div className="absolute bottom-0 left-0 md:m-4">
-        <ThemeSelector />
-      </div>
+  const isRegister = pathname === '/register';
 
-      <div className="flex flex-grow items-center justify-center">
-        <div className="w-authPageWidth overflow-hidden bg-white/40 px-6 py-4 dark:bg-gray-900 sm:max-w-md sm:rounded-lg">
-          <BlinkAnimation active={isFetching}>
-            <div className="mb-7 flex justify-center">
-              <div style={{ height: '90px', width: 'auto' }}>
-                <img
-                  src="/assets/logo.png"
-                  className="h-full w-full object-contain"
-                  alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? 'LibreChat' })}
-                />
-              </div>
-            </div>
-          </BlinkAnimation>
-          <DisplayError />
-          {!hasStartupConfigError && !isFetching && (
-            <h1
-              className="mb-3 text-center text-3xl font-semibold text-black dark:text-white"
-              style={{ userSelect: 'none' }}
-            >
-              {header}
-            </h1>
-          )}
-          {children}
-          {!pathname.includes('2fa') &&
-            (pathname.includes('login') || pathname.includes('register')) && (
-              <SocialLoginRender startupConfig={startupConfig} />
-            )}
+  return (
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-gray-900 lg:flex-row">
+      <AuthSlider />
+
+      <div className="relative flex flex-1 items-start justify-center overflow-y-auto bg-gray-50 lg:h-full lg:w-7/12 lg:items-center lg:p-8 dark:bg-[rgb(7,43,41)]">
+        <div className="absolute left-0 top-0 w-full">
+          <Banner />
         </div>
+        {isRegister ? (
+          // Register page: wider container, no card wrapper (Registration component handles its own layout)
+          <div className="w-full max-w-5xl">
+            <DisplayError />
+            {children}
+          </div>
+        ) : (
+          // Login/other pages: card container with logo and header
+          <div className="w-full h-full max-w-none space-y-8 rounded-t-[2rem] bg-white px-8 py-10 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] dark:bg-gray-900 lg:h-auto lg:max-w-md lg:rounded-[2rem] lg:p-12 lg:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+
+            <div className="text-center">
+              {!hasStartupConfigError && !isFetching && (
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {header}
+                </h2>
+              )}
+              {isFetching && (
+                <div className="flex items-center justify-center gap-2 mt-4 text-gray-500">
+                  <Spinner className="size-5" />
+                  <p>Cargando...</p>
+                </div>
+              )}
+            </div>
+
+            <DisplayError />
+
+            {children}
+
+            <div className="mt-8 flex flex-col items-center text-center lg:hidden">
+              <img
+                src="/assets/img_avi/ccm-logo-black2.png"
+                alt="Corporación Crecer Mejor"
+                className="w-[80px] h-auto opacity-80 mb-2"
+              />
+              <p className="text-xs uppercase tracking-widest text-gray-400">© 2025 Corporación Crecer Mejor</p>
+            </div>
+          </div>
+        )}
       </div>
-      <Footer startupConfig={startupConfig} />
     </div>
   );
 }

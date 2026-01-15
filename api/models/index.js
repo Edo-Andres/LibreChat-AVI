@@ -28,6 +28,9 @@ const seedDatabase = async () => {
   await methods.initializeRoles();
   await methods.seedDefaultRoles();
   await methods.ensureDefaultCategories();
+  // Initialize AVI Roles system
+  await methods.initializeAviRoles();
+  await methods.initializeAviSubroles();
 };
 
 module.exports = {

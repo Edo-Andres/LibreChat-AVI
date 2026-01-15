@@ -49,6 +49,7 @@ const registerSchema = z
       .transform((value) => (value === '' ? null : value))
       .optional()
       .nullable(),
+    phone: z.string().optional(),
     email: z.string().email(),
     password: z
       .string()
@@ -64,6 +65,9 @@ const registerSchema = z
       .refine((value) => value.trim().length > 0, {
         message: 'Password cannot be only spaces',
       }),
+    // AVI Roles - Optional fields
+    aviRol_id: z.string().optional(),
+    aviSubrol_id: z.string().optional(),
   })
   .superRefine(({ confirm_password, password }, ctx) => {
     if (confirm_password !== password) {

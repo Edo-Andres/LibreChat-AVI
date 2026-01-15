@@ -88,6 +88,11 @@ module.exports = {
           800: '#06373e',
           900: '#031f29',
         },
+        'chat-user': {
+          light: '#00ccb0',
+          DEFAULT: '#3b82f6',
+          dark: '#009cb6',
+        },
         'brand-purple': 'var(--brand-purple)',
         presentation: 'var(--presentation)',
         'text-primary': 'var(--text-primary)',

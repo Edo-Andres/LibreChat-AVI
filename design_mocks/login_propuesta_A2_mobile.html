@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login Mobile - AVI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { green: { 500: '#10a37f', 600: '#059669' } }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="h-screen w-full flex flex-col overflow-hidden bg-white">
+
+    <!-- Top Section - Dynamic Slides (35% height) -->
+    <div id="dynamic-bg" class="relative h-[35vh] w-full overflow-hidden bg-gray-900">
+        <!-- Overlay for readability -->
+        <div class="absolute inset-0 bg-black/50 mix-blend-multiply z-0"></div>
+        
+        <!-- Decorative Gradients -->
+        <div id="gradient-overlay" class="absolute inset-0 bg-gradient-to-br from-green-900/80 to-black/80 z-0"></div>
+
+        <div class="relative z-10 flex flex-col justify-center items-center h-full px-6 text-white text-center">
+            <!-- Text Slider -->
+            <div class="relative w-full max-w-sm">
+                <div id="slider-container" class="relative">
+                    <!-- Slide 1 -->
+                    <div class="slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-100 flex flex-col justify-center items-center z-10">
+                        <h2 class="text-3xl font-bold mb-3 leading-tight">Resguardamos la<br>infancia</h2>
+                        <p class="text-sm text-gray-200 font-light">Para fomentar entornos más seguros y saludables para los niños, niñas y adolescentes</p>
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0 flex flex-col justify-center items-center z-0 pointer-events-none">
+                        <h2 class="text-3xl font-bold mb-3 leading-tight">Conocimiento<br>que Protege</h2>
+                        <p class="text-sm text-gray-200 font-light">Respuestas construidas sobre evidencia científica y datos de alta calidad en los que puedes confiar.</p>
+                    </div>
+                    <!-- Slide 3 -->
+                    <div class="slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0 flex flex-col justify-center items-center z-0 pointer-events-none">
+                        <h2 class="text-3xl font-bold mb-3 leading-tight">Sé parte<br>del Cambio</h2>
+                        <p class="text-sm text-gray-200 font-light">Tu participación fortalece nuestra comunidad. Juntos construimos un mejor mañana.</p>
+                    </div>
+                </div>
+                
+                <!-- Indicators -->
+                <div class="flex justify-center space-x-2 mt-6 relative z-20">
+                    <button class="indicator w-12 h-1 bg-white rounded-full transition-all duration-300 opacity-100 hover:opacity-100"></button>
+                    <button class="indicator w-12 h-1 bg-white rounded-full transition-all duration-300 opacity-40 hover:opacity-70"></button>
+                    <button class="indicator w-12 h-1 bg-white rounded-full transition-all duration-300 opacity-40 hover:opacity-70"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Section - Login Form (65% height) -->
+    <div class="flex-1 flex items-start justify-center bg-gray-50 overflow-hidden">
+        <div class="w-full h-full bg-white rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.1)] px-8 py-10 overflow-y-auto">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">Iniciar Sesión</h2>
+                <p class="mt-2 text-sm text-gray-500">Ingresa tus credenciales para continuar</p>
+            </div>
+
+            <form class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Correo Institucional</label>
+                    <input type="email" class="w-full px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all text-base" placeholder="usuario@ccm.edu">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Contraseña</label>
+                    <input type="password" class="w-full px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all text-base" placeholder="••••••••">
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded transition-all">
+                        <span class="ml-2 text-sm text-gray-600">Recordarme</span>
+                    </label>
+                    <a href="#" class="text-sm font-medium text-green-600 hover:text-green-700 transition-colors">Recuperar clave</a>
+                </div>
+
+                <button type="button" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg shadow-green-500/30 text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform active:scale-95">
+                    ACCEDER AHORA
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="text-center mt-8">
+                <p class="text-xs text-gray-400 uppercase tracking-widest">© 2025 CCM Education</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const indicators = document.querySelectorAll('.indicator');
+            const dynamicBg = document.getElementById('dynamic-bg');
+            
+            // Define background images for each slide
+            const bgImages = [
+                'url(\'./img_avi/slide-1-inteligencia.jpg\')',
+                'url(\'./img_avi/slide-2-adaptativo.jpg\')',
+                'url(\'./img_avi/slide-3-comunidad.jpg\')'
+            ];
+
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+            let slideInterval;
+
+            function showSlide(index) {
+                // Update Background Image
+                dynamicBg.style.backgroundImage = bgImages[index];
+                dynamicBg.style.backgroundSize = 'cover';
+                dynamicBg.style.backgroundPosition = 'center';
+
+                slides.forEach((slide, i) => {
+                    if (i === index) {
+                        slide.classList.remove('opacity-0', 'z-0', 'pointer-events-none');
+                        slide.classList.add('opacity-100', 'z-10');
+                    } else {
+                        slide.classList.remove('opacity-100', 'z-10');
+                        slide.classList.add('opacity-0', 'z-0', 'pointer-events-none');
+                    }
+                });
+                
+                indicators.forEach((indicator, i) => {
+                    if (i === index) {
+                        indicator.classList.remove('opacity-40');
+                        indicator.classList.add('opacity-100');
+                    } else {
+                        indicator.classList.remove('opacity-100');
+                        indicator.classList.add('opacity-40');
+                    }
+                });
+                currentSlide = index;
+            }
+
+            function nextSlide() {
+                showSlide((currentSlide + 1) % totalSlides);
+            }
+
+            function startSlider() {
+                slideInterval = setInterval(nextSlide, 7000); // 7 seconds
+            }
+
+            function stopSlider() {
+                clearInterval(slideInterval);
+            }
+
+            // Initialize
+            showSlide(0);
+            startSlider();
+
+            // Click on indicators
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    stopSlider();
+                    showSlide(index);
+                    startSlider();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

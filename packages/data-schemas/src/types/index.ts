@@ -24,3 +24,6 @@ export * from './prompts';
 export * from './accessRole';
 export * from './aclEntry';
 export * from './group';
+/* AVI Roles System */
+export * from './aviRol';
+export * from './aviSubrol';

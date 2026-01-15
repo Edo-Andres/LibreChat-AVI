@@ -389,3 +389,95 @@ endpoints:
 #     # instructions: "You are a memory management assistant. Store and manage user information accurately."
 #     # model_parameters:
 #     #   temperature: 0.1
+
+
+# AVI Roles Dynamic Configuration
+# Sistema dinámico de roles y subroles para LibreChat-AVI
+aviRoles:
+  roles:
+    # Rol AviRol (usuarios básicos)
+    - name: AviRol
+      knowledge: "Conocimiento básico en el uso de asistentes virtuales y herramientas digitales"
+      behavior: "Debe seguir las políticas de privacidad y uso ético de la información"
+      subroles:
+        - Cuidador
+        - Psicologo
+        - Administrativo
+    
+    # Rol genérico (usuarios básicos)
+    - name: Generico
+      knowledge: "Conocimiento general del sistema"
+      behavior: "Usuario estándar con acceso básico"
+      subroles:
+        - Lector
+        - Comentarista
+        - Colaborador
+
+    # Rol cuidador (personal de cuidado)
+    - name: Cuidador
+      knowledge: "Conocimiento especializado en técnicas de cuidado, primeros auxilios y desarrollo infantil"
+      behavior: "Responsable, atento, proactivo en la protección y cuidado de niños"
+      subroles:
+        - Cuidador Principal
+        - Cuidador Secundario
+        - Asistente
+
+    # Rol administrativo (administradores del sistema)
+    - name: Admin
+      knowledge: "Conocimiento técnico avanzado en sistemas, bases de datos y gestión de plataformas"
+      behavior: "Ético, responsable, transparente y comprometido con la seguridad de los datos"
+      subroles:
+        - Programador
+        - Configuración
+        - Supervisor
+
+# Nota Importante sobre knowledge y behavior:
+# - Los campos knowledge y behavior son OPCIONALES en los roles
+# - Los subroles NO soportan knowledge ni behavior (se guardan como null)
+# - Si necesitas documentar conocimientos/comportamientos por subrol, 
+#   considera hacerlo en documentación externa o usar solo roles
+#
+# Ejemplo sin knowledge/behavior:
+# aviRoles:
+#   roles:
+#     - name: MiRol
+#       subroles:
+#         - Subrol1
+#         - Subrol2
+#
+# Ejemplo con name, knowledge, behavior y registerAnswer en roles y subroles:
+aviRoles:
+  roles:
+      - name: MiRol
+        behavior: "comportamiento esperado del rol"
+        knowledge: "Conocimiento general de MiRol"
+        registerAnswer: "Respuesta personalizada unica para MiRol (relacion 1 a 1)"
+        subroles:
+        - name: Subrol1
+          behavior: "Comportamiento específico de Subrol1"
+          knowledge: "Conocimiento específico de Subrol1"
+          registerAnswer: "Respuesta personalizada unica para Subrol1 (relacion 1 a 1)"
+        - name: Subrol2
+          behavior: "Comportamiento específico de Subrol2"
+          knowledge: "Conocimiento específico de Subrol2"
+          registerAnswer: "Respuesta personalizada unica para Subrol2 (relacion 1 a 1)"
+
+  # Configuración de migraciones (opcional)
+  # Permite renombrar roles y subroles sin perder datos
+  migrations:
+    # Mapeo de roles antiguos a nuevos nombres
+    # Formato: "nombre_antiguo": "nombre_nuevo"
+    roles:      
+      # administrativo: Admin
+
+    # Mapeo de subroles antiguos a nuevos nombres
+    # Usar null para eliminar un subrol
+    # Si no se pasa cambios se debe colocar {} ejmplo --> suroles: {}
+    # Cuando se pasan subroles se quitanlos {}
+    subroles: {}
+      # Ejemplo adicional:
+      # Lector: Ver
+      # Asistente: null  # Eliminar este subrol
+
+    # Rol por defecto para usuarios huérfanos (opcional)
+    defaultRoleForOrphans: generico

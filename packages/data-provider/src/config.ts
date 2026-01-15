@@ -804,6 +804,41 @@ export type TMemoryConfig = z.infer<typeof memorySchema>;
 
 const customEndpointsSchema = z.array(endpointSchema.partial()).optional();
 
+// Schema para AVI Roles dinámico
+const aviRolesSchema = z.object({
+  roles: z.array(
+    z.object({
+      name: z.string(),
+      knowledge: z.string().optional(),
+      behavior: z.string().optional(),
+      registerAnswer: z.string().optional(),
+      subroles: z.array(
+        z.union([
+          z.string(),
+          z.object({
+            name: z.string(),
+            knowledge: z.string().optional(),
+            behavior: z.string().optional(),
+            registerAnswer: z.string().optional(),
+          })
+        ])
+      ).optional(),
+    })
+  ),
+  migrations: z.object({
+    roles: z.record(z.string()).optional(),
+    subroles: z.record(z.string().nullable()).optional(),
+    defaultRoleForOrphans: z.string().optional(),
+  }).optional(),
+}).optional();
+
+// Schema para conversationSuggestions
+const conversationSuggestionsSchema = z.object({
+  enabled: z.boolean().default(true),
+  defaultInitialSuggestions: z.array(z.string()).max(4).default([]),
+  fastModel: z.string().default('gemini-1.5-flash'),
+}).optional();
+
 export const configSchema = z.object({
   version: z.string(),
   cache: z.boolean().default(true),
@@ -842,6 +877,8 @@ export const configSchema = z.object({
   rateLimits: rateLimitSchema.optional(),
   fileConfig: fileConfigSchema.optional(),
   modelSpecs: specsConfigSchema.optional(),
+  aviRoles: aviRolesSchema,
+  conversationSuggestions: conversationSuggestionsSchema,
   endpoints: z
     .object({
       all: baseEndpointSchema.optional(),
@@ -1686,6 +1723,14 @@ export const specialVariables = {
   current_user: true,
   iso_datetime: true,
   current_datetime: true,
+  user_avi_rol: true,
+  user_avi_subrol: true,
+  user_avi_rol_knowledge: true,
+  user_avi_rol_behavior: true,
+  user_avi_subrol_knowledge: true,
+  user_avi_subrol_behavior: true,
+  user_avi_rol_registerAnswer: true,
+  user_avi_subrol_registerAnswer: true,
 };
 
 export type TSpecialVarLabel = `com_ui_special_var_${keyof typeof specialVariables}`;

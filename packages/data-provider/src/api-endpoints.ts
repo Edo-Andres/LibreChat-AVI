@@ -44,6 +44,14 @@ export const user = () => `${BASE_URL}/api/user`;
 
 export const balance = () => `${BASE_URL}/api/balance`;
 
+// AVI Roles endpoints
+export const aviRoles = () => `${BASE_URL}/api/avi-roles`;
+export const aviSubroles = (roleId: string) => `${BASE_URL}/api/avi-roles/${roleId}/subroles`;
+
+// Suggestions endpoints
+export const initialSuggestions = () => `${BASE_URL}/api/suggestions/initial`;
+export const followUpSuggestions = () => `${BASE_URL}/api/suggestions/follow-up`;
+
 export const userPlugins = () => `${BASE_URL}/api/user/plugins`;
 
 export const deleteUser = () => `${BASE_URL}/api/user/delete`;

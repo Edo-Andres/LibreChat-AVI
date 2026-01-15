@@ -15,6 +15,7 @@ import type { ContentTypes } from './types/runs';
 import type { Agent } from './types/assistants';
 
 export * from './schemas';
+export * from './types/aviRoles';
 
 export type TMessages = TMessage[];
 
@@ -205,6 +206,14 @@ export type TUser = {
   };
   createdAt: string;
   updatedAt: string;
+  aviRol?: string;
+  aviSubrol?: string;
+  aviRolKnowledge?: string | null;
+  aviRolBehavior?: string | null;
+  aviSubrolKnowledge?: string | null;
+  aviSubrolBehavior?: string | null;
+  aviRolRegisterAnswer?: string | null;
+  aviSubrolRegisterAnswer?: string | null;
 };
 
 export type TGetConversationsResponse = {
@@ -378,6 +387,8 @@ export type TRegisterUser = {
   password: string;
   confirm_password?: string;
   token?: string;
+  aviRol_id?: string;
+  aviSubrol_id?: string;
 };
 
 export type TLoginUser = {

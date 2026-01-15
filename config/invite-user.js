@@ -41,6 +41,9 @@ const connect = require('./connect');
     silentExit(1);
   }
 
+  // Normalize email to lowercase
+  email = email.toLowerCase();
+
   // Check if the user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {

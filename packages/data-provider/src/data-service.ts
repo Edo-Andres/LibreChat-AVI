@@ -110,6 +110,15 @@ export const register = (payload: t.TRegisterUser) => {
 export const userKeyQuery = (name: string): Promise<t.TCheckUserKeyResponse> =>
   request.get(endpoints.userKeyQuery(name));
 
+// AVI Roles services
+export const getAviRoles = (): Promise<t.TAviRolesResponse> => {
+  return request.get(endpoints.aviRoles());
+};
+
+export const getAviSubroles = (roleId: string): Promise<t.TAviSubrolesResponse> => {
+  return request.get(endpoints.aviSubroles(roleId));
+};
+
 export const getLoginGoogle = () => {
   return request.get(endpoints.loginGoogle());
 };
@@ -957,6 +966,15 @@ export function getEffectivePermissions(
 // SharePoint Graph API Token
 export function getGraphApiToken(params: q.GraphTokenParams): Promise<q.GraphTokenResponse> {
   return request.get(endpoints.graphToken(params.scopes));
+}
+
+// Conversation Suggestions
+export function getInitialSuggestions(): Promise<{ suggestions: string[] }> {
+  return request.get(endpoints.initialSuggestions());
+}
+
+export function getFollowUpSuggestions(params: { conversationId: string }): Promise<{ suggestions: string[] }> {
+  return request.post(endpoints.followUpSuggestions(), params);
 }
 
 export function getDomainServerBaseUrl(): string {

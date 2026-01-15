@@ -34,6 +34,7 @@ import EditBadges from './EditBadges';
 import BadgeRow from './BadgeRow';
 import Mention from './Mention';
 import PhoneButton from './PhoneButton';
+import InitialSuggestions from './InitialSuggestions';
 import store from '~/store';
 
 // Declarar el elemento personalizado de ElevenLabs
@@ -58,10 +59,10 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   const [visualRowCount, setVisualRowCount] = useState(1);
   const [isTextAreaFocused, setIsTextAreaFocused] = useState(false);
   const [backupBadges, setBackupBadges] = useState<Pick<BadgeItem, 'id'>[]>([]);
-  
+
   // Estados para ElevenLabs ConvAI
   const [showElevenLabsWidget, setShowElevenLabsWidget] = useState(false);
-  
+
   // Ref para trackear el observer actual y evitar duplicados
   const elevenLabsObserverRef = useRef<MutationObserver | null>(null);
 
@@ -106,10 +107,10 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     () => conversation?.endpointType ?? conversation?.endpoint,
     [conversation?.endpointType, conversation?.endpoint],
   );
-  
+
   // Obtener configuración de startup para ElevenLabs
   const { data: config } = useGetStartupConfig();
-  
+
   const conversationId = useMemo(
     () => conversation?.conversationId ?? Constants.NEW_CONVO,
     [conversation?.conversationId],
@@ -215,18 +216,18 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   }, [backupBadges, setBadges, setIsEditingBadges]);
 
   const handlePhoneClick = useCallback(() => {
-    console.log('Botón de teléfono clickeado');    
+    console.log('Botón de teléfono clickeado');
     console.log('Config disponible:', config);
     console.log('ElevenLabs Agent ID desde config:', (config as any)?.elevenLabsAgentId);
     console.log('ElevenLabs Agent ID desde Vite:', import.meta.env.VITE_ELEVENLABS_AGENT_ID);
-    
+
     const agentId = (config as any)?.elevenLabsAgentId || import.meta.env.VITE_ELEVENLABS_AGENT_ID;
     console.log('Agent ID final:', agentId);
-    
+
     // Si el widget está oculto, mostrarlo y configurar la funcionalidad
     if (!showElevenLabsWidget) {
       setShowElevenLabsWidget(true);
-      
+
       // Usar setTimeout para asegurar que el widget esté renderizado
       setTimeout(() => {
         setupElevenLabsWidget();
@@ -561,6 +562,17 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     [isCollapsed, isMoreThanThreeRows],
   );
 
+  // Determine when to show initial suggestions
+  const showInitialSuggestions = useMemo(() => {
+    return (
+      isTextAreaFocused &&
+      (conversation?.messages?.length === 0 || !conversation?.messages) &&
+      !textValue?.trim() &&
+      !isSubmitting &&
+      !isSubmittingAdded
+    );
+  }, [isTextAreaFocused, conversation?.messages, textValue, isSubmitting, isSubmittingAdded]);
+
   return (
     <>
       <form
@@ -576,141 +588,143 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
             : 'sm:mb-10',
         )}
       >
-      <div className="relative flex h-full flex-1 items-stretch md:flex-col">
-        <div className={cn('flex w-full items-center', isRTL && 'flex-row-reverse')}>
-          {showPlusPopover && !isAssistantsEndpoint(endpoint) && (
-            <Mention
-              setShowMentionPopover={setShowPlusPopover}
-              newConversation={generateConversation}
-              textAreaRef={textAreaRef}
-              commandChar="+"
-              placeholder="com_ui_add_model_preset"
-              includeAssistants={false}
-            />
-          )}
-          {showMentionPopover && (
-            <Mention
-              setShowMentionPopover={setShowMentionPopover}
-              newConversation={newConversation}
-              textAreaRef={textAreaRef}
-            />
-          )}
-          <PromptsCommand index={index} textAreaRef={textAreaRef} submitPrompt={submitPrompt} />
-          <div
-            onClick={handleContainerClick}
-            className={cn(
-              'relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border pb-4 text-text-primary transition-all duration-200 sm:rounded-3xl sm:pb-0',
-              isTextAreaFocused ? 'shadow-lg' : 'shadow-md',
-              isTemporary
-                ? 'border-violet-800/60 bg-violet-950/10'
-                : 'border-border-light bg-surface-chat',
+        <div className="relative flex h-full flex-1 items-stretch md:flex-col">
+          <div className={cn('flex w-full items-center', isRTL && 'flex-row-reverse')}>
+            {showPlusPopover && !isAssistantsEndpoint(endpoint) && (
+              <Mention
+                setShowMentionPopover={setShowPlusPopover}
+                newConversation={generateConversation}
+                textAreaRef={textAreaRef}
+                commandChar="+"
+                placeholder="com_ui_add_model_preset"
+                includeAssistants={false}
+              />
             )}
-          >
-            <TextareaHeader addedConvo={addedConvo} setAddedConvo={setAddedConvo} />
-            <EditBadges
-              isEditingChatBadges={isEditingBadges}
-              handleCancelBadges={handleCancelBadges}
-              handleSaveBadges={handleSaveBadges}
-              setBadges={setBadges}
-            />
-            <FileFormChat conversation={conversation} />
-            {endpoint && (
-              <div className={cn('flex', isRTL ? 'flex-row-reverse' : 'flex-row')}>
-                <TextareaAutosize
-                  {...registerProps}
-                  ref={(e) => {
-                    ref(e);
-                    (textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e;
-                  }}
-                  disabled={disableInputs || isNotAppendable}
-                  onPaste={handlePaste}
-                  onKeyDown={handleKeyDown}
-                  onKeyUp={handleKeyUp}
-                  onCompositionStart={handleCompositionStart}
-                  onCompositionEnd={handleCompositionEnd}
-                  id={mainTextareaId}
-                  tabIndex={0}
-                  data-testid="text-input"
-                  rows={1}
-                  onFocus={() => {
-                    handleFocusOrClick();
-                    setIsTextAreaFocused(true);
-                  }}
-                  onBlur={setIsTextAreaFocused.bind(null, false)}
-                  onClick={handleFocusOrClick}
-                  style={{ height: 44, overflowY: 'auto' }}
-                  className={cn(
-                    baseClasses,
-                    removeFocusRings,
-                    'transition-[max-height] duration-200 disabled:cursor-not-allowed',
-                  )}
+            {showMentionPopover && (
+              <Mention
+                setShowMentionPopover={setShowMentionPopover}
+                newConversation={newConversation}
+                textAreaRef={textAreaRef}
+              />
+            )}
+            <PromptsCommand index={index} textAreaRef={textAreaRef} submitPrompt={submitPrompt} />
+            <div
+              onClick={handleContainerClick}
+              className={cn(
+                'relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border pb-4 text-text-primary transition-all duration-200 sm:rounded-3xl sm:pb-0',
+                isTextAreaFocused ? 'shadow-lg' : 'shadow-md',
+                isTemporary
+                  ? 'border-violet-800/60 bg-violet-950/10'
+                  : 'border-border-light bg-surface-chat',
+              )}
+            >
+              <TextareaHeader addedConvo={addedConvo} setAddedConvo={setAddedConvo} />
+              <EditBadges
+                isEditingChatBadges={isEditingBadges}
+                handleCancelBadges={handleCancelBadges}
+                handleSaveBadges={handleSaveBadges}
+                setBadges={setBadges}
+              />
+              <FileFormChat conversation={conversation} />
+              {endpoint && (
+                <div className={cn('flex', isRTL ? 'flex-row-reverse' : 'flex-row')}>
+                  <TextareaAutosize
+                    {...registerProps}
+                    ref={(e) => {
+                      ref(e);
+                      (textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e;
+                    }}
+                    disabled={disableInputs || isNotAppendable}
+                    onPaste={handlePaste}
+                    onKeyDown={handleKeyDown}
+                    onKeyUp={handleKeyUp}
+                    onCompositionStart={handleCompositionStart}
+                    onCompositionEnd={handleCompositionEnd}
+                    id={mainTextareaId}
+                    tabIndex={0}
+                    data-testid="text-input"
+                    rows={1}
+                    onFocus={() => {
+                      handleFocusOrClick();
+                      setIsTextAreaFocused(true);
+                    }}
+                    onBlur={setIsTextAreaFocused.bind(null, false)}
+                    onClick={handleFocusOrClick}
+                    style={{ height: 44, overflowY: 'auto' }}
+                    className={cn(
+                      baseClasses,
+                      removeFocusRings,
+                      'transition-[max-height] duration-200 disabled:cursor-not-allowed',
+                    )}
+                  />
+                  <div className="flex flex-col items-start justify-start pt-1.5">
+                    <CollapseChat
+                      isCollapsed={isCollapsed}
+                      isScrollable={isMoreThanThreeRows}
+                      setIsCollapsed={setIsCollapsed}
+                    />
+                  </div>
+                </div>
+              )}
+              <div
+                className={cn(
+                  'items-between flex gap-2 pb-2',
+                  isRTL ? 'flex-row-reverse' : 'flex-row',
+                )}
+              >
+                <div className={`${isRTL ? 'mr-2' : 'ml-2'}`}>
+                  <AttachFileChat conversation={conversation} disableInputs={disableInputs} />
+                </div>
+                <BadgeRow
+                  showEphemeralBadges={!isAgentsEndpoint(endpoint) && !isAssistantsEndpoint(endpoint)}
+                  isSubmitting={isSubmitting || isSubmittingAdded}
+                  conversationId={conversationId}
+                  onChange={setBadges}
+                  isInChat={
+                    Array.isArray(conversation?.messages) && conversation.messages.length >= 1
+                  }
                 />
-                <div className="flex flex-col items-start justify-start pt-1.5">
-                  <CollapseChat
-                    isCollapsed={isCollapsed}
-                    isScrollable={isMoreThanThreeRows}
-                    setIsCollapsed={setIsCollapsed}
+                <div className="mx-auto flex" />
+                {SpeechToText && (
+                  <AudioRecorder
+                    methods={methods}
+                    ask={submitMessage}
+                    textAreaRef={textAreaRef}
+                    disabled={disableInputs || isNotAppendable}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                <div className={`${isRTL ? 'ml-2' : 'mr-2'}`}>
+                  {(isSubmitting || isSubmittingAdded) && (showStopButton || showStopAdded) ? (
+                    <StopButton stop={handleStopGenerating} setShowStopButton={setShowStopButton} />
+                  ) : (
+                    endpoint && (
+                      <SendButton
+                        ref={submitButtonRef}
+                        control={methods.control}
+                        disabled={filesLoading || isSubmitting || disableInputs || isNotAppendable}
+                      />
+                    )
+                  )}
+                </div>
+                <div className={`${isRTL ? 'ml-2' : 'mr-2'}`}>
+                  <PhoneButton
+                    disabled={disableInputs}
+                    onClick={handlePhoneClick}
                   />
                 </div>
               </div>
-            )}
-            <div
-              className={cn(
-                'items-between flex gap-2 pb-2',
-                isRTL ? 'flex-row-reverse' : 'flex-row',
-              )}
-            >
-              <div className={`${isRTL ? 'mr-2' : 'ml-2'}`}>
-                <AttachFileChat conversation={conversation} disableInputs={disableInputs} />
-              </div>
-              <BadgeRow
-                showEphemeralBadges={!isAgentsEndpoint(endpoint) && !isAssistantsEndpoint(endpoint)}
-                isSubmitting={isSubmitting || isSubmittingAdded}
-                conversationId={conversationId}
-                onChange={setBadges}
-                isInChat={
-                  Array.isArray(conversation?.messages) && conversation.messages.length >= 1
-                }
-              />
-              <div className="mx-auto flex" />
-              {SpeechToText && (
-                <AudioRecorder
-                  methods={methods}
-                  ask={submitMessage}
-                  textAreaRef={textAreaRef}
-                  disabled={disableInputs || isNotAppendable}
-                  isSubmitting={isSubmitting}
-                />
-              )}
-              <div className={`${isRTL ? 'ml-2' : 'mr-2'}`}>
-                {(isSubmitting || isSubmittingAdded) && (showStopButton || showStopAdded) ? (
-                  <StopButton stop={handleStopGenerating} setShowStopButton={setShowStopButton} />
-                ) : (
-                  endpoint && (
-                    <SendButton
-                      ref={submitButtonRef}
-                      control={methods.control}
-                      disabled={filesLoading || isSubmitting || disableInputs || isNotAppendable}
-                    />
-                  )
-                )}
-              </div>
-              <div className={`${isRTL ? 'ml-2' : 'mr-2'}`}>
-                <PhoneButton
-                  disabled={disableInputs}
-                  onClick={handlePhoneClick}
-                />
-              </div>
+              {/* Initial Suggestions - shown below action buttons */}
+              <InitialSuggestions show={showInitialSuggestions} />
+              {TextToSpeech && automaticPlayback && <StreamAudio index={index} />}
             </div>
-            {TextToSpeech && automaticPlayback && <StreamAudio index={index} />}
           </div>
         </div>
+      </form>
+      {/* Widget de ElevenLabs ConvAI */}
+      <div style={{ display: showElevenLabsWidget ? 'block' : 'none' }}>
+        <elevenlabs-convai agent-id={(config as any)?.elevenLabsAgentId || import.meta.env.VITE_ELEVENLABS_AGENT_ID}></elevenlabs-convai>
       </div>
-    </form>
-    {/* Widget de ElevenLabs ConvAI */}
-    <div style={{ display: showElevenLabsWidget ? 'block' : 'none' }}>
-      <elevenlabs-convai agent-id={(config as any)?.elevenLabsAgentId || import.meta.env.VITE_ELEVENLABS_AGENT_ID}></elevenlabs-convai>
-    </div>
     </>
   );
 });

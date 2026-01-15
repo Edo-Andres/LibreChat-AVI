@@ -1,0 +1,62 @@
+import { Schema, Types } from 'mongoose';
+import type { IAviSubrol } from '~/types';
+
+const aviSubrolSchema: Schema<IAviSubrol> = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    parentRolId: {
+      type: Schema.Types.ObjectId,
+      ref: 'AviRol',
+      required: true,
+      index: true,
+    },
+    knowledge: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 10000,
+      trim: true,
+    },
+    behavior: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 10000,
+      trim: true,
+    },
+    initial_suggestions: {
+      type: [String],
+      default: [],
+      validate: [
+        {
+          validator: function (v: string[]) {
+            return v.length <= 4;
+          },
+          message: 'Maximum 4 initial suggestions allowed'
+        }
+      ],
+    },
+    registerAnswer: {
+      type: String,
+      required: false,
+      default: null,
+      maxlength: 10000,
+      trim: true,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+// Compound index for unique subrol names within the same parent role
+aviSubrolSchema.index({ name: 1, parentRolId: 1 }, { unique: true });
+
+// Index for faster queries by parent role
+aviSubrolSchema.index({ parentRolId: 1 });
+
+export default aviSubrolSchema;

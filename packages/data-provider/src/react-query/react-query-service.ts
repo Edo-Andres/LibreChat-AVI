@@ -275,6 +275,30 @@ export const useUserKeyQuery = (
   );
 };
 
+// AVI Roles queries - Simple implementation
+export const useAviRolesQuery = () => {
+  return useQuery<t.TAviRolesResponse>(
+    ['aviRoles'],
+    () => dataService.getAviRoles(),
+    {
+      staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  );
+};
+
+export const useAviSubrolesQuery = (roleId: string) => {
+  return useQuery<t.TAviSubrolesResponse>(
+    ['aviSubroles', roleId],
+    () => dataService.getAviSubroles(roleId),
+    {
+      enabled: !!roleId,
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  );
+};
+
 export const useRequestPasswordResetMutation = (): UseMutationResult<
   t.TRequestPasswordResetResponse,
   unknown,

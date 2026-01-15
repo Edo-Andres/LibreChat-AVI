@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import TagManager from 'react-gtm-module';
 import { Constants } from 'librechat-data-provider';
 import { useGetStartupConfig } from '~/data-provider';
+import ViewTermsModal from '~/components/ui/ViewTermsModal';
 import { useLocalize } from '~/hooks';
 
 export default function Footer({ className }: { className?: string }) {
   const { data: config } = useGetStartupConfig();
   const localize = useLocalize();
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const privacyPolicy = config?.interface?.privacyPolicy;
   const termsOfService = config?.interface?.termsOfService;
@@ -24,14 +26,12 @@ export default function Footer({ className }: { className?: string }) {
   );
 
   const termsOfServiceRender = termsOfService?.externalUrl != null && (
-    <a
-      className="text-text-secondary underline"
-      href={termsOfService.externalUrl}
-      target={termsOfService.openNewTab === true ? '_blank' : undefined}
-      rel="noreferrer"
+    <button
+      onClick={() => setShowTermsModal(true)}
+      className="text-text-secondary underline hover:text-text-primary"
     >
       {localize('com_ui_terms_of_service')}
-    </a>
+    </button>
   );
 
   const mainContentParts = (
@@ -78,7 +78,7 @@ export default function Footer({ className }: { className?: string }) {
     </React.Fragment>
   ));
 
-  const footerElements = [...mainContentRender, privacyPolicyRender].filter(
+  const footerElements = [...mainContentRender, privacyPolicyRender, termsOfServiceRender].filter(
     Boolean,
   );
 
@@ -106,6 +106,12 @@ export default function Footer({ className }: { className?: string }) {
           );
         })}
       </div>
+      <ViewTermsModal
+        open={showTermsModal}
+        onOpenChange={setShowTermsModal}
+        title={termsOfService?.modalTitle}
+        modalContent={termsOfService?.modalContent}
+      />
     </div>
   );
 }

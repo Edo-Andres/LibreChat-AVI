@@ -32,10 +32,10 @@ export default function HeaderNewChat() {
           variant="outline"
           data-testid="wide-header-new-chat-button"
           aria-label={localize('com_ui_new_chat')}
-          className="rounded-xl border border-border-light bg-surface-secondary p-2 hover:bg-surface-hover max-md:hidden"
+          className="rounded-full border-none bg-gradient-to-br from-chat-user-light to-chat-user-dark p-3 hover:opacity-90 transition-opacity max-md:hidden"
           onClick={clickHandler}
         >
-          <NewChatIcon />
+          <NewChatIcon className="text-white" />
         </Button>
       }
     />
