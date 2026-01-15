@@ -124,31 +124,45 @@ async function callLLMForSuggestions(conversationContext, model) {
     const genModel = genAI.getGenerativeModel({ model });
 
     // Create prompt for suggestion generation
-    // IMPROVED PROMPT: Generates suggestions as QUESTIONS THE USER WOULD ASK (not questions the agent would ask)
-    const prompt = `Eres un asistente experto que genera sugerencias para que el usuario continúe conversando con AVI sobre cuidado infantil y desarrollo emocional.
+    // IMPROVED PROMPT: Comprehensive UX Writing and Child Psychology prompt for dynamic Quick Replies
+    const prompt = `Eres un experto en Diseño Conversacional y UX Writing enfocado en el contexto de AVI (Asistente Virtual en Infancia).
 
-**Tu Tarea:**
-Analizar el contexto de la conversación y generar EXACTAMENTE 3 preguntas que UN USUARIO podría hacer para profundizar, hacer seguimiento o explorar temas relacionados derivados de la última respuesta.
+**TU OBJETIVO:**
+Analizar el historial de conversación y generar EXACTAMENTE 3 opciones de "Quick Reply" que el USUARIO podría pulsar para continuar el diálogo, profundizar en el tema o explorar nuevas áreas relacionadas.
 
-**Reglas ESTRICTAS:**
-1. Cada sugerencia es una PREGUNTA que el usuario escribiría (no una pregunta que haría el agente para obtener contexto).
-2. Forma: Interrogativa directa (¿Cómo...?, ¿Qué...?, ¿Por qué...?, etc.) o iniciada por verbo si es apropiado.
-3. Longitud: EXACTAMENTE entre 6 y 12 palabras (sin contar signos de puntuación).
-4. Idioma: EXACTAMENTE el mismo idioma del último mensaje del USUARIO.
-5. Contenido: Preguntas PRÁCTICAS y DERIVADAS del contexto, no genéricas.
-6. Fidelidad: NO inventes ni asumas información si no está explícito en el contexto.
+**CONTEXTO DE AVI:**
+AVI apoya a equipos residenciales y cuidadores en la prevención y cuidado especializado de niños, niñas y adolescentes (NNA). Sus temas clave son: Cuidado y Bienestar, Fortalecimiento Familiar, y Gestión de Equipos.
 
-**Contexto de la conversación:**
+**REGLAS DE ORO (PERSPECTIVA DE USUARIO):**
+1. **Voz del Usuario:** Las sugerencias DEBEN estar en primera persona (ej: "Necesito...", "¿Qué hago si...?", "Dame ejemplos").
+2. **Prohibido Cerrar:** NUNCA generes respuestas de cierre como "Gracias", "Entendido" o "Ok". El objetivo es EXTENDER la conversación.
+3. **Rol Correcto:** NUNCA escribas frases que diría el asistente (ej: "¿En qué te ayudo?", "¿Quieres saber más?").
+4. **Variedad:** Cubre distintos ángulos: Práctico (ejemplos), Técnico (profundización) o Situacional (qué hacer en caso X).
 
+**EJEMPLOS DE REFERENCIA:**
+
+ MALOS (EVITAR):
+- "Excelente respuesta, gracias" (Cierra el chat)
+- "¿Necesitas más detalles?" (Habla el asistente, no el usuario)
+- "Ok, entendido" (Sin valor)
+
+BUENOS (IMITAR):
+- "¿Podrías explicarlo en palabras más simples?"
+- "¿Qué hago si el niño me pega durante la crisis?"
+- "Dame un ejemplo de rutina nocturna segura"
+- "¿Cómo documento la revelación correctamente?"
+- "¿Cuáles son las señales de burnout en el equipo?"
+
+**ESPECIFICACIONES TÉCNICAS:**
+- **Cantidad:** 3 sugerencias exactas.
+- **Longitud:** 5 a 12 palabras por sugerencia (concisión para botones).
+- **Idioma:** EXACTAMENTE el mismo idioma del último mensaje del usuario.
+- **Formato:** ÚNICAMENTE un JSON array de strings.
+
+**HISTORIAL DE CONVERSACIÓN ACTUAL:**
 ${'    ' + conversationContext.replaceAll('\n', '\n    ')}
 
-**Ejemplos de salida VÁLIDA** (preguntas que el usuario haría):
-["¿Cómo manejar una rabieta emocional?", "¿Qué estrategias mejoran la concentración?", "¿Por qué los niños tienen miedos?"]
-
-**IMPORTANTE:**
-- Responde SOLO con el JSON array, sin texto adicional ni explicaciones.
-- NO generes preguntas que el agente haría (como "¿Qué edad tiene?" o "¿Cuánto tiempo lleva así?").
-- Cada pregunta debe ser algo que el usuario escribiría para profundizar en el tema.`;
+Genera el JSON array con las 3 sugerencias:`;
 
     // Generate content
     const result = await genModel.generateContent(prompt);
