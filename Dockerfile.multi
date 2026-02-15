@@ -87,6 +87,9 @@ RUN sed -i 's/\r$//' ./scripts/health-check.sh && chmod +x ./scripts/health-chec
 # ✅ Script para recarga dinámica de AVI Roles
 COPY ./scripts/reload-avi-roles.sh ./scripts/reload-avi-roles.sh
 RUN sed -i 's/\r$//' ./scripts/reload-avi-roles.sh && chmod +x ./scripts/reload-avi-roles.sh
+# ✅ Script para limpieza de chats antiguos
+COPY ./scripts/cleanup-chats.sh ./scripts/cleanup-chats.sh
+RUN sed -i 's/\r$//' ./scripts/cleanup-chats.sh && chmod +x ./scripts/cleanup-chats.sh
 
 COPY --from=data-provider-build /app/packages/data-provider/dist ./packages/data-provider/dist
 COPY --from=data-schemas-build /app/packages/data-schemas/dist ./packages/data-schemas/dist

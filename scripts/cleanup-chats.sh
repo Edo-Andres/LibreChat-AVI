@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Script de limpieza de conversaciones antiguas de LibreChat
 # Uso: ./cleanup-chats.sh [--force] [--days N]
