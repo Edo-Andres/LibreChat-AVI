@@ -4,10 +4,10 @@ const csv = require('csv-parser');
 const { google } = require('googleapis');
 require('dotenv').config();
 
-// Configuración
-const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID || '1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U';
-const RANGE_NAME = 'Hoja 1';
-const CSV_FILE = path.join(__dirname, '..', 'api', 'chats.csv');
+// ⭐ CONFIGURACIÓN PARA SHEET EXTENDIDO
+const SPREADSHEET_ID = '1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U';
+const RANGE_NAME = 'Hoja 1'; // ⭐ NUEVA HOJA
+const CSV_FILE = path.join(__dirname, '..', 'api', 'chats_extended.csv');
 
 /**
  * Obtiene credenciales desde variable de entorno
@@ -62,6 +62,7 @@ async function readCSV() {
       })
       .on('end', () => {
         console.log(`📖 CSV leído: ${results.length - 1} filas, ${headers.length} columnas`);
+        console.log(`📋 Columnas: ${headers.join(', ')}`);
         resolve(results);
       })
       .on('error', reject);
@@ -76,11 +77,16 @@ async function updateGoogleSheets(data) {
     const auth = getCredentials();
     const sheets = google.sheets({ version: 'v4', auth });
 
-    console.log('🔄 Limpiando hoja existente...');
-    await sheets.spreadsheets.values.clear({
-      spreadsheetId: SPREADSHEET_ID,
-      range: RANGE_NAME,
-    });
+    console.log(`🔄 Limpiando hoja "${RANGE_NAME}"...`);
+    
+    try {
+      await sheets.spreadsheets.values.clear({
+        spreadsheetId: SPREADSHEET_ID,
+        range: RANGE_NAME,
+      });
+    } catch (error) {
+      console.log(`⚠️ La hoja "${RANGE_NAME}" no existe, se creará automáticamente`);
+    }
 
     console.log('📤 Subiendo nueva data...');
     const result = await sheets.spreadsheets.values.update({
@@ -92,7 +98,7 @@ async function updateGoogleSheets(data) {
       }
     });
 
-    console.log(`✅ Actualización exitosa! Filas: ${result.data.updatedRows}`);
+    console.log(`✅ Actualización exitosa! Filas: ${result.data.updatedRows}, Columnas: ${result.data.updatedColumns}`);
     return result;
 
   } catch (error) {
@@ -119,7 +125,9 @@ function cleanupFile() {
  */
 async function main() {
   try {
-    console.log('🚀 Iniciando sincronización con Google Sheets...');
+    console.log('🚀 Iniciando sincronización EXTENDIDA con Google Sheets...');
+    console.log(`📊 Spreadsheet ID: ${SPREADSHEET_ID}`);
+    console.log(`📄 Hoja destino: ${RANGE_NAME}`);
 
     // Leer CSV
     const csvData = await readCSV();
@@ -135,7 +143,7 @@ async function main() {
 
   } catch (error) {
     console.error('❌ Error en el proceso:', error.message);
-    cleanupFile(); // Limpiar en caso de error también
+    cleanupFile();
     process.exit(1);
   }
 }

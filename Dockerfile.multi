@@ -79,6 +79,11 @@ RUN sed -i 's/\r$//' ./enviar-invitaciones.sh && chmod +x ./enviar-invitaciones.
 COPY ./config/upload-to-sheets.js ./config/upload-to-sheets.js
 COPY ./scripts/sync-chats.sh ./scripts/sync-chats.sh
 RUN sed -i 's/\r$//' ./scripts/sync-chats.sh && chmod +x ./scripts/sync-chats.sh
+# ✅ Scripts para sincronización EXTENDIDA con Google Sheets
+COPY ./config/export-all-chats-extended.js ./config/export-all-chats-extended.js
+COPY ./config/upload-to-sheets-extended.js ./config/upload-to-sheets-extended.js
+COPY ./scripts/sync-chats-extended.sh ./scripts/sync-chats-extended.sh
+RUN sed -i 's/\r$//' ./scripts/sync-chats-extended.sh && chmod +x ./scripts/sync-chats-extended.sh
 # ✅ Scripts para Health Check Audit
 COPY ./config/health-check/ ./config/health-check/
 COPY ./config/services/ ./config/services/
