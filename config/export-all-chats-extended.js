@@ -117,6 +117,7 @@ function formatDateWithTimezone(date) {
     const userMap = {};
     users.forEach(user => {
       userMap[user._id.toString()] = {
+        userId: user._id.toString(),
         email: user.email || '',
         name: user.name || '',
         phone: user.phone || '',
@@ -153,6 +154,7 @@ function formatDateWithTimezone(date) {
         if (!result.users[userEmail]) {
           result.users[userEmail] = {
             userInfo: {
+              userId: user.userId,
               email: user.email,
               name: user.name,
               phone: user.phone,
@@ -190,6 +192,7 @@ function formatDateWithTimezone(date) {
     } else {
       // ⭐ Generar CSV con TODAS LAS COLUMNAS NUEVAS
       const header = [
+        'userId',
         'userEmail',
         'userName',
         'userPhone',
@@ -222,6 +225,7 @@ function formatDateWithTimezone(date) {
 
           const row = [
             // ⭐ DATOS DE USUARIO
+            user.userId,
             user.email,
             `"${cleanTextForCSV(user.name)}"`,
             user.phone,
