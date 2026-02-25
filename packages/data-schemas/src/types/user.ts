@@ -34,6 +34,7 @@ export interface IUser extends Document {
   }>;
   expiresAt?: Date;
   termsAccepted?: boolean;
+  participationConsent?: boolean;
   personalization?: {
     memories?: boolean;
   };
@@ -68,6 +69,7 @@ export interface UpdateUserRequest {
   plugins?: string[];
   twoFactorEnabled?: boolean;
   termsAccepted?: boolean;
+  participationConsent?: boolean;
   personalization?: {
     memories?: boolean;
   };
