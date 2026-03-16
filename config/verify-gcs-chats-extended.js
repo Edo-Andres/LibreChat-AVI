@@ -82,7 +82,16 @@ async function verifyTodayFileExists() {
       console.log(`   ℹ️  Archivos existentes en la carpeta (últimos 5):`);
       files.slice(-5).forEach((f) => console.log(`      - ${f.name}`));
     }
-    return { exists: false, bucketName, prefix: folderPrefix, dateUTC, dateToken, matches: [] };
+    return {
+      exists: false,
+      bucketName,
+      prefix: folderPrefix,
+      dateUTC,
+      dateToken,
+      scannedCount: files?.length || 0,
+      recentFiles: (files || []).slice(-5).map((f) => f.name),
+      matches: [],
+    };
   }
 
   console.log(`✅ Encontrado(s) ${matchingFiles.length} archivo(s) para el día (UTC).`);
@@ -94,6 +103,8 @@ async function verifyTodayFileExists() {
     prefix: folderPrefix,
     dateUTC,
     dateToken,
+    scannedCount: files?.length || 0,
+    recentFiles: [],
     matches: matchingFiles.map((f) => f.name),
   };
 }
@@ -124,12 +135,14 @@ async function sendVerificationEmail({ isSuccess, result, errorMessage, duration
     },
     details: {
       verificationType: 'gcs-chats-extended-date-token',
-      dateUTC: result?.dateUTC,
-      dateToken: result?.dateToken,
-      bucketName: result?.bucketName,
-      folderPrefix: result?.prefix,
+      dateUTC: result?.dateUTC || getDateUTC(),
+      dateToken: result?.dateToken || `_${getDateUTC()}_`,
+      bucketName: result?.bucketName || process.env.GCS_BUCKET_NAME || 'avi-bkt',
+      folderPrefix: result?.prefix || normalizeBucketPath(process.env.GCS_BUCKET_PATH || 'chats/'),
+      scannedCount: result?.scannedCount || 0,
       matchCount: result?.matches?.length || 0,
       matches: result?.matches || [],
+      recentFiles: result?.recentFiles || [],
       error: errorMessage || null,
     },
   };
@@ -144,6 +157,7 @@ async function sendVerificationEmail({ isSuccess, result, errorMessage, duration
       agentId: process.env.HEALTH_CHECK_AGENT_ID || 'N/A',
       appTitle: process.env.APP_TITLE || 'LibreChat',
     },
+    notificationType: 'gcs-backup-verify',
     error: errorMessage || undefined,
   };
 
