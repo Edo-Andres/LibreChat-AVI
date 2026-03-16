@@ -30,11 +30,11 @@ flowchart TD
 Estas variables ya estan en uso por el health-check y se reutilizan:
 - `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_ENCRYPTION`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`
 - `EMAIL_SERVICE`, `EMAIL_ALLOW_SELFSIGNED`, `EMAIL_FROM_NAME`, `EMAIL_FROM`
-- `HEALTH_CHECK_ADMIN_EMAIL` (primer email para exito, todos para error)
+- `HEALTH_CHECK_ADMIN_EMAIL` (en caso de error enviar email a los 2 primeros emails del array, en caso de exito enviar email solo al primer email del array)
 
 ## Verificacion del archivo en GCS
-El nombre del archivo usa fecha UTC. La verificacion debe buscar el prefijo:
-- `chats_extended_YYYY-MM-DD_` (fecha UTC del dia de ejecucion)
+El nombre del archivo usa fecha UTC. La verificacion debe buscar que contenga:
+- `_YYYY-MM-DD_` (fecha UTC del dia de ejecucion)
 
 ## Asuntos de email
 - Exito: "✅ Respaldo programado OK: limpieza + exportacion a GCS"
