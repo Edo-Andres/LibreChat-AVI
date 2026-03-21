@@ -166,6 +166,22 @@ async function sendVerificationEmail({ isSuccess, result, errorMessage, duration
 
 async function main() {
   const startTime = Date.now();
+  const forcedErrorMessage = process.env.BACKUP_FORCE_ERROR_MESSAGE;
+
+  if (forcedErrorMessage) {
+    console.error(`❌ Error previo del flujo unificado: ${forcedErrorMessage}`);
+    try {
+      await sendVerificationEmail({
+        isSuccess: false,
+        result: null,
+        errorMessage: forcedErrorMessage,
+        durationMs: Date.now() - startTime,
+      });
+    } catch (emailError) {
+      console.error(`❌ Error enviando email de verificación: ${emailError.message}`);
+    }
+    process.exit(1);
+  }
 
   try {
     const result = await verifyTodayFileExists();
