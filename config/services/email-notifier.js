@@ -34,7 +34,7 @@ class EmailNotifier {
   }
 
   async sendNotification(emailData, customRecipients = null) {
-    const { subject, isSuccess, testResults, config, error } = emailData;
+    const { subject, isSuccess, testResults, config, error, notificationType } = emailData;
     
     // Usar destinatarios personalizados si se proporcionan, sino usar el valor por defecto
     const recipients = customRecipients || config.adminEmail;
@@ -43,8 +43,8 @@ class EmailNotifier {
       from: `"${process.env.EMAIL_FROM_NAME || 'LibreChat Health Check'}" <${process.env.EMAIL_FROM}>`,
       to: recipients,
       subject: subject,
-      html: this.generateEmailHTML(isSuccess, testResults, config, error),
-      text: this.generateEmailText(isSuccess, testResults, config, error)
+      html: this.generateEmailHTML(isSuccess, testResults, config, error, notificationType),
+      text: this.generateEmailText(isSuccess, testResults, config, error, notificationType)
     };
 
     try {
@@ -58,7 +58,11 @@ class EmailNotifier {
     }
   }
 
-  generateEmailHTML(isSuccess, testResults, config, error = null) {
+  generateEmailHTML(isSuccess, testResults, config, error = null, notificationType = 'health-check') {
+    if (notificationType === 'gcs-backup-verify') {
+      return this.generateGCSBackupEmailHTML(isSuccess, testResults, config, error);
+    }
+
     const statusIcon = isSuccess ? '✅' : '❌';
     const statusText = isSuccess ? 'EXITOSO' : 'FALLIDO';
     const statusColor = isSuccess ? '#28a745' : '#dc3545';
@@ -141,7 +145,11 @@ class EmailNotifier {
     </html>`;
   }
 
-  generateEmailText(isSuccess, testResults, config, error = null) {
+  generateEmailText(isSuccess, testResults, config, error = null, notificationType = 'health-check') {
+    if (notificationType === 'gcs-backup-verify') {
+      return this.generateGCSBackupEmailText(isSuccess, testResults, config, error);
+    }
+
     const statusText = isSuccess ? 'EXITOSO' : 'FALLIDO';
     const timestamp = new Date().toLocaleString('es-ES', {
       timeZone: 'America/Santiago'
@@ -176,6 +184,129 @@ DETALLE DE PASOS:
     }
 
     text += `\n---\nNotificación automática - Sistema de Health Check LibreChat AVI`;
+
+    return text;
+  }
+
+  generateGCSBackupEmailHTML(isSuccess, testResults, config, error = null) {
+    const statusIcon = isSuccess ? '✅' : '❌';
+    const statusText = isSuccess ? 'VERIFICADO' : 'NO VERIFICADO';
+    const statusColor = isSuccess ? '#28a745' : '#dc3545';
+    const details = testResults?.details || {};
+    const matches = details.matches || [];
+    const recentFiles = details.recentFiles || [];
+
+    const timestamp = new Date().toLocaleString('es-ES', {
+      timeZone: 'America/Santiago',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+
+    const statusLine = isSuccess
+      ? `Se verificó correctamente el respaldo en GCS para la fecha UTC <strong>${details.dateUTC || 'N/A'}</strong>.`
+      : `No se encontró archivo de respaldo para la fecha UTC <strong>${details.dateUTC || 'N/A'}</strong>. El nombre debe contener <strong>${details.dateToken || 'N/A'}</strong>.`;
+
+    const matchesHTML = matches.length > 0
+      ? `<h3>📄 Archivos encontrados (máx 10):</h3><ul style="line-height: 1.6;">${matches.slice(0, 10).map((name) => `<li><code>${name}</code></li>`).join('')}</ul>`
+      : '';
+
+    const recentFilesHTML = !isSuccess && recentFiles.length > 0
+      ? `<h3>🧭 Referencia (últimos archivos en carpeta):</h3><ul style="line-height: 1.6;">${recentFiles.map((name) => `<li><code>${name}</code></li>`).join('')}</ul>`
+      : '';
+
+    const errorHTML = !isSuccess && error
+      ? `<h3>❌ Detalle:</h3><p style="line-height: 1.6; margin: 0;">${error}</p>`
+      : '';
+
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Verificación Respaldo GCS</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4;">
+        <div style="max-width: 700px; margin: 0 auto; background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; border-bottom: 3px solid ${statusColor}; padding-bottom: 20px; margin-bottom: 24px;">
+                <h1 style="color: ${statusColor}; margin: 0; font-size: 26px;">${statusIcon} Respaldo GCS ${statusText}</h1>
+                <p style="color: #666; margin: 10px 0 0 0; font-size: 15px;">${config?.appTitle || 'LibreChat AVI'} - Verificación de respaldo programado</p>
+            </div>
+
+            <p style="font-size: 15px; line-height: 1.6; margin-top: 0;">${statusLine}</p>
+
+            <h3>🕐 Resumen:</h3>
+            <ul style="line-height: 1.6;">
+              <li><strong>Fecha ejecución:</strong> ${timestamp}</li>
+              <li><strong>Fecha UTC objetivo:</strong> ${details.dateUTC || 'N/A'}</li>
+              <li><strong>Token esperado:</strong> ${details.dateToken || 'N/A'}</li>
+              <li><strong>Bucket:</strong> ${details.bucketName || 'N/A'}</li>
+              <li><strong>Carpeta:</strong> ${details.folderPrefix || 'N/A'}</li>
+              <li><strong>Archivos revisados:</strong> ${details.scannedCount ?? 0}</li>
+              <li><strong>Coincidencias:</strong> ${details.matchCount ?? 0}</li>
+              <li><strong>Duración:</strong> ${testResults ? this.formatDuration(testResults.duration) : 'N/A'}</li>
+            </ul>
+
+            ${matchesHTML}
+            ${recentFilesHTML}
+            ${errorHTML}
+
+            <div style="background-color: #e9ecef; border-radius: 4px; padding: 14px; margin-top: 20px;">
+                <p style="margin: 0; font-size: 13px; color: #6c757d;">
+                    <strong>📧 Notificación automática</strong> - Proceso de verificación de respaldo GCS.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>`;
+  }
+
+  generateGCSBackupEmailText(isSuccess, testResults, config, error = null) {
+    const statusText = isSuccess ? 'VERIFICADO' : 'NO VERIFICADO';
+    const details = testResults?.details || {};
+    const matches = details.matches || [];
+    const recentFiles = details.recentFiles || [];
+
+    let text = `
+RESPALDO GCS ${statusText} - ${config?.appTitle || 'LibreChat AVI'}
+
+Fecha UTC objetivo: ${details.dateUTC || 'N/A'}
+Token esperado en nombre: ${details.dateToken || 'N/A'}
+Bucket: ${details.bucketName || 'N/A'}
+Carpeta: ${details.folderPrefix || 'N/A'}
+Archivos revisados: ${details.scannedCount ?? 0}
+Coincidencias: ${details.matchCount ?? 0}
+Duración: ${testResults ? this.formatDuration(testResults.duration) : 'N/A'}
+`;
+
+    if (isSuccess) {
+      text += `\nResultado: Se verificó correctamente el respaldo para la fecha UTC ${details.dateUTC || 'N/A'}.\n`;
+    } else {
+      text += `\nResultado: No se encontró archivo de respaldo para la fecha UTC ${details.dateUTC || 'N/A'}. El nombre debe contener ${details.dateToken || 'N/A'}.\n`;
+    }
+
+    if (matches.length > 0) {
+      text += `\nArchivos encontrados (máx 10):\n`;
+      matches.slice(0, 10).forEach((name) => {
+        text += `- ${name}\n`;
+      });
+    }
+
+    if (!isSuccess && recentFiles.length > 0) {
+      text += `\nÚltimos archivos observados en carpeta:\n`;
+      recentFiles.forEach((name) => {
+        text += `- ${name}\n`;
+      });
+    }
+
+    if (!isSuccess && error) {
+      text += `\nDetalle error: ${error}\n`;
+    }
+
+    text += `\n---\nNotificación automática - Verificación de respaldo GCS`;
 
     return text;
   }

@@ -1,0 +1,82 @@
+#!/bin/sh
+
+# Unified orchestrator: cleanup -> sync to GCS -> verify/email
+# Usage:
+#   sh /app/scripts/backup-chats-gcs --force --days 15
+
+set -u
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+
+# If no cleanup args are provided, keep the current retention default.
+if [ "$#" -eq 0 ]; then
+  set -- --force --days 15
+fi
+
+echo "Starting unified GCS backup flow"
+echo "Project root: $PROJECT_ROOT"
+echo "Cleanup args: $*"
+
+cleanup_failed=0
+sync_failed=0
+cleanup_exit=0
+sync_exit=0
+verify_exit=0
+
+cd "$PROJECT_ROOT" || exit 1
+
+echo "Step 1/3: Cleanup chats"
+sh "$SCRIPT_DIR/cleanup-chats.sh" "$@"
+cleanup_exit=$?
+if [ "$cleanup_exit" -ne 0 ]; then
+  cleanup_failed=1
+  echo "Cleanup failed with exit code: $cleanup_exit"
+else
+  echo "Cleanup completed"
+fi
+
+if [ "$cleanup_failed" -eq 0 ]; then
+  echo "Step 2/3: Export and upload to GCS"
+  sh "$SCRIPT_DIR/sync-chats-gcs-extended.sh"
+  sync_exit=$?
+  if [ "$sync_exit" -ne 0 ]; then
+    sync_failed=1
+    echo "Sync to GCS failed with exit code: $sync_exit"
+  else
+    echo "Sync to GCS completed"
+  fi
+else
+  echo "Step 2/3: skipped due to cleanup failure"
+fi
+
+echo "Step 3/3: Verify in GCS and send email notification"
+if [ "$cleanup_failed" -ne 0 ] || [ "$sync_failed" -ne 0 ]; then
+  reason=""
+  if [ "$cleanup_failed" -ne 0 ]; then
+    reason="cleanup (exit $cleanup_exit)"
+  fi
+  if [ "$sync_failed" -ne 0 ]; then
+    if [ -n "$reason" ]; then
+      reason="$reason; sync-gcs (exit $sync_exit)"
+    else
+      reason="sync-gcs (exit $sync_exit)"
+    fi
+  fi
+
+  BACKUP_FORCE_ERROR_MESSAGE="Previous unified flow failure: $reason" \
+    node "$PROJECT_ROOT/config/verify-gcs-chats-extended.js"
+  verify_exit=$?
+else
+  node "$PROJECT_ROOT/config/verify-gcs-chats-extended.js"
+  verify_exit=$?
+fi
+
+if [ "$cleanup_failed" -ne 0 ] || [ "$sync_failed" -ne 0 ] || [ "$verify_exit" -ne 0 ]; then
+  echo "Unified flow finished with errors"
+  echo "cleanup_failed=$cleanup_failed sync_failed=$sync_failed verify_exit=$verify_exit"
+  exit 1
+fi
+
+echo "Unified flow completed successfully"
+exit 0

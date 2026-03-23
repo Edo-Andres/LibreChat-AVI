@@ -79,6 +79,14 @@ RUN sed -i 's/\r$//' ./enviar-invitaciones.sh && chmod +x ./enviar-invitaciones.
 COPY ./config/upload-to-sheets.js ./config/upload-to-sheets.js
 COPY ./scripts/sync-chats.sh ./scripts/sync-chats.sh
 RUN sed -i 's/\r$//' ./scripts/sync-chats.sh && chmod +x ./scripts/sync-chats.sh
+# ✅ Scripts para sincronización EXTENDIDA con Google Sheets
+COPY ./config/export-all-chats-extended.js ./config/export-all-chats-extended.js
+COPY ./config/upload-to-sheets-extended.js ./config/upload-to-sheets-extended.js
+COPY ./config/upload-to-gcs-extended.js ./config/upload-to-gcs-extended.js
+COPY ./scripts/sync-chats-extended.sh ./scripts/sync-chats-extended.sh
+COPY ./scripts/sync-chats-gcs-extended.sh ./scripts/sync-chats-gcs-extended.sh
+RUN sed -i 's/\r$//' ./scripts/sync-chats-extended.sh && chmod +x ./scripts/sync-chats-extended.sh
+RUN sed -i 's/\r$//' ./scripts/sync-chats-gcs-extended.sh && chmod +x ./scripts/sync-chats-gcs-extended.sh
 # ✅ Scripts para Health Check Audit
 COPY ./config/health-check/ ./config/health-check/
 COPY ./config/services/ ./config/services/
@@ -90,6 +98,9 @@ RUN sed -i 's/\r$//' ./scripts/reload-avi-roles.sh && chmod +x ./scripts/reload-
 # ✅ Script para limpieza de chats antiguos
 COPY ./scripts/cleanup-chats.sh ./scripts/cleanup-chats.sh
 RUN sed -i 's/\r$//' ./scripts/cleanup-chats.sh && chmod +x ./scripts/cleanup-chats.sh
+# ✅ Orquestador unificado de backup chats a GCS
+COPY ./scripts/backup-chats-gcs ./scripts/backup-chats-gcs
+RUN sed -i 's/\r$//' ./scripts/backup-chats-gcs && chmod +x ./scripts/backup-chats-gcs
 
 COPY --from=data-provider-build /app/packages/data-provider/dist ./packages/data-provider/dist
 COPY --from=data-schemas-build /app/packages/data-schemas/dist ./packages/data-schemas/dist
