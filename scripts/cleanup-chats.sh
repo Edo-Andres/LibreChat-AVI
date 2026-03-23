@@ -8,11 +8,11 @@
 echo "🚀 Iniciando script de limpieza de chats..."
 
 # --- SOLUCIÓN ROBUSTA PARA DIRECTORIOS ---
-# Obtener la ruta real de donde está este script .sh
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# Obtener la ruta real de donde está este script (compatible con /bin/sh)
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 # Moverse a la raíz del proyecto (un nivel arriba de scripts/)
-cd "$SCRIPT_DIR/.."
+cd "$SCRIPT_DIR/.." || exit 1
 # ------------------------------------------
 
 JS_PATH="config/cleanup-conversations.js"
