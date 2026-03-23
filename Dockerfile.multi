@@ -98,6 +98,9 @@ RUN sed -i 's/\r$//' ./scripts/reload-avi-roles.sh && chmod +x ./scripts/reload-
 # ✅ Script para limpieza de chats antiguos
 COPY ./scripts/cleanup-chats.sh ./scripts/cleanup-chats.sh
 RUN sed -i 's/\r$//' ./scripts/cleanup-chats.sh && chmod +x ./scripts/cleanup-chats.sh
+# ✅ Orquestador unificado de backup chats a GCS
+COPY ./scripts/backup-chats-gcs ./scripts/backup-chats-gcs
+RUN sed -i 's/\r$//' ./scripts/backup-chats-gcs && chmod +x ./scripts/backup-chats-gcs
 
 COPY --from=data-provider-build /app/packages/data-provider/dist ./packages/data-provider/dist
 COPY --from=data-schemas-build /app/packages/data-schemas/dist ./packages/data-schemas/dist
