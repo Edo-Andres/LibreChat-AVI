@@ -33,3 +33,22 @@ Y de ser necesario buscar mayor info en documetos Docs_AVI/
 - Cuando sugieras comandos, usa los específicos del proyecto (ej: `npm run backend:dev` en lugar de `node server.js`).
 - Si el usuario modifica un esquema en `packages/`, recuérdale hacer el build. (si está en modo desarrollo, ya que en producción se asume que hará el build en la imagen docker antes de desplegar).
 - Si el usuario modifica `librechat.yaml`, recuérdale correr el script de recarga de roles.
+
+# Regla de Sincronización (Scripts vs Docker/NPM)
+
+Si se modifica cualquier archivo en **scripts** o **config**.
+
+### 1. Revisar `Dockerfile.multi` y hacerlo de forma consistente con el proyecto:
+* **COPY** del script/archivo nuevo o renombrado.
+* `sed -i 's/\r$//'` y `chmod +x` para scripts `.sh`.
+
+### 2. Revisar `package.json` y hacerlo de forma consistente con el proyecto:
+* Scripts `npm run` afectados existen y apuntan a rutas correctas.
+
+---
+
+### Reporte de Cierre
+Antes de cerrar la tarea, reportar explícitamente:
+* **Dockerfile.multi**: actualizado / no requerido.
+* **package.json**: actualizado / no requerido.
+* **package.json**: actualizado / no requerido.
