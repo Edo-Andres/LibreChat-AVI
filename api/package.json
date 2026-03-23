@@ -22,6 +22,7 @@
     "export-chats-extended": "node ../config/export-all-chats-extended.js csv ../api/chats_extended.csv",
     "upload-to-sheets-extended": "node ../config/upload-to-sheets-extended.js",
     "upload-to-gcs-extended": "node ../config/upload-to-gcs-extended.js",
+    "gcs-to-sheets-historial": "node ../config/gcs-to-sheets-historial.js",
     "sync-chats-extended": "npm run export-chats-extended && npm run upload-to-sheets-extended",
     "sync-chats-gcs-extended": "npm run export-chats-extended && npm run upload-to-gcs-extended",
     "test-export-extended": "node ../config/test-export-extended.js",

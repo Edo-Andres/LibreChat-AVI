@@ -83,10 +83,13 @@ RUN sed -i 's/\r$//' ./scripts/sync-chats.sh && chmod +x ./scripts/sync-chats.sh
 COPY ./config/export-all-chats-extended.js ./config/export-all-chats-extended.js
 COPY ./config/upload-to-sheets-extended.js ./config/upload-to-sheets-extended.js
 COPY ./config/upload-to-gcs-extended.js ./config/upload-to-gcs-extended.js
+COPY ./config/gcs-to-sheets-historial.js ./config/gcs-to-sheets-historial.js
 COPY ./scripts/sync-chats-extended.sh ./scripts/sync-chats-extended.sh
 COPY ./scripts/sync-chats-gcs-extended.sh ./scripts/sync-chats-gcs-extended.sh
+COPY ./scripts/gcs-to-sheets-historial.sh ./scripts/gcs-to-sheets-historial.sh
 RUN sed -i 's/\r$//' ./scripts/sync-chats-extended.sh && chmod +x ./scripts/sync-chats-extended.sh
 RUN sed -i 's/\r$//' ./scripts/sync-chats-gcs-extended.sh && chmod +x ./scripts/sync-chats-gcs-extended.sh
+RUN sed -i 's/\r$//' ./scripts/gcs-to-sheets-historial.sh && chmod +x ./scripts/gcs-to-sheets-historial.sh
 # ✅ Scripts para Health Check Audit
 COPY ./config/health-check/ ./config/health-check/
 COPY ./config/services/ ./config/services/
