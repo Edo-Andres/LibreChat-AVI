@@ -110,27 +110,76 @@ function assertCompatibleHeaders(baseHeaders, currentHeaders, fileName) {
   }
 }
 
-function parseDateToMs(dateValue) {
-  const parsed = Date.parse(dateValue);
+function parseDateToMs(value) {
+  if (value === null || value === undefined) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  const stringValue = String(value).trim();
+  if (!stringValue) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  if (/^\d+$/.test(stringValue)) {
+    const numericValue = Number(stringValue);
+    if (Number.isFinite(numericValue)) {
+      return numericValue;
+    }
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const parsed = Date.parse(stringValue);
   if (Number.isNaN(parsed)) {
     return Number.NEGATIVE_INFINITY;
   }
   return parsed;
 }
 
-function dedupeRows(rows) {
+function getRowSortMs(row, indexPriority) {
+  for (const index of indexPriority) {
+    if (index === -1) {
+      continue;
+    }
+
+    const parsed = parseDateToMs(row[index]);
+    if (parsed !== Number.NEGATIVE_INFINITY) {
+      return parsed;
+    }
+  }
+
+  return Number.NEGATIVE_INFINITY;
+}
+
+function dedupeRows(rows, headers) {
+  const conversationIdIndex = headers.indexOf('conversationId');
+  const messageIdIndex = headers.indexOf('messageId');
+  const canUseBusinessKey = conversationIdIndex !== -1 && messageIdIndex !== -1;
+
   const seen = new Set();
   const deduped = [];
 
   for (const row of rows) {
-    const key = JSON.stringify(row);
+    const conversationId = canUseBusinessKey ? String(row[conversationIdIndex] || '').trim() : '';
+    const messageId = canUseBusinessKey ? String(row[messageIdIndex] || '').trim() : '';
+
+    const key = canUseBusinessKey && conversationId && messageId
+      ? `${conversationId}::${messageId}`
+      : JSON.stringify(row);
+
     if (!seen.has(key)) {
       seen.add(key);
       deduped.push(row);
     }
   }
 
-  return deduped;
+  return {
+    rows: deduped,
+    strategy: canUseBusinessKey ? 'conversationId+messageId' : 'fila completa (fallback)',
+  };
 }
 
 async function buildMergedDataFromGCS() {
@@ -160,23 +209,36 @@ async function buildMergedDataFromGCS() {
     throw new Error('No se pudo detectar encabezado en los CSV procesados');
   }
 
-  const updatedAtIndex = baseHeaders.indexOf('conversationUpdatedAt');
-  if (updatedAtIndex === -1) {
-    throw new Error('No se encontro la columna conversationUpdatedAt en los CSV');
+  const messageEpochIndex = baseHeaders.indexOf('messageCreatedAtEpoch');
+  const messageCreatedAtIndex = baseHeaders.indexOf('messageCreatedAt');
+  const conversationUpdatedAtIndex = baseHeaders.indexOf('conversationUpdatedAt');
+
+  if (messageEpochIndex === -1 && messageCreatedAtIndex === -1 && conversationUpdatedAtIndex === -1) {
+    throw new Error('No se encontro ninguna columna de orden temporal (messageCreatedAtEpoch/messageCreatedAt/conversationUpdatedAt) en los CSV');
   }
 
   const originalCount = allRows.length;
-  const dedupedRows = dedupeRows(allRows);
+  const dedupeResult = dedupeRows(allRows, baseHeaders);
+  const dedupedRows = dedupeResult.rows;
   const removedDuplicates = originalCount - dedupedRows.length;
 
+  if (messageEpochIndex !== -1) {
+    for (const row of dedupedRows) {
+      const parsedEpoch = parseDateToMs(row[messageEpochIndex]);
+      row[messageEpochIndex] = parsedEpoch === Number.NEGATIVE_INFINITY ? '' : parsedEpoch;
+    }
+  }
+
   dedupedRows.sort((rowA, rowB) => {
-    const a = parseDateToMs(rowA[updatedAtIndex]);
-    const b = parseDateToMs(rowB[updatedAtIndex]);
+    const indexPriority = [messageEpochIndex, messageCreatedAtIndex, conversationUpdatedAtIndex];
+    const a = getRowSortMs(rowA, indexPriority);
+    const b = getRowSortMs(rowB, indexPriority);
     return b - a;
   });
 
   console.log(`Filas totales antes de dedupe: ${originalCount}`);
-  console.log(`Duplicados removidos (fila completa): ${removedDuplicates}`);
+  console.log(`Estrategia dedupe: ${dedupeResult.strategy}`);
+  console.log(`Duplicados removidos (${dedupeResult.strategy}): ${removedDuplicates}`);
   console.log(`Filas finales para Historial: ${dedupedRows.length}`);
 
   return [baseHeaders, ...dedupedRows];

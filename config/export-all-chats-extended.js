@@ -72,6 +72,15 @@ function formatDateWithTimezone(date) {
   }
 }
 
+/**
+ * Convierte fecha a epoch en milisegundos (ordenable en Sheets)
+ */
+function toEpochMs(date) {
+  if (!date) return '';
+  const epoch = new Date(date).getTime();
+  return Number.isFinite(epoch) ? epoch : '';
+}
+
 (async () => {
   await connect();
 
@@ -96,7 +105,7 @@ function formatDateWithTimezone(date) {
     const users = await User.find({})
       .populate('aviRol_id', 'name')
       .populate('aviSubrol_id', 'name')
-      .select('email name phone aviRol_id aviSubrol_id createdAt')
+      .select('email name phone aviRol_id aviSubrol_id participationConsent createdAt')
       .lean();
 
     console.orange('📂 Obteniendo conversaciones con fechas...');
@@ -121,6 +130,7 @@ function formatDateWithTimezone(date) {
         email: user.email || '',
         name: user.name || '',
         phone: user.phone || '',
+        participationConsent: Boolean(user.participationConsent),
         // ⭐ Extraer NOMBRES de los aviRoles (no ObjectId)
         aviRole: user.aviRol_id?.name || '',
         aviSubrole: user.aviSubrol_id?.name || '',
@@ -158,6 +168,7 @@ function formatDateWithTimezone(date) {
               email: user.email,
               name: user.name,
               phone: user.phone,
+              participationConsent: user.participationConsent,
               aviRole: user.aviRole,
               aviSubrole: user.aviSubrole,
               userCreatedAt: formatDateWithTimezone(user.createdAt)
@@ -174,6 +185,7 @@ function formatDateWithTimezone(date) {
             text: msg.text || extractTextFromContent(msg.content),
             isCreatedByUser: msg.isCreatedByUser || false,
             messageCreatedAt: formatDateWithTimezone(msg.createdAt),
+            messageCreatedAtEpoch: toEpochMs(msg.createdAt),
             feedback: msg.feedback || null
           }));
 
@@ -196,6 +208,7 @@ function formatDateWithTimezone(date) {
         'userEmail',
         'userName',
         'userPhone',
+        'userParticipationConsent',
         'userAviRole',
         'userAviSubrole',
         'userCreatedAt',
@@ -208,6 +221,7 @@ function formatDateWithTimezone(date) {
         'isCreatedByUser',
         'messageId',
         'messageCreatedAt',
+        'messageCreatedAtEpoch',
         'feedback'
       ].join(',');
 
@@ -229,6 +243,7 @@ function formatDateWithTimezone(date) {
             user.email,
             `"${cleanTextForCSV(user.name)}"`,
             user.phone,
+            user.participationConsent,
             user.aviRole,
             user.aviSubrole,
             formatDateWithTimezone(user.createdAt),
@@ -245,6 +260,7 @@ function formatDateWithTimezone(date) {
             msg.isCreatedByUser || false,
             msg.messageId,
             formatDateWithTimezone(msg.createdAt),
+            toEpochMs(msg.createdAt),
             
             // ⭐ FEEDBACK
             `"${serializeFeedback(msg.feedback)}"`
@@ -263,6 +279,7 @@ function formatDateWithTimezone(date) {
     console.purple('----------------------------------------------------');
     console.cyan(`👥 Total usuarios: ${users.length}`);
     console.cyan(`   - Con teléfono: ${users.filter(u => userMap[u._id.toString()].phone).length}`);
+    console.cyan(`   - Consentimiento participación: ${users.filter(u => userMap[u._id.toString()].participationConsent).length}`);
     console.cyan(`   - Con AviRole: ${users.filter(u => userMap[u._id.toString()].aviRole).length}`);
     console.cyan(`   - Con AviSubrole: ${users.filter(u => userMap[u._id.toString()].aviSubrole).length}`);
     console.cyan(`📊 Total conversaciones: ${conversations.length}`);

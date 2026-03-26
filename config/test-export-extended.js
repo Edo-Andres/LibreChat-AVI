@@ -22,11 +22,13 @@ const { User, Conversation, Message } = require('@librechat/data-schemas').creat
     
     const totalUsers = await User.countDocuments();
     const usersWithPhone = await User.countDocuments({ phone: { $exists: true, $ne: null, $ne: "" } });
+    const usersWithParticipationConsent = await User.countDocuments({ participationConsent: true });
     const usersWithAviRole = await User.countDocuments({ aviRol_id: { $exists: true, $ne: null } });
     const usersWithAviSubrole = await User.countDocuments({ aviSubrol_id: { $exists: true, $ne: null } });
     
     console.log(`Total usuarios: ${totalUsers}`);
     console.log(`  - Con teléfono: ${usersWithPhone} (${((usersWithPhone/totalUsers)*100).toFixed(1)}%)`);
+    console.log(`  - Con consentimiento: ${usersWithParticipationConsent} (${((usersWithParticipationConsent/totalUsers)*100).toFixed(1)}%)`);
     console.log(`  - Con AviRole: ${usersWithAviRole} (${((usersWithAviRole/totalUsers)*100).toFixed(1)}%)`);
     console.log(`  - Con AviSubrole: ${usersWithAviSubrole} (${((usersWithAviSubrole/totalUsers)*100).toFixed(1)}%)`);
     
@@ -34,7 +36,7 @@ const { User, Conversation, Message } = require('@librechat/data-schemas').creat
     const sampleUser = await User.findOne()
       .populate('aviRol_id', 'name')
       .populate('aviSubrol_id', 'name')
-      .select('email name phone aviRol_id aviSubrol_id createdAt')
+      .select('email name phone participationConsent aviRol_id aviSubrol_id createdAt')
       .lean();
     
     if (sampleUser) {
@@ -43,6 +45,7 @@ const { User, Conversation, Message } = require('@librechat/data-schemas').creat
         email: sampleUser.email,
         name: sampleUser.name,
         phone: sampleUser.phone || '(vacío)',
+        participationConsent: Boolean(sampleUser.participationConsent),
         aviRole: sampleUser.aviRol_id?.name || '(no asignado)',
         aviSubrole: sampleUser.aviSubrol_id?.name || '(no asignado)',
         createdAt: sampleUser.createdAt
@@ -139,22 +142,25 @@ const { User, Conversation, Message } = require('@librechat/data-schemas').creat
     if (readyForExport) {
       console.log('✅ Datos disponibles para exportación extendida');
       console.log('\n📊 Columnas que se exportarán:');
-      console.log('   1. userEmail');
-      console.log('   2. userName');
-      console.log(`   3. userPhone (${usersWithPhone} usuarios tienen teléfono)`);
-      console.log(`   4. userAviRole (${usersWithAviRole} usuarios tienen rol)`);
-      console.log(`   5. userAviSubrole (${usersWithAviSubrole} usuarios tienen subrol)`);
-      console.log('   6. userCreatedAt');
-      console.log('   7. conversationId');
-      console.log('   8. conversationTitle');
-      console.log('   9. conversationCreatedAt');
-      console.log('  10. conversationUpdatedAt');
-      console.log('  11. sender');
-      console.log('  12. text');
-      console.log('  13. isCreatedByUser');
-      console.log('  14. messageId');
-      console.log('  15. messageCreatedAt');
-      console.log(`  16. feedback (${messagesWithFeedback} mensajes tienen feedback)`);
+      console.log('   1. userId');
+      console.log('   2. userEmail');
+      console.log('   3. userName');
+      console.log(`   4. userPhone (${usersWithPhone} usuarios tienen teléfono)`);
+      console.log(`   5. userParticipationConsent (${usersWithParticipationConsent} usuarios con consentimiento)`);
+      console.log(`   6. userAviRole (${usersWithAviRole} usuarios tienen rol)`);
+      console.log(`   7. userAviSubrole (${usersWithAviSubrole} usuarios tienen subrol)`);
+      console.log('   8. userCreatedAt');
+      console.log('   9. conversationId');
+      console.log('  10. conversationTitle');
+      console.log('  11. conversationCreatedAt');
+      console.log('  12. conversationUpdatedAt');
+      console.log('  13. sender');
+      console.log('  14. text');
+      console.log('  15. isCreatedByUser');
+      console.log('  16. messageId');
+      console.log('  17. messageCreatedAt');
+      console.log('  18. messageCreatedAtEpoch (ordenable por tiempo)');
+      console.log(`  19. feedback (${messagesWithFeedback} mensajes tienen feedback)`);
       
       console.log('\n🚀 Para exportar ejecuta:');
       console.log('   npm run sync-chats-extended');
