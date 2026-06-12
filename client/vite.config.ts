@@ -3,7 +3,6 @@ import path from 'path';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vite';
 import { compression } from 'vite-plugin-compression2';
-import mkcert from 'vite-plugin-mkcert';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -31,7 +30,6 @@ export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     nodePolyfills(),
-    mkcert(),
     VitePWA({
       injectRegister: 'auto', // 'auto' | 'manual' | 'disabled'
       registerType: 'prompt', // 'prompt' | 'autoUpdate'
