@@ -3,6 +3,7 @@ import path from 'path';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vite';
 import { compression } from 'vite-plugin-compression2';
+import mkcert from 'vite-plugin-mkcert';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -30,11 +31,12 @@ export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     nodePolyfills(),
+    mkcert(),
     VitePWA({
       injectRegister: 'auto', // 'auto' | 'manual' | 'disabled'
-      registerType: 'autoUpdate', // 'prompt' | 'autoUpdate'
+      registerType: 'prompt', // 'prompt' | 'autoUpdate'
       devOptions: {
-        enabled: false, // disable service worker registration in development mode
+        enabled: true, // disable service worker registration in development mode
       },
       useCredentials: true,
       includeManifestIcons: false,
@@ -43,6 +45,7 @@ export default defineConfig(({ command }) => ({
           '**/*.{js,css,html}',
           'assets/favicon*.png',
           'assets/icon-*.png',
+          'assets/android-chrome-*.png',
           'assets/apple-touch-icon*.png',
           'assets/maskable-icon.png',
           'manifest.webmanifest',
@@ -53,8 +56,10 @@ export default defineConfig(({ command }) => ({
       },
       includeAssets: [],
       manifest: {
-        name: 'LibreChat',
-        short_name: 'LibreChat',
+        name: 'AVI',
+        short_name: 'AVI',
+        start_url: '/',
+        scope: '/',
         display: 'standalone',
         background_color: '#000000',
         theme_color: '#009688',
@@ -70,14 +75,16 @@ export default defineConfig(({ command }) => ({
             type: 'image/png',
           },
           {
-            src: 'assets/apple-touch-icon-180x180.png',
-            sizes: '180x180',
-            type: 'image/png',
-          },
-          {
             src: 'assets/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'assets/android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
           },
           {
             src: 'assets/maskable-icon.png',
