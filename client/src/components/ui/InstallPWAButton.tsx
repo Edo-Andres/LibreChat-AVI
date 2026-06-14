@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { Download, X } from 'lucide-react';
 
-const STORAGE_KEY = 'avi_pwa_install_rejected';
-const COOLDOWN_DAYS = 14;
-const DELAY_MS = 30000;
+const STORAGE_KEY = 'avi_pwa_install_rejected_v2';
+const COOLDOWN_DAYS = 1;
+const DELAY_MS = 15000;
 const MIN_NAVIGATIONS = 2;
 
 const isStandalone = () =>

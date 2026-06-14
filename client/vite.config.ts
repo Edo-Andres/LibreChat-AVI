@@ -32,7 +32,7 @@ export default defineConfig(({ command }) => ({
     nodePolyfills(),
     VitePWA({
       injectRegister: 'auto', // 'auto' | 'manual' | 'disabled'
-      registerType: 'prompt', // 'prompt' | 'autoUpdate'
+      registerType: 'autoUpdate', // 'prompt' | 'autoUpdate'
       devOptions: {
         enabled: true, // disable service worker registration in development mode
       },
