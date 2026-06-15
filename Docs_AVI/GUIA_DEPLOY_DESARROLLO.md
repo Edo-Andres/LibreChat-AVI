@@ -297,6 +297,16 @@ El script mostrará:
 ✅ Configuración actualizada exitosamente
 ```
 
+### ⚠️ Importante: Qué sincroniza y qué NO `reload-avi-roles.sh`
+
+El script sincroniza a MongoDB los campos `name`, `knowledge`, `behavior` y `registerAnswer` de roles y subroles. **No** sincroniza `initial_suggestions` ni `instructionSuggestion`.
+
+| Cambio en `librechat.yaml` | Acción requerida |
+|---|---|
+| `aviRoles` (roles/subroles: name, knowledge, behavior, registerAnswer) | `reload-avi-roles.sh -i` |
+| `conversationSuggestions.defaultInitialSuggestions` | Stop + redeploy en Dokploy (no requiere script de roles) |
+| `initial_suggestions` por rol/subrol | Directo en MongoDB (no se leen del YAML) |
+
 ---
 
 ## 📦 Comandos Principales
