@@ -132,6 +132,12 @@ const InstallPWAButton = () => {
     }
   }, [isReady, mode]);
 
+  useEffect(() => {
+    if (!showLightbox && mode === 'tutorial') {
+      setIsVisible(true);
+    }
+  }, [showLightbox, mode]);
+
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
       return;
@@ -166,7 +172,7 @@ const InstallPWAButton = () => {
             overlayClassName="bg-black/90"
           >
             <img
-              src="assets/img_avi/tutorial_install_app.png"
+              src="assets/img_avi/tutorial_install_ok.jpg"
               alt="Tutorial de instalación de AVI"
               className="h-auto max-h-[75vh] w-full rounded-lg object-contain sm:max-h-[80vh] md:max-h-[85vh]"
             />
