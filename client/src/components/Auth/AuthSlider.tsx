@@ -4,8 +4,8 @@ const slides = [
   {
     title: 'Si estás aquí es porque\nte importa cuidar',
     description: 'Niños, niñas y adolescentes nos necesitan',
-    srcDesktop: '/assets/img_avi/slide-1-inteligencia.jpg',
-    srcMobile: '/assets/img_avi/slide-1-inteligencia.jpg', // TODO: Cambiar por imagen vertical/mobile
+    srcDesktop: '/assets/img_avi/slide-1.mp4',
+    srcMobile: '/assets/img_avi/slide-1.mp4', // TODO: Cambiar por imagen vertical/mobile
   },
   {
     title: 'Tu dedicación diaria\ntransforma vidas',
@@ -90,7 +90,7 @@ export default function AuthSlider() {
       ))}
 
       {/* Overlay for readability */}
-      <div className="absolute inset-0 z-0 bg-black/50 mix-blend-multiply"></div>
+      <div className="absolute inset-0 z-0 bg-black/20 mix-blend-multiply"></div>
 
       {/* Decorative Gradients */}
       <div

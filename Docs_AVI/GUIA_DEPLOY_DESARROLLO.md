@@ -1,7 +1,7 @@
 # 🚀 Guía de Deploy y Desarrollo - LibreChat-AVI
 
 **Versión:** v0.8.0-rc4  
-**Fecha:** Octubre 2025  
+**Fecha:** Junio 2026  
 **Proyecto:** LibreChat-AVI - Asistente Virtual en Infancia
 
 ---
@@ -94,6 +94,32 @@ El archivo ya incluye:
 ### Estrategia de Ramas
 - **`master`**: Producción estable
 - **`dev`**: Desarrollo y testing
+
+### Entornos avi vs avi-dev
+
+El proyecto se despliega en **dos entornos independientes** sobre el mismo servidor Dokploy, uno por rama git.
+
+| Aspecto | **avi** (Producción) | **avi-dev** (Staging) |
+|---|---|---|
+| **Dominio** | `https://avi.corporacionccm.cl` | `https://avi-dev.corporacionccm.cl` |
+| **Rama git** | `master` | `dev` |
+| **Imagen Docker** | `ghcr.io/edo-andres/librechat-avi-api:master` | `ghcr.io/edo-andres/librechat-avi-api:dev` |
+| **Tags adicionales** | `:latest`, `:stable` (rama por defecto) | — |
+| **BDs / `.env` / `librechat.yaml`** | Independientes (`../files/`) | Independientes (`../files/`) |
+
+**Cómo se materializa la separación:**
+
+1. **CI/CD** (`.github/workflows/ci-docker-build.yml`): se dispara en push a `master` y `dev`. El tag de la imagen se genera con `type=ref,event=branch`, produciendo `:master` o `:dev` según la rama. Los tags `:latest` y `:stable` solo se publican en la rama por defecto.
+2. **Compose por rama**: `deploy-compose-dokploy.yml` referencia la imagen correspondiente en cada rama (`:master` en master, `:dev` en dev). Histórico: commit `13d42eb32`.
+3. **Apps Dokploy**: existen dos aplicaciones independientes en el servidor, cada una apuntando a su rama y consumiendo su imagen. Dominio, HTTPS y certificado Let's Encrypt se configuran **desde la UI de Dokploy (Traefik)** — no están en el repo. Cada app tiene su propio set de volúmenes `../files/`, por lo que las bases de datos están aisladas entre entornos.
+
+### Flujo de Promoción
+
+```
+feature branch → PR a dev → merge → avi-dev (staging)
+                                  ↓
+                          validación OK → PR master → merge → avi (producción)
+```
 
 ### Deploy con Dokploy
 
@@ -296,6 +322,16 @@ El script mostrará:
 
 ✅ Configuración actualizada exitosamente
 ```
+
+### ⚠️ Importante: Qué sincroniza y qué NO `reload-avi-roles.sh`
+
+El script sincroniza a MongoDB los campos `name`, `knowledge`, `behavior` y `registerAnswer` de roles y subroles. **No** sincroniza `initial_suggestions` ni `instructionSuggestion`.
+
+| Cambio en `librechat.yaml` | Acción requerida |
+|---|---|
+| `aviRoles` (roles/subroles: name, knowledge, behavior, registerAnswer) | `reload-avi-roles.sh -i` |
+| `conversationSuggestions.defaultInitialSuggestions` | Stop + redeploy en Dokploy (no requiere script de roles) |
+| `initial_suggestions` por rol/subrol | Directo en MongoDB (no se leen del YAML) |
 
 ---
 
@@ -542,9 +578,9 @@ docker-compose -f deploy-compose.yml down
 ## 📚 Documentación Relacionada
 
 ### Interna AVI
-- `Docs_AVI/AVI_ROLES_DOCUMENTATION.md` - Sistema de roles completo
-- `Docs_AVI/IMPLEMENTACION_VARIABLES_AVI.md` - Variables en prompts
-- `Docs_AVI/README_HEALTH_CHECK_AUDIT.md` - Health checks
+- `Docs_AVI/AVI_ROLES.md` - Sistema de roles completo, campos, variables y recarga dinámica
+- `Docs_AVI/OPERACIONES.md` - Backups GCS, sync Google Sheets, Health Check, invitaciones
+- `Docs_AVI/README.md` - Índice de documentación
 
 ### Oficial LibreChat
 - [Configuration Guide](https://www.librechat.ai/docs/configuration/librechat_yaml)
@@ -593,4 +629,4 @@ docker-compose -f deploy-compose-dokploy.yml logs -f api
 
 **Documentación creada para:** LibreChat-AVI v0.8.0-rc4  
 **Mantenida por:** Equipo de Desarrollo AVI  
-**Última actualización:** Octubre 2025
+**Última actualización:** Junio 2026

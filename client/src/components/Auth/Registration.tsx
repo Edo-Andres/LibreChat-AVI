@@ -467,6 +467,22 @@ const Registration: React.FC = () => {
                     )}
                   </div>
 
+                  {/* Participation Consent Checkbox */}
+                  <div className="flex items-start space-x-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
+                    <input
+                      id="participationConsent"
+                      type="checkbox"
+                      {...register('participationConsent')}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
+                    <label
+                      htmlFor="participationConsent"
+                      className="text-sm text-gray-600 dark:text-gray-300"
+                    >
+                      Acepto ser contactado/a para participar en estudios o evaluaciones relacionadas con el uso de AVI.
+                    </label>
+                  </div>
+
                   {/* Turnstile Captcha */}
                   {startupConfig?.turnstile?.siteKey && (
                     <div className="flex justify-center">

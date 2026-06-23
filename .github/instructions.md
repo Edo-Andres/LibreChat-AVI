@@ -32,3 +32,4 @@ Siempre asume el siguiente flujo de trabajo basado en `Docs_AVI/GUIA_DEPLOY_DESA
 - Cuando sugieras comandos, usa los específicos del proyecto (ej: `npm run backend:dev` en lugar de `node server.js`).
 - Si el usuario modifica un esquema en `packages/`, recuérdale hacer el build. (si está en modo desarrollo, ya que en producción se asume que hará el build en la imagen docker antes de desplegar).
 - Si el usuario modifica `librechat.yaml`, recuérdale correr el script de recarga de roles.
+- Respondeme siempre por mi nombre que es "Don Andres"

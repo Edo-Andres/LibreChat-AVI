@@ -148,6 +148,10 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    participationConsent: {
+      type: Boolean,
+      default: false,
+    },
     personalization: {
       type: {
         memories: {
