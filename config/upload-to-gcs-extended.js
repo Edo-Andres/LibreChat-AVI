@@ -3,9 +3,17 @@ const path = require('path');
 const { Storage } = require('@google-cloud/storage');
 require('dotenv').config();
 
-// ⭐ CONFIGURACIÓN GCS
-const BUCKET_NAME = 'avi-bkt';
-const BUCKET_PATH = 'chats/'; // Carpeta dentro del bucket
+// ⭐ CONFIGURACIÓN GCS (leída de variables de entorno, fallback a defaults)
+const BUCKET_NAME = process.env.GCS_BUCKET_NAME || 'avi-bkt';
+
+function normalizeBucketPath(bucketPath) {
+  if (!bucketPath) {
+    return '';
+  }
+  return bucketPath.endsWith('/') ? bucketPath : `${bucketPath}/`;
+}
+
+const BUCKET_PATH = normalizeBucketPath(process.env.GCS_BUCKET_PATH || 'chats/');
 const CSV_FILE = path.join(__dirname, '..', 'api', 'chats_extended.csv');
 
 /**

@@ -33,7 +33,7 @@ if [ "$RUN_MODE" = "container" ]; then
   echo "Paso 1/2: Exportando chats extendidos..."
   npm run export-chats-extended
 
-  echo "Paso 2/2: Subiendo a GCS (avi-bkt/chats/)..."
+  echo "Paso 2/2: Subiendo a GCS..."
   npm run upload-to-gcs-extended
 else
   # En local, ejecutar desde raiz para que dotenv tome .env del proyecto.
@@ -42,7 +42,7 @@ else
   echo "Paso 1/2: Exportando chats extendidos..."
   node config/export-all-chats-extended.js csv api/chats_extended.csv
 
-  echo "Paso 2/2: Subiendo a GCS (avi-bkt/chats/)..."
+  echo "Paso 2/2: Subiendo a GCS..."
   node config/upload-to-gcs-extended.js
 fi
 
