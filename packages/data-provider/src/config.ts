@@ -805,39 +805,47 @@ export type TMemoryConfig = z.infer<typeof memorySchema>;
 const customEndpointsSchema = z.array(endpointSchema.partial()).optional();
 
 // Schema para AVI Roles dinámico
-const aviRolesSchema = z.object({
-  roles: z.array(
-    z.object({
-      name: z.string(),
-      knowledge: z.string().optional(),
-      behavior: z.string().optional(),
-      registerAnswer: z.string().optional(),
-      subroles: z.array(
-        z.union([
-          z.string(),
-          z.object({
-            name: z.string(),
-            knowledge: z.string().optional(),
-            behavior: z.string().optional(),
-            registerAnswer: z.string().optional(),
-          })
-        ])
-      ).optional(),
-    })
-  ),
-  migrations: z.object({
-    roles: z.record(z.string()).optional(),
-    subroles: z.record(z.string().nullable()).optional(),
-    defaultRoleForOrphans: z.string().optional(),
-  }).optional(),
-}).optional();
+const aviRolesSchema = z
+  .object({
+    roles: z.array(
+      z.object({
+        name: z.string(),
+        knowledge: z.string().optional(),
+        behavior: z.string().optional(),
+        registerAnswer: z.string().optional(),
+        subroles: z
+          .array(
+            z.union([
+              z.string(),
+              z.object({
+                name: z.string(),
+                knowledge: z.string().optional(),
+                behavior: z.string().optional(),
+                registerAnswer: z.string().optional(),
+              }),
+            ]),
+          )
+          .optional(),
+      }),
+    ),
+    migrations: z
+      .object({
+        roles: z.record(z.string()).optional(),
+        subroles: z.record(z.string().nullable()).optional(),
+        defaultRoleForOrphans: z.string().optional(),
+      })
+      .optional(),
+  })
+  .optional();
 
 // Schema para conversationSuggestions
-const conversationSuggestionsSchema = z.object({
-  enabled: z.boolean().default(true),
-  defaultInitialSuggestions: z.array(z.string()).max(4).default([]),
-  fastModel: z.string().default('gemini-1.5-flash'),
-}).optional();
+const conversationSuggestionsSchema = z
+  .object({
+    enabled: z.boolean().default(true),
+    defaultInitialSuggestions: z.array(z.string()).max(4).default([]),
+    fastModel: z.string().default('gemini-1.5-flash'),
+  })
+  .optional();
 
 export const configSchema = z.object({
   version: z.string(),

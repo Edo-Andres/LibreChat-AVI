@@ -98,10 +98,10 @@ const MessageRender = memo(
       () =>
         showCardRender && !isLatestMessage
           ? () => {
-            logger.log(`Message Card click: Setting ${msg?.messageId} as latest message`);
-            logger.dir(msg);
-            setLatestMessage(msg!);
-          }
+              logger.log(`Message Card click: Setting ${msg?.messageId} as latest message`);
+              logger.dir(msg);
+              setLatestMessage(msg!);
+            }
           : undefined,
       [showCardRender, isLatestMessage, msg, setLatestMessage],
     );
@@ -150,14 +150,18 @@ const MessageRender = memo(
           <div className="absolute right-0 top-0 m-2 h-3 w-3 rounded-full bg-text-primary" />
         )}
 
-        <div className={cn(
-          "relative flex flex-shrink-0 flex-col items-center",
-          msg.isCreatedByUser ? 'ml-3' : 'mr-3'
-        )}>
-          <div className={cn(
-            "flex h-6 w-6 items-center justify-center overflow-hidden rounded-full",
-            msg.isCreatedByUser ? 'bg-gradient-to-br from-chat-user-light to-chat-user-dark' : ''
-          )}>
+        <div
+          className={cn(
+            'relative flex flex-shrink-0 flex-col items-center',
+            msg.isCreatedByUser ? 'ml-3' : 'mr-3',
+          )}
+        >
+          <div
+            className={cn(
+              'flex h-6 w-6 items-center justify-center overflow-hidden rounded-full',
+              msg.isCreatedByUser ? 'bg-gradient-to-br from-chat-user-light to-chat-user-dark' : '',
+            )}
+          >
             <MessageIcon iconData={iconData} assistant={assistant} agent={agent} />
           </div>
         </div>
@@ -169,13 +173,19 @@ const MessageRender = memo(
             msg.isCreatedByUser ? 'user-turn' : 'agent-turn',
           )}
         >
-          <h2 className={cn('select-none font-semibold text-right mr-2', fontSize)}>{messageLabel}</h2>
+          <h2 className={cn('mr-2 select-none text-right font-semibold', fontSize)}>
+            {messageLabel}
+          </h2>
 
           <div className="flex flex-col gap-1">
-            <div className={cn(
-              "flex max-w-full flex-grow flex-col gap-0",
-              msg.isCreatedByUser ? 'rounded-tl-3xl rounded-bl-3xl rounded-br-3xl bg-gradient-to-br from-chat-user-light to-chat-user-dark p-6 shadow-lg' : ''
-            )}>
+            <div
+              className={cn(
+                'flex max-w-full flex-grow flex-col gap-0',
+                msg.isCreatedByUser
+                  ? 'rounded-bl-3xl rounded-br-3xl rounded-tl-3xl bg-gradient-to-br from-chat-user-light to-chat-user-dark p-6 shadow-lg'
+                  : '',
+              )}
+            >
               <MessageContext.Provider
                 value={{
                   messageId: msg.messageId,

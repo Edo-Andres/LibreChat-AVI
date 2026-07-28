@@ -48,8 +48,8 @@ export const CustomMenu = React.forwardRef<HTMLDivElement, CustomMenuProps>(func
             'flex h-10 w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm text-text-primary',
           menuStore.useState('open')
             ? 'bg-surface-tertiary hover:bg-surface-tertiary'
-            // : 'bg-surface-secondary hover:bg-surface-tertiary',
-            : '',
+            : // : 'bg-surface-secondary hover:bg-surface-tertiary',
+              '',
           props.className,
         )}
         render={parent ? <CustomMenuItem render={trigger} /> : trigger}

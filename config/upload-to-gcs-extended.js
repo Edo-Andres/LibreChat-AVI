@@ -55,11 +55,11 @@ function validateCSVExists() {
   if (!fs.existsSync(CSV_FILE)) {
     throw new Error(`❌ Archivo no encontrado: ${CSV_FILE}`);
   }
-  
+
   const stats = fs.statSync(CSV_FILE);
   const sizeKB = (stats.size / 1024).toFixed(2);
   console.log(`📊 Archivo encontrado: ${sizeKB} KB`);
-  
+
   return stats;
 }
 
@@ -70,12 +70,12 @@ async function uploadToGCS() {
   try {
     const storage = getGCSClient();
     const stats = validateCSVExists();
-    
+
     const fileName = generateFileName();
     const destination = `${BUCKET_PATH}${fileName}`;
-    
+
     console.log(`📤 Subiendo a GCS: gs://${BUCKET_NAME}/${destination}`);
-    
+
     await storage.bucket(BUCKET_NAME).upload(CSV_FILE, {
       destination: destination,
       metadata: {
@@ -83,17 +83,16 @@ async function uploadToGCS() {
         metadata: {
           uploadedAt: new Date().toISOString(),
           source: 'LibreChat-AVI',
-          exportType: 'extended'
-        }
-      }
+          exportType: 'extended',
+        },
+      },
     });
 
     console.log(`✅ Archivo subido exitosamente!`);
     console.log(`   📍 Ubicación: gs://${BUCKET_NAME}/${destination}`);
     console.log(`   📏 Tamaño: ${(stats.size / 1024).toFixed(2)} KB`);
-    
-    return { bucket: BUCKET_NAME, path: destination, size: stats.size };
 
+    return { bucket: BUCKET_NAME, path: destination, size: stats.size };
   } catch (error) {
     throw new Error(`❌ Error subiendo a GCS: ${error.message}`);
   }
@@ -130,13 +129,12 @@ async function main() {
 
     console.log('✅ Proceso completado exitosamente!');
     process.exit(0);
-
   } catch (error) {
     console.error('❌ Error en el proceso:', error.message);
-    
+
     // Si falla, NO eliminar el archivo para debug
     console.warn('⚠️ Archivo local preservado para debugging');
-    
+
     process.exit(1);
   }
 }

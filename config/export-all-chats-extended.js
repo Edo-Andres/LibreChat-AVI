@@ -12,8 +12,8 @@ const connect = require('./connect');
 function extractTextFromContent(content) {
   if (!content || !Array.isArray(content)) return '';
   return content
-    .filter(item => item.type === 'text')
-    .map(item => item.text)
+    .filter((item) => item.type === 'text')
+    .map((item) => item.text)
     .join(' ');
 }
 
@@ -22,11 +22,7 @@ function extractTextFromContent(content) {
  */
 function cleanTextForCSV(text) {
   if (!text) return '';
-  return text
-    .replace(/\n/g, ' ')
-    .replace(/\r/g, ' ')
-    .replace(/"/g, '""')
-    .trim();
+  return text.replace(/\n/g, ' ').replace(/\r/g, ' ').replace(/"/g, '""').trim();
 }
 
 /**
@@ -57,15 +53,19 @@ function formatDateWithTimezone(date) {
   const timezone = process.env.TZ || 'America/Santiago';
 
   try {
-    return new Date(date).toLocaleString('sv-SE', {
-      timeZone: timezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }).replace(' ', 'T') + '.000Z';
+    return (
+      new Date(date)
+        .toLocaleString('sv-SE', {
+          timeZone: timezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        })
+        .replace(' ', 'T') + '.000Z'
+    );
   } catch (error) {
     console.warn(`⚠️ Error convirtiendo fecha a ${timezone}, usando UTC:`, error.message);
     return new Date(date).toISOString();
@@ -120,11 +120,13 @@ function toEpochMs(date) {
       .sort({ createdAt: 1 })
       .lean();
 
-    console.green(`✅ ${users.length} usuarios, ${conversations.length} conversaciones, ${messages.length} mensajes`);
+    console.green(
+      `✅ ${users.length} usuarios, ${conversations.length} conversaciones, ${messages.length} mensajes`,
+    );
 
     // Crear mapa de usuarios con TODOS los campos requeridos
     const userMap = {};
-    users.forEach(user => {
+    users.forEach((user) => {
       userMap[user._id.toString()] = {
         userId: user._id.toString(),
         email: user.email || '',
@@ -134,14 +136,15 @@ function toEpochMs(date) {
         // ⭐ Extraer NOMBRES de los aviRoles (no ObjectId)
         aviRole: user.aviRol_id?.name || '',
         aviSubrole: user.aviSubrol_id?.name || '',
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
       };
     });
 
     // Determinar archivo de salida
     if (!outputFile) {
       const timestamp = new Date().toISOString().slice(0, 10);
-      outputFile = format === 'csv' ? 'chats_extended.csv' : `chats_extended_${timestamp}.${format}`;
+      outputFile =
+        format === 'csv' ? 'chats_extended.csv' : `chats_extended_${timestamp}.${format}`;
     }
 
     console.orange('📝 Generando exportación extendida...');
@@ -153,10 +156,10 @@ function toEpochMs(date) {
         totalUsers: users.length,
         totalConversations: conversations.length,
         totalMessages: messages.length,
-        users: {}
+        users: {},
       };
 
-      conversations.forEach(conv => {
+      conversations.forEach((conv) => {
         const user = userMap[conv.user];
         if (!user) return;
 
@@ -171,22 +174,22 @@ function toEpochMs(date) {
               participationConsent: user.participationConsent,
               aviRole: user.aviRole,
               aviSubrole: user.aviSubrole,
-              userCreatedAt: formatDateWithTimezone(user.createdAt)
+              userCreatedAt: formatDateWithTimezone(user.createdAt),
             },
-            conversations: []
+            conversations: [],
           };
         }
 
         const convMessages = messages
-          .filter(msg => msg.conversationId === conv.conversationId)
-          .map(msg => ({
+          .filter((msg) => msg.conversationId === conv.conversationId)
+          .map((msg) => ({
             messageId: msg.messageId,
             sender: msg.sender || '',
             text: msg.text || extractTextFromContent(msg.content),
             isCreatedByUser: msg.isCreatedByUser || false,
             messageCreatedAt: formatDateWithTimezone(msg.createdAt),
             messageCreatedAtEpoch: toEpochMs(msg.createdAt),
-            feedback: msg.feedback || null
+            feedback: msg.feedback || null,
           }));
 
         result.users[userEmail].conversations.push({
@@ -195,12 +198,11 @@ function toEpochMs(date) {
           conversationCreatedAt: formatDateWithTimezone(conv.createdAt),
           conversationUpdatedAt: formatDateWithTimezone(conv.updatedAt),
           messageCount: convMessages.length,
-          messages: convMessages
+          messages: convMessages,
         });
       });
 
       fs.writeFileSync(outputFile, JSON.stringify(result, null, 2), 'utf8');
-
     } else {
       // ⭐ Generar CSV con TODAS LAS COLUMNAS NUEVAS
       const header = [
@@ -222,18 +224,18 @@ function toEpochMs(date) {
         'messageId',
         'messageCreatedAt',
         'messageCreatedAtEpoch',
-        'feedback'
+        'feedback',
       ].join(',');
 
       const lines = [header];
 
-      conversations.forEach(conv => {
+      conversations.forEach((conv) => {
         const user = userMap[conv.user];
         if (!user) return;
 
-        const convMessages = messages.filter(msg => msg.conversationId === conv.conversationId);
+        const convMessages = messages.filter((msg) => msg.conversationId === conv.conversationId);
 
-        convMessages.forEach(msg => {
+        convMessages.forEach((msg) => {
           let text = msg.text || extractTextFromContent(msg.content);
           text = cleanTextForCSV(text);
 
@@ -247,13 +249,13 @@ function toEpochMs(date) {
             user.aviRole,
             user.aviSubrole,
             formatDateWithTimezone(user.createdAt),
-            
+
             // ⭐ DATOS DE CONVERSACIÓN
             conv.conversationId,
             `"${cleanTextForCSV(conv.title || 'Sin título')}"`,
             formatDateWithTimezone(conv.createdAt),
             formatDateWithTimezone(conv.updatedAt),
-            
+
             // DATOS DE MENSAJE
             msg.sender || '',
             `"${text}"`,
@@ -261,11 +263,11 @@ function toEpochMs(date) {
             msg.messageId,
             formatDateWithTimezone(msg.createdAt),
             toEpochMs(msg.createdAt),
-            
+
             // ⭐ FEEDBACK
-            `"${serializeFeedback(msg.feedback)}"`
+            `"${serializeFeedback(msg.feedback)}"`,
           ];
-          
+
           lines.push(row.join(','));
         });
       });
@@ -278,20 +280,27 @@ function toEpochMs(date) {
     console.green('✅ ¡Exportación extendida completada!');
     console.purple('----------------------------------------------------');
     console.cyan(`👥 Total usuarios: ${users.length}`);
-    console.cyan(`   - Con teléfono: ${users.filter(u => userMap[u._id.toString()].phone).length}`);
-    console.cyan(`   - Consentimiento participación: ${users.filter(u => userMap[u._id.toString()].participationConsent).length}`);
-    console.cyan(`   - Con AviRole: ${users.filter(u => userMap[u._id.toString()].aviRole).length}`);
-    console.cyan(`   - Con AviSubrole: ${users.filter(u => userMap[u._id.toString()].aviSubrole).length}`);
+    console.cyan(
+      `   - Con teléfono: ${users.filter((u) => userMap[u._id.toString()].phone).length}`,
+    );
+    console.cyan(
+      `   - Consentimiento participación: ${users.filter((u) => userMap[u._id.toString()].participationConsent).length}`,
+    );
+    console.cyan(
+      `   - Con AviRole: ${users.filter((u) => userMap[u._id.toString()].aviRole).length}`,
+    );
+    console.cyan(
+      `   - Con AviSubrole: ${users.filter((u) => userMap[u._id.toString()].aviSubrole).length}`,
+    );
     console.cyan(`📊 Total conversaciones: ${conversations.length}`);
     console.cyan(`💬 Total mensajes: ${messages.length}`);
-    console.cyan(`   - Con feedback: ${messages.filter(m => m.feedback).length}`);
+    console.cyan(`   - Con feedback: ${messages.filter((m) => m.feedback).length}`);
     console.cyan(`📁 Formato: ${format.toUpperCase()}`);
     console.cyan(`💾 Archivo: ${outputFile}`);
     console.cyan(`📅 Fecha: ${new Date().toLocaleString()}`);
     console.purple('----------------------------------------------------');
 
     silentExit(0);
-
   } catch (error) {
     console.red('❌ Error durante la exportación:');
     console.red(error.message);

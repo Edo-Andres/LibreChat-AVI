@@ -13,14 +13,17 @@ const InitialSuggestions = ({ show }: InitialSuggestionsProps) => {
   const { submitMessage } = useSubmitMessage();
 
   // Handle suggestion click - submit and blur
-  const handleSuggestionClick = useCallback((text: string) => {
-    submitMessage({ text });
-    // Blur the textarea to trigger hiding suggestions immediately
-    const textarea = document.getElementById('text-input');
-    if (textarea) {
-      (textarea as HTMLTextAreaElement).blur();
-    }
-  }, [submitMessage]);
+  const handleSuggestionClick = useCallback(
+    (text: string) => {
+      submitMessage({ text });
+      // Blur the textarea to trigger hiding suggestions immediately
+      const textarea = document.getElementById('text-input');
+      if (textarea) {
+        (textarea as HTMLTextAreaElement).blur();
+      }
+    },
+    [submitMessage],
+  );
 
   // Fetch initial suggestions from API
   const { data: suggestionData } = useQuery(
@@ -35,9 +38,7 @@ const InitialSuggestions = ({ show }: InitialSuggestionsProps) => {
 
   // Use API suggestions first, fallback to config defaults
   const suggestions =
-    suggestionData?.suggestions ||
-    config?.conversationSuggestions?.defaultInitialSuggestions ||
-    [];
+    suggestionData?.suggestions || config?.conversationSuggestions?.defaultInitialSuggestions || [];
 
   // Always render container for smooth transitions, but hide when not needed
   const hasSuggestions = suggestions.length > 0;
@@ -46,8 +47,8 @@ const InitialSuggestions = ({ show }: InitialSuggestionsProps) => {
     <div
       className={`px-4 transition-all duration-300 ease-in-out ${
         show && hasSuggestions
-          ? 'max-h-96 opacity-100 pb-3 pt-2'
-          : 'max-h-0 opacity-0 overflow-hidden pb-0 pt-0'
+          ? 'max-h-96 pb-3 pt-2 opacity-100'
+          : 'max-h-0 overflow-hidden pb-0 pt-0 opacity-0'
       }`}
     >
       <h3 className="mb-2 text-xs font-medium text-text-secondary">Sugerencias</h3>
@@ -56,7 +57,7 @@ const InitialSuggestions = ({ show }: InitialSuggestionsProps) => {
           <button
             key={index}
             onClick={() => handleSuggestionClick(text)}
-            className="rounded-tl-2xl rounded-bl-2xl rounded-br-2xl bg-gradient-to-br from-chat-user-light to-chat-user-dark px-3 py-2 text-left text-sm text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1 animate-in fade-in slide-in-from-bottom-2"
+            className="rounded-bl-2xl rounded-br-2xl rounded-tl-2xl bg-gradient-to-br from-chat-user-light to-chat-user-dark px-3 py-2 text-left text-sm text-white transition-opacity animate-in fade-in slide-in-from-bottom-2 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <span className="line-clamp-2">{text}</span>

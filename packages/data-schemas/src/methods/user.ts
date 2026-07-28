@@ -297,7 +297,7 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
       throw new Error('AVI Role not found');
     }
 
-    let updateData: any = { aviRol_id: aviRolId };
+    const updateData: any = { aviRol_id: aviRolId };
 
     // If subrol is provided, validate it belongs to the role
     if (aviSubrolId) {
@@ -316,11 +316,10 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
       updateData.aviSubrol_id = null;
     }
 
-    return await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true, lean: true }
-    ) as IUser | null;
+    return (await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      lean: true,
+    })) as IUser | null;
   }
 
   /**
@@ -328,10 +327,10 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
    */
   async function getUserWithAviRoles(userId: string): Promise<IUser | null> {
     const User = mongoose.models.User;
-    return await User.findById(userId)
+    return (await User.findById(userId)
       .populate('aviRol_id', 'name knowledge behavior registerAnswer')
       .populate('aviSubrol_id', 'name knowledge behavior registerAnswer')
-      .lean() as IUser | null;
+      .lean()) as IUser | null;
   }
 
   /**
@@ -339,16 +338,16 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
    */
   async function removeUserAviRoles(userId: string): Promise<IUser | null> {
     const User = mongoose.models.User;
-    return await User.findByIdAndUpdate(
+    return (await User.findByIdAndUpdate(
       userId,
-      { 
-        $unset: { 
-          aviRol_id: 1, 
-          aviSubrol_id: 1 
-        } 
+      {
+        $unset: {
+          aviRol_id: 1,
+          aviSubrol_id: 1,
+        },
       },
-      { new: true, lean: true }
-    ) as IUser | null;
+      { new: true, lean: true },
+    )) as IUser | null;
   }
 
   /**
@@ -365,10 +364,12 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
   /**
    * Validate user's subrol belongs to their role
    */
-  async function validateUserAviRoles(userId: string): Promise<{ isValid: boolean; error?: string }> {
+  async function validateUserAviRoles(
+    userId: string,
+  ): Promise<{ isValid: boolean; error?: string }> {
     const User = mongoose.models.User;
-    const user = await User.findById(userId).lean() as any;
-    
+    const user = (await User.findById(userId).lean()) as any;
+
     if (!user) {
       return { isValid: false, error: 'User not found' };
     }
@@ -392,13 +393,13 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
     if (user.aviRol_id && user.aviSubrol_id) {
       const AviSubrol = mongoose.models.AviSubrol;
       const subrol = await AviSubrol.findById(user.aviSubrol_id);
-      
+
       if (!subrol) {
         return { isValid: false, error: 'Invalid subrol reference' };
       }
 
       if (subrol.parentRolId.toString() !== user.aviRol_id.toString()) {
-        return { isValid: false, error: 'Subrol does not belong to user\'s role' };
+        return { isValid: false, error: "Subrol does not belong to user's role" };
       }
     }
 

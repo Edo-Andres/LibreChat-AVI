@@ -77,10 +77,13 @@ export const PostHogProvider = ({ children }: ProviderProps) => {
     };
   }, []);
 
-  const contextValue = useMemo(() => ({
-    posthog: config?.posthogKey ? posthog : null,
-    isLoaded,
-  }), [config, isLoaded]);
+  const contextValue = useMemo(
+    () => ({
+      posthog: config?.posthogKey ? posthog : null,
+      isLoaded,
+    }),
+    [config, isLoaded],
+  );
 
   if (config?.posthogKey) {
     return (

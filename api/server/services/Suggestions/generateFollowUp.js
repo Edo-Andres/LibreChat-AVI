@@ -27,20 +27,22 @@ async function generateFollowUpSuggestions(conversationId, userId, messageCount 
 
     // Get last N messages
     const recentMessages = messages.slice(-messageCount);
-    
+
     logger.info(`[Follow-up Suggestions] Recent messages (last ${messageCount}):`);
     recentMessages.forEach((msg, index) => {
       const hasText = !!msg.text;
       const hasContent = msg.content && Array.isArray(msg.content) && msg.content.length > 0;
-      const contentTypes = hasContent ? msg.content.map(c => c.type).join(', ') : 'none';
-      
+      const contentTypes = hasContent ? msg.content.map((c) => c.type).join(', ') : 'none';
+
       logger.info(`  [${index}] isCreatedByUser: ${msg.isCreatedByUser}, sender: ${msg.sender}`);
-      logger.info(`        hasText: ${hasText}, hasContent: ${hasContent}, contentTypes: [${contentTypes}]`);
-      
+      logger.info(
+        `        hasText: ${hasText}, hasContent: ${hasContent}, contentTypes: [${contentTypes}]`,
+      );
+
       if (hasText) {
         logger.info(`        textPreview: "${msg.text?.substring(0, 80)}..."`);
       } else if (hasContent) {
-        const textContent = msg.content.find(c => c.type === 'text');
+        const textContent = msg.content.find((c) => c.type === 'text');
         if (textContent?.text) {
           logger.info(`        contentTextPreview: "${textContent.text.substring(0, 80)}..."`);
         }
@@ -51,24 +53,24 @@ async function generateFollowUpSuggestions(conversationId, userId, messageCount 
     const conversationContext = recentMessages
       .map((msg) => {
         const role = msg.isCreatedByUser ? 'Usuario' : 'Asistente';
-        
+
         // Extract text content - prioritize msg.text, but fall back to content array
         let messageText = msg.text || '';
-        
+
         // If text is empty but content array exists (for agents/assistants)
         if (!messageText && msg.content && Array.isArray(msg.content)) {
           // Extract text from content array (filter out 'think' type, keep 'text' type)
           const textParts = msg.content
-            .filter(part => part.type === 'text' && part.text)
-            .map(part => part.text);
-          
+            .filter((part) => part.type === 'text' && part.text)
+            .map((part) => part.text);
+
           messageText = textParts.join('\n');
         }
-        
+
         return `${role}: ${messageText}`;
       })
       .join('\n');
-    
+
     logger.info('[Follow-up Suggestions] Formatted conversation context:');
     logger.info('--- CONTEXT START ---');
     logger.info(conversationContext);
@@ -91,7 +93,7 @@ async function generateFollowUpSuggestions(conversationId, userId, messageCount 
 
     // 4. Call LLM to generate suggestions
     const suggestions = await callLLMForSuggestions(conversationContext, fastModel);
-    
+
     logger.info(`[Follow-up Suggestions] Generated ${suggestions.length} suggestions`);
     logger.info('[Follow-up Suggestions] Suggestions:', JSON.stringify(suggestions));
     logger.info('=== [Follow-up Suggestions] DEBUG END ===');
@@ -115,7 +117,9 @@ async function callLLMForSuggestions(conversationContext, model) {
     const apiKey = process.env.GOOGLE_API_KEY || process.env.GOOGLE_KEY;
 
     if (!apiKey) {
-      logger.warn('[Follow-up Suggestions] Google API key not configured, returning empty suggestions');
+      logger.warn(
+        '[Follow-up Suggestions] Google API key not configured, returning empty suggestions',
+      );
       return [];
     }
 
@@ -187,7 +191,10 @@ Genera el JSON array con las 3 sugerencias:`;
 function parseJSONSuggestions(text) {
   try {
     // Remove markdown code blocks if present
-    let cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    let cleaned = text
+      .replace(/```json\s*/g, '')
+      .replace(/```\s*/g, '')
+      .trim();
 
     // Try to find JSON array in the text
     const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
@@ -198,7 +205,7 @@ function parseJSONSuggestions(text) {
     const parsed = JSON.parse(cleaned);
 
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed.filter(s => typeof s === 'string' && s.trim().length > 0);
+      return parsed.filter((s) => typeof s === 'string' && s.trim().length > 0);
     }
 
     logger.warn('[Follow-up Suggestions] Parsed response is not a valid array');

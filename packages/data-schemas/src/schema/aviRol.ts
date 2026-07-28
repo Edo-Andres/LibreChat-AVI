@@ -32,8 +32,8 @@ const aviRolSchema: Schema<IAviRol> = new Schema(
           validator: function (v: string[]) {
             return v.length <= 4;
           },
-          message: 'Maximum 4 initial suggestions allowed'
-        }
+          message: 'Maximum 4 initial suggestions allowed',
+        },
       ],
     },
     registerAnswer: {

@@ -202,7 +202,10 @@ const InstallPWAButton = () => {
           <div className="mt-4 flex items-center gap-3">
             <button
               type="button"
-              onClick={() => { setShowLightbox(true); setIsVisible(false); }}
+              onClick={() => {
+                setShowLightbox(true);
+                setIsVisible(false);
+              }}
               className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-95"
             >
               <Eye className="h-4 w-4" />

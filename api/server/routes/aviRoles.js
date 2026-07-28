@@ -26,7 +26,7 @@ router.get('/:roleId/subroles', async (req, res) => {
   try {
     const { getAviSubrolesByParentId } = require('~/models');
     const { roleId } = req.params;
-    
+
     const aviSubroles = await getAviSubrolesByParentId(roleId);
     res.status(200).json(aviSubroles);
   } catch (error) {

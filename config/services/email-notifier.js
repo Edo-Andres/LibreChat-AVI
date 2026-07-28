@@ -14,8 +14,8 @@ class EmailNotifier {
       secure: process.env.EMAIL_ENCRYPTION === 'ssl', // true para SSL, false para STARTTLS
       auth: {
         user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD
-      }
+        pass: process.env.EMAIL_PASSWORD,
+      },
     };
 
     // Para Gmail, usar configuración específica si es necesario
@@ -26,7 +26,7 @@ class EmailNotifier {
     // Permitir certificados autofirmados si está configurado
     if (process.env.EMAIL_ALLOW_SELFSIGNED === 'true') {
       emailConfig.tls = {
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
       };
     }
 
@@ -35,16 +35,16 @@ class EmailNotifier {
 
   async sendNotification(emailData, customRecipients = null) {
     const { subject, isSuccess, testResults, config, error, notificationType } = emailData;
-    
+
     // Usar destinatarios personalizados si se proporcionan, sino usar el valor por defecto
     const recipients = customRecipients || config.adminEmail;
-    
+
     const mailOptions = {
       from: `"${process.env.EMAIL_FROM_NAME || 'LibreChat Health Check'}" <${process.env.EMAIL_FROM}>`,
       to: recipients,
       subject: subject,
       html: this.generateEmailHTML(isSuccess, testResults, config, error, notificationType),
-      text: this.generateEmailText(isSuccess, testResults, config, error, notificationType)
+      text: this.generateEmailText(isSuccess, testResults, config, error, notificationType),
     };
 
     try {
@@ -58,7 +58,13 @@ class EmailNotifier {
     }
   }
 
-  generateEmailHTML(isSuccess, testResults, config, error = null, notificationType = 'health-check') {
+  generateEmailHTML(
+    isSuccess,
+    testResults,
+    config,
+    error = null,
+    notificationType = 'health-check',
+  ) {
     if (notificationType === 'gcs-backup-verify') {
       return this.generateGCSBackupEmailHTML(isSuccess, testResults, config, error);
     }
@@ -66,7 +72,7 @@ class EmailNotifier {
     const statusIcon = isSuccess ? '✅' : '❌';
     const statusText = isSuccess ? 'EXITOSO' : 'FALLIDO';
     const statusColor = isSuccess ? '#28a745' : '#dc3545';
-    
+
     const timestamp = new Date().toLocaleString('es-ES', {
       timeZone: 'America/Santiago',
       year: 'numeric',
@@ -74,7 +80,7 @@ class EmailNotifier {
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     });
 
     let stepsHTML = '';
@@ -94,7 +100,7 @@ class EmailNotifier {
     if (!isSuccess && error) {
       const detectedPattern = testResults?.details?.detectedErrorPattern || 'no específico';
       const fullResponseContent = testResults?.details?.fullResponseContent || 'No disponible';
-      
+
       errorHTML = `
         <h3>❌ Detalles del Error:</h3>
         <ul style="line-height: 1.6;">
@@ -145,14 +151,20 @@ class EmailNotifier {
     </html>`;
   }
 
-  generateEmailText(isSuccess, testResults, config, error = null, notificationType = 'health-check') {
+  generateEmailText(
+    isSuccess,
+    testResults,
+    config,
+    error = null,
+    notificationType = 'health-check',
+  ) {
     if (notificationType === 'gcs-backup-verify') {
       return this.generateGCSBackupEmailText(isSuccess, testResults, config, error);
     }
 
     const statusText = isSuccess ? 'EXITOSO' : 'FALLIDO';
     const timestamp = new Date().toLocaleString('es-ES', {
-      timeZone: 'America/Santiago'
+      timeZone: 'America/Santiago',
     });
 
     let text = `
@@ -177,7 +189,7 @@ DETALLE DE PASOS:
     if (!isSuccess && error) {
       const detectedPattern = testResults?.details?.detectedErrorPattern || 'no específico';
       const fullResponseContent = testResults?.details?.fullResponseContent || 'No disponible';
-      
+
       text += `\nDETALLES DEL ERROR:\n`;
       text += `• Error Detectado: ${detectedPattern}\n`;
       text += `• Contenido de Respuesta:\n${fullResponseContent}\n`;
@@ -210,17 +222,23 @@ DETALLE DE PASOS:
       ? `Se verificó correctamente el respaldo en GCS para la fecha UTC <strong>${details.dateUTC || 'N/A'}</strong>.`
       : `No se encontró archivo de respaldo para la fecha UTC <strong>${details.dateUTC || 'N/A'}</strong>. El nombre debe contener <strong>${details.dateToken || 'N/A'}</strong>.`;
 
-    const matchesHTML = matches.length > 0
-      ? `<h3>📄 Archivos encontrados (máx 10):</h3><ul style="line-height: 1.6;">${matches.slice(0, 10).map((name) => `<li><code>${name}</code></li>`).join('')}</ul>`
-      : '';
+    const matchesHTML =
+      matches.length > 0
+        ? `<h3>📄 Archivos encontrados (máx 10):</h3><ul style="line-height: 1.6;">${matches
+            .slice(0, 10)
+            .map((name) => `<li><code>${name}</code></li>`)
+            .join('')}</ul>`
+        : '';
 
-    const recentFilesHTML = !isSuccess && recentFiles.length > 0
-      ? `<h3>🧭 Referencia (últimos archivos en carpeta):</h3><ul style="line-height: 1.6;">${recentFiles.map((name) => `<li><code>${name}</code></li>`).join('')}</ul>`
-      : '';
+    const recentFilesHTML =
+      !isSuccess && recentFiles.length > 0
+        ? `<h3>🧭 Referencia (últimos archivos en carpeta):</h3><ul style="line-height: 1.6;">${recentFiles.map((name) => `<li><code>${name}</code></li>`).join('')}</ul>`
+        : '';
 
-    const errorHTML = !isSuccess && error
-      ? `<h3>❌ Detalle:</h3><p style="line-height: 1.6; margin: 0;">${error}</p>`
-      : '';
+    const errorHTML =
+      !isSuccess && error
+        ? `<h3>❌ Detalle:</h3><p style="line-height: 1.6; margin: 0;">${error}</p>`
+        : '';
 
     return `
     <!DOCTYPE html>
@@ -319,7 +337,7 @@ Duración: ${testResults ? this.formatDuration(testResults.duration) : 'N/A'}
 
   async testEmail(config) {
     console.log('🧪 Probando configuración de email...');
-    
+
     const testEmailData = {
       subject: '🧪 Test - Health Check LibreChat AVI',
       isSuccess: true,
@@ -329,10 +347,10 @@ Duración: ${testResults ? this.formatDuration(testResults.duration) : 'N/A'}
           config: true,
           login: true,
           loadData: true,
-          sendMessage: true
-        }
+          sendMessage: true,
+        },
       },
-      config: config
+      config: config,
     };
 
     try {

@@ -39,8 +39,10 @@ export default function useSpeechSettingsInit(isAuthenticated: boolean) {
       if (key === 'sttExternal' || key === 'ttsExternal') return;
 
       // Special handling: force textToSpeech and speechToText when explicitly set to false
-      const shouldForceOverride = 
-        (key === 'textToSpeech' || key === 'speechToText') && typeof value === 'boolean' && value === false;
+      const shouldForceOverride =
+        (key === 'textToSpeech' || key === 'speechToText') &&
+        typeof value === 'boolean' &&
+        value === false;
 
       if (!shouldForceOverride && localStorage.getItem(key) !== null) return;
 

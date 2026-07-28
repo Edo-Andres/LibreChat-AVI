@@ -5,7 +5,8 @@ const { google } = require('googleapis');
 require('dotenv').config();
 
 // Configuración
-const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID || '1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U';
+const SPREADSHEET_ID =
+  process.env.GOOGLE_SHEETS_ID || '1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U';
 const RANGE_NAME = 'Hoja 1';
 const CSV_FILE = path.join(__dirname, '..', 'api', 'chats.csv');
 
@@ -25,7 +26,7 @@ function getCredentials() {
 
     const auth = new google.auth.GoogleAuth({
       credentials,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets']
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
     return auth;
@@ -88,13 +89,12 @@ async function updateGoogleSheets(data) {
       range: `${RANGE_NAME}!A1`,
       valueInputOption: 'RAW',
       requestBody: {
-        values: data
-      }
+        values: data,
+      },
     });
 
     console.log(`✅ Actualización exitosa! Filas: ${result.data.updatedRows}`);
     return result;
-
   } catch (error) {
     throw new Error(`❌ Error actualizando Google Sheets: ${error.message}`);
   }
@@ -132,7 +132,6 @@ async function main() {
 
     console.log('✅ Proceso completado exitosamente!');
     process.exit(0);
-
   } catch (error) {
     console.error('❌ Error en el proceso:', error.message);
     cleanupFile(); // Limpiar en caso de error también

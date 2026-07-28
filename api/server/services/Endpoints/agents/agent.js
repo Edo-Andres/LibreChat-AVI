@@ -185,7 +185,7 @@ const initializeAgent = async ({
   if (agent.instructions && agent.instructions !== '') {
     // Prepare user object with AVI roles for variable replacement
     let userWithRoles = req.user;
-    
+
     // If user has AVI roles, populate them for variable replacement
     if (req.user && (req.user.aviRol_id || req.user.aviSubrol_id)) {
       try {

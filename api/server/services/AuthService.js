@@ -177,7 +177,17 @@ const registerUser = async (user, additionalData = {}) => {
     return { status: 404, message: errorMessage };
   }
 
-  const { email, password, name, username, phone, ageRange, aviRol_id, aviSubrol_id, participationConsent } = user;
+  const {
+    email,
+    password,
+    name,
+    username,
+    phone,
+    ageRange,
+    aviRol_id,
+    aviSubrol_id,
+    participationConsent,
+  } = user;
 
   let newUserId;
   try {

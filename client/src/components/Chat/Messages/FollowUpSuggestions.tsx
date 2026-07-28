@@ -37,7 +37,11 @@ const FollowUpSuggestions = ({
   }, [isLatestAssistantMessage]);
 
   // Fetch follow-up suggestions
-  const { data: suggestionData, isLoading, error } = useQuery(
+  const {
+    data: suggestionData,
+    isLoading,
+    error,
+  } = useQuery(
     ['followUpSuggestions', messageId],
     () => {
       console.log('[FollowUpSuggestions] Fetching suggestions for:', conversationId);
@@ -80,7 +84,7 @@ const FollowUpSuggestions = ({
         <button
           key={index}
           onClick={() => submitMessage({ text })}
-          className="rounded-tl-2xl rounded-bl-2xl rounded-br-2xl bg-gradient-to-br from-chat-user-light to-chat-user-dark px-3 py-2 text-sm text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1"
+          className="rounded-bl-2xl rounded-br-2xl rounded-tl-2xl bg-gradient-to-br from-chat-user-light to-chat-user-dark px-3 py-2 text-sm text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1"
           disabled={isLoading}
         >
           {text}

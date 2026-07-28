@@ -12,8 +12,8 @@ const connect = require('./connect');
 function extractTextFromContent(content) {
   if (!content || !Array.isArray(content)) return '';
   return content
-    .filter(item => item.type === 'text')
-    .map(item => item.text)
+    .filter((item) => item.type === 'text')
+    .map((item) => item.text)
     .join(' ');
 }
 
@@ -22,23 +22,21 @@ function extractTextFromContent(content) {
  */
 function cleanTextForCSV(text) {
   if (!text) return '';
-  return text
-    .replace(/\n/g, ' ')
-    .replace(/\r/g, ' ')
-    .replace(/"/g, '""')
-    .trim();
+  return text.replace(/\n/g, ' ').replace(/\r/g, ' ').replace(/"/g, '""').trim();
 }
 
 /**
  * Genera CSV de las conversaciones
  */
 function generateCSV(userEmail, conversations, messages) {
-  const lines = ['userEmail,conversationId,conversationTitle,sender,text,isCreatedByUser,error,unfinished,messageId,parentMessageId,createdAt'];
+  const lines = [
+    'userEmail,conversationId,conversationTitle,sender,text,isCreatedByUser,error,unfinished,messageId,parentMessageId,createdAt',
+  ];
 
-  conversations.forEach(conv => {
-    const convMessages = messages.filter(msg => msg.conversationId === conv.conversationId);
+  conversations.forEach((conv) => {
+    const convMessages = messages.filter((msg) => msg.conversationId === conv.conversationId);
 
-    convMessages.forEach(msg => {
+    convMessages.forEach((msg) => {
       let text = msg.text || extractTextFromContent(msg.content);
       text = cleanTextForCSV(text);
 
@@ -53,7 +51,7 @@ function generateCSV(userEmail, conversations, messages) {
         msg.unfinished || false,
         msg.messageId,
         msg.parentMessageId || '',
-        msg.createdAt ? msg.createdAt.toISOString() : ''
+        msg.createdAt ? msg.createdAt.toISOString() : '',
       ];
       lines.push(row.join(','));
     });
@@ -71,19 +69,19 @@ function generateJSON(userEmail, conversations, messages) {
     exportDate: new Date().toISOString(),
     totalConversations: conversations.length,
     totalMessages: messages.length,
-    conversations: []
+    conversations: [],
   };
 
-  conversations.forEach(conv => {
+  conversations.forEach((conv) => {
     const convMessages = messages
-      .filter(msg => msg.conversationId === conv.conversationId)
-      .map(msg => ({
+      .filter((msg) => msg.conversationId === conv.conversationId)
+      .map((msg) => ({
         messageId: msg.messageId,
         sender: msg.sender || '',
         text: msg.text || extractTextFromContent(msg.content),
         isCreatedByUser: msg.isCreatedByUser || false,
         createdAt: msg.createdAt,
-        parentMessageId: msg.parentMessageId || ''
+        parentMessageId: msg.parentMessageId || '',
       }));
 
     result.conversations.push({
@@ -92,7 +90,7 @@ function generateJSON(userEmail, conversations, messages) {
       createdAt: conv.createdAt,
       updatedAt: conv.updatedAt,
       messageCount: convMessages.length,
-      messages: convMessages
+      messages: convMessages,
     });
   });
 
@@ -148,7 +146,7 @@ function generateJSON(userEmail, conversations, messages) {
       const allUsers = await User.find({}, 'email name').limit(10).lean();
       if (allUsers.length > 0) {
         console.cyan('\n📋 Algunos usuarios disponibles:');
-        allUsers.forEach(u => console.cyan(`   • ${u.email} ${u.name ? `(${u.name})` : ''}`));
+        allUsers.forEach((u) => console.cyan(`   • ${u.email} ${u.name ? `(${u.name})` : ''}`));
       }
       silentExit(1);
     }
@@ -170,13 +168,13 @@ function generateJSON(userEmail, conversations, messages) {
     console.orange('💬 Obteniendo mensajes...');
 
     // Obtener todos los mensajes de las conversaciones
-    const conversationIds = conversations.map(conv => conv.conversationId);
+    const conversationIds = conversations.map((conv) => conv.conversationId);
     const messages = await Message.find({
       conversationId: { $in: conversationIds },
-      user: user._id.toString()
+      user: user._id.toString(),
     })
-    .sort({ createdAt: 1 })
-    .lean();
+      .sort({ createdAt: 1 })
+      .lean();
 
     console.green(`✅ Encontrados ${messages.length} mensajes`);
     console.orange('📝 Generando exportación...');
@@ -214,7 +212,6 @@ function generateJSON(userEmail, conversations, messages) {
     console.purple('----------------------------------------');
 
     silentExit(0);
-
   } catch (error) {
     console.red('❌ Error durante la exportación:');
     console.red(error.message);

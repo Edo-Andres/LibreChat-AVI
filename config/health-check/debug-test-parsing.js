@@ -12,13 +12,13 @@ const testCases = [
   ' espacios@email.com , mas@email.com , final@email.com ',
   '',
   null,
-  undefined
+  undefined,
 ];
 
 testCases.forEach((testCase, index) => {
   console.log(`\n📧 Test ${index + 1}:`);
   console.log(`   Input: "${testCase}"`);
-  
+
   const result = parseAdminEmails(testCase);
   console.log(`   ✅ Para éxito: "${result.success}"`);
   console.log(`   ❌ Para error: "${result.error}"`);

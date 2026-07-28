@@ -17,10 +17,7 @@ router.get('/initial', requireJwtAuth, async (req, res) => {
     const userId = req.user.id;
 
     // Fetch user with populated roles
-    const user = await User.findById(userId)
-      .populate('aviSubrol_id')
-      .populate('aviRol_id')
-      .lean();
+    const user = await User.findById(userId).populate('aviSubrol_id').populate('aviRol_id').lean();
 
     if (!user) {
       logger.warn('[Initial Suggestions] User not found:', userId);
@@ -65,24 +62,24 @@ router.post('/follow-up', requireJwtAuth, async (req, res) => {
     if (!conversationId) {
       return res.status(400).json({
         error: 'conversationId is required',
-        suggestions: []
+        suggestions: [],
       });
     }
 
     // Verify user owns conversation
     const conversation = await Conversation.findOne({
       conversationId,
-      user: userId
+      user: userId,
     }).lean();
 
     if (!conversation) {
       logger.warn('[Follow-up Suggestions] Conversation not found or unauthorized:', {
         conversationId,
-        userId
+        userId,
       });
       return res.status(404).json({
         error: 'Conversation not found',
-        suggestions: []
+        suggestions: [],
       });
     }
 

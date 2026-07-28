@@ -5,7 +5,7 @@
  * - {{user_avi_rol_behavior}}
  * - {{user_avi_subrol_knowledge}}
  * - {{user_avi_subrol_behavior}}
- * 
+ *
  * Usage: node config/test-knowledge-behavior-variables.js
  */
 
@@ -33,7 +33,7 @@ async function testKnowledgeBehaviorVariables() {
     // Get or create a test user
     console.log('🔧 Setting up test user...');
     let testUser = await methods.findUser({ email: 'test-knowledge-behavior@example.com' });
-    
+
     if (!testUser) {
       testUser = await methods.createUser({
         email: 'test-knowledge-behavior@example.com',
@@ -49,8 +49,8 @@ async function testKnowledgeBehaviorVariables() {
 
     // Get AVI roles
     const aviRoles = await methods.listAviRoles();
-    const administrativoRole = aviRoles.find(r => r.name === 'administrativo');
-    const cuidadorRole = aviRoles.find(r => r.name === 'cuidador');
+    const administrativoRole = aviRoles.find((r) => r.name === 'administrativo');
+    const cuidadorRole = aviRoles.find((r) => r.name === 'cuidador');
 
     if (!administrativoRole || !cuidadorRole) {
       throw new Error('AVI roles not found. Please run initialize scripts first.');
@@ -60,11 +60,11 @@ async function testKnowledgeBehaviorVariables() {
     const adminSubroles = await methods.getAviSubrolesByParentId(administrativoRole._id.toString());
     const cuidadorSubroles = await methods.getAviSubrolesByParentId(cuidadorRole._id.toString());
 
-    const gestorUsuarios = adminSubroles.find(s => s.name === 'Gestor de Usuarios');
-    const cuidadorPrincipal = cuidadorSubroles.find(s => s.name === 'Cuidador Principal');
+    const gestorUsuarios = adminSubroles.find((s) => s.name === 'Gestor de Usuarios');
+    const cuidadorPrincipal = cuidadorSubroles.find((s) => s.name === 'Cuidador Principal');
 
     console.log('\n📋 Available AVI Roles:');
-    aviRoles.forEach(role => {
+    aviRoles.forEach((role) => {
       console.log(`  - ${role.name} (ID: ${role._id})`);
       if (role.knowledge) console.log(`    Knowledge: ${role.knowledge.substring(0, 60)}...`);
       if (role.behavior) console.log(`    Behavior: ${role.behavior.substring(0, 60)}...`);
@@ -73,11 +73,11 @@ async function testKnowledgeBehaviorVariables() {
     // Test Case 1: User with administrativo role (has knowledge and behavior)
     console.log('\n\n🧪 TEST CASE 1: User with administrativo role');
     console.log('═'.repeat(80));
-    
+
     await methods.assignUserAviRoles(
       testUser._id.toString(),
       administrativoRole._id.toString(),
-      gestorUsuarios?._id?.toString() || null
+      gestorUsuarios?._id?.toString() || null,
     );
     console.log('✅ Assigned roles to user');
 
@@ -93,9 +93,13 @@ async function testKnowledgeBehaviorVariables() {
     console.log(`\nRol Behavior:`);
     console.log(`  ${userWithRoles1.aviRol_id?.behavior || 'N/A'}`);
     console.log(`\nSubrol Knowledge:`);
-    console.log(`  ${userWithRoles1.aviSubrol_id?.knowledge || 'N/A (subroles don\'t have knowledge)'}`);
+    console.log(
+      `  ${userWithRoles1.aviSubrol_id?.knowledge || "N/A (subroles don't have knowledge)"}`,
+    );
     console.log(`\nSubrol Behavior:`);
-    console.log(`  ${userWithRoles1.aviSubrol_id?.behavior || 'N/A (subroles don\'t have behavior)'}`);
+    console.log(
+      `  ${userWithRoles1.aviSubrol_id?.behavior || "N/A (subroles don't have behavior)"}`,
+    );
 
     // Prepare user object for variable replacement (simulating what agent.js does)
     const userForReplacement1 = {
@@ -148,11 +152,11 @@ Fecha: {{current_date}}
     // Test Case 2: User with cuidador role
     console.log('\n\n🧪 TEST CASE 2: User with cuidador role');
     console.log('═'.repeat(80));
-    
+
     await methods.assignUserAviRoles(
       testUser._id.toString(),
       cuidadorRole._id.toString(),
-      cuidadorPrincipal?._id?.toString() || null
+      cuidadorPrincipal?._id?.toString() || null,
     );
     console.log('✅ Assigned cuidador role to user');
 
@@ -207,13 +211,13 @@ COMPORTAMIENTO:
     // Test Case 3: User without roles
     console.log('\n\n🧪 TEST CASE 3: User without AVI roles');
     console.log('═'.repeat(80));
-    
+
     // Remove roles
     await methods.assignUserAviRoles(testUser._id.toString(), null, null);
     console.log('✅ Removed roles from user');
 
     const userWithRoles3 = await methods.getUserWithAviRoles(testUser._id.toString());
-    
+
     const userForReplacement3 = {
       ...testUser.toObject(),
       name: userWithRoles3.name,
@@ -255,7 +259,6 @@ Behavior: {{user_avi_rol_behavior}}
     console.log('  ✅ Empty strings returned for users without roles');
     console.log('  ✅ Subroles correctly show null for knowledge/behavior');
     console.log('\n✨ The new variables are ready to use in agent prompts!');
-
   } catch (error) {
     console.error('❌ Error during testing:', error);
     throw error;

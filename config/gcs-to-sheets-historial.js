@@ -5,7 +5,8 @@ const { google } = require('googleapis');
 require('dotenv').config();
 
 // Configuracion
-const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID || '1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U';
+const SPREADSHEET_ID =
+  process.env.GOOGLE_SHEETS_ID || '1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U';
 const RANGE_NAME = 'Historial';
 const BUCKET_NAME = process.env.GCS_BUCKET_NAME || 'avi-bkt';
 const BUCKET_PATH = normalizeBucketPath(process.env.GCS_BUCKET_PATH || 'chats/');
@@ -45,7 +46,7 @@ function getSheetsAuth() {
     const credentials = JSON.parse(googleCredentialsJson);
     return new google.auth.GoogleAuth({
       credentials,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets']
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
   } catch (error) {
     throw new Error(`Error parseando GOOGLE_CREDENTIALS_JSON: ${error.message}`);
@@ -87,7 +88,7 @@ async function listTargetCsvFiles(storage) {
 
   if (!csvFiles.length) {
     throw new Error(
-      `No se encontraron CSV en gs://${BUCKET_NAME}/${BUCKET_PATH} con prefijo ${FILE_PREFIX}`
+      `No se encontraron CSV en gs://${BUCKET_NAME}/${BUCKET_PATH} con prefijo ${FILE_PREFIX}`,
     );
   }
 
@@ -97,14 +98,14 @@ async function listTargetCsvFiles(storage) {
 function assertCompatibleHeaders(baseHeaders, currentHeaders, fileName) {
   if (baseHeaders.length !== currentHeaders.length) {
     throw new Error(
-      `Encabezados incompatibles en ${fileName}: columnas esperadas ${baseHeaders.length}, recibidas ${currentHeaders.length}`
+      `Encabezados incompatibles en ${fileName}: columnas esperadas ${baseHeaders.length}, recibidas ${currentHeaders.length}`,
     );
   }
 
   for (let i = 0; i < baseHeaders.length; i += 1) {
     if (baseHeaders[i] !== currentHeaders[i]) {
       throw new Error(
-        `Encabezados incompatibles en ${fileName}: diferencia en columna ${i + 1} (${baseHeaders[i]} vs ${currentHeaders[i]})`
+        `Encabezados incompatibles en ${fileName}: diferencia en columna ${i + 1} (${baseHeaders[i]} vs ${currentHeaders[i]})`,
       );
     }
   }
@@ -166,9 +167,10 @@ function dedupeRows(rows, headers) {
     const conversationId = canUseBusinessKey ? String(row[conversationIdIndex] || '').trim() : '';
     const messageId = canUseBusinessKey ? String(row[messageIdIndex] || '').trim() : '';
 
-    const key = canUseBusinessKey && conversationId && messageId
-      ? `${conversationId}::${messageId}`
-      : JSON.stringify(row);
+    const key =
+      canUseBusinessKey && conversationId && messageId
+        ? `${conversationId}::${messageId}`
+        : JSON.stringify(row);
 
     if (!seen.has(key)) {
       seen.add(key);
@@ -213,8 +215,14 @@ async function buildMergedDataFromGCS() {
   const messageCreatedAtIndex = baseHeaders.indexOf('messageCreatedAt');
   const conversationUpdatedAtIndex = baseHeaders.indexOf('conversationUpdatedAt');
 
-  if (messageEpochIndex === -1 && messageCreatedAtIndex === -1 && conversationUpdatedAtIndex === -1) {
-    throw new Error('No se encontro ninguna columna de orden temporal (messageCreatedAtEpoch/messageCreatedAt/conversationUpdatedAt) en los CSV');
+  if (
+    messageEpochIndex === -1 &&
+    messageCreatedAtIndex === -1 &&
+    conversationUpdatedAtIndex === -1
+  ) {
+    throw new Error(
+      'No se encontro ninguna columna de orden temporal (messageCreatedAtEpoch/messageCreatedAt/conversationUpdatedAt) en los CSV',
+    );
   }
 
   const originalCount = allRows.length;
@@ -265,7 +273,7 @@ async function updateGoogleSheets(values) {
   });
 
   console.log(
-    `Actualizacion exitosa. Filas: ${result.data.updatedRows || 0}, Columnas: ${result.data.updatedColumns || 0}`
+    `Actualizacion exitosa. Filas: ${result.data.updatedRows || 0}, Columnas: ${result.data.updatedColumns || 0}`,
   );
 }
 

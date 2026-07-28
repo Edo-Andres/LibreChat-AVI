@@ -62,7 +62,7 @@ function AuthLayout({
     <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-gray-900 lg:flex-row">
       <AuthSlider />
 
-      <div className="relative flex flex-1 items-start justify-center overflow-y-auto bg-gray-50 lg:h-full lg:w-7/12 lg:items-center lg:p-8 dark:bg-[rgb(7,43,41)]">
+      <div className="relative flex flex-1 items-start justify-center overflow-y-auto bg-gray-50 dark:bg-[rgb(7,43,41)] lg:h-full lg:w-7/12 lg:items-center lg:p-8">
         <div className="absolute left-0 top-0 w-full">
           <Banner />
         </div>
@@ -74,16 +74,13 @@ function AuthLayout({
           </div>
         ) : (
           // Login/other pages: card container with logo and header
-          <div className="w-full h-full max-w-none space-y-8 rounded-t-[2rem] bg-white px-8 py-10 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] dark:bg-gray-900 lg:h-auto lg:max-w-md lg:rounded-[2rem] lg:p-12 lg:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
-
+          <div className="h-full w-full max-w-none space-y-8 rounded-t-[2rem] bg-white px-8 py-10 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] dark:bg-gray-900 lg:h-auto lg:max-w-md lg:rounded-[2rem] lg:p-12 lg:shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
             <div className="text-center">
               {!hasStartupConfigError && !isFetching && (
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {header}
-                </h2>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{header}</h2>
               )}
               {isFetching && (
-                <div className="flex items-center justify-center gap-2 mt-4 text-gray-500">
+                <div className="mt-4 flex items-center justify-center gap-2 text-gray-500">
                   <Spinner className="size-5" />
                   <p>Cargando...</p>
                 </div>
@@ -98,9 +95,11 @@ function AuthLayout({
               <img
                 src="/assets/img_avi/ccm-logo-black2.png"
                 alt="Corporación Crecer Mejor"
-                className="w-[80px] h-auto opacity-80 mb-2"
+                className="mb-2 h-auto w-[80px] opacity-80"
               />
-              <p className="text-xs uppercase tracking-widest text-gray-400">© 2025 Corporación Crecer Mejor</p>
+              <p className="text-xs uppercase tracking-widest text-gray-400">
+                © 2025 Corporación Crecer Mejor
+              </p>
             </div>
           </div>
         )}
