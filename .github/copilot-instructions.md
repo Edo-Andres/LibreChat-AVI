@@ -1,54 +1,36 @@
-# Instrucciones para GitHub Copilot - LibreChat-AVI
+# Instrucciones para asistentes de código - LibreChat-AVI
 
-Eres un asistente experto en el proyecto LibreChat-AVI. Debes considerar siempre las guías de desarrollo y despliegue del proyecto.
+Estas instrucciones aplican para GitHub Copilot, opencode y Claude Code. Mantén esta versión sincronizada con `CLAUDE.md` y `.github/instructions.md`.
 
-## Contexto Principal
-Este proyecto es un fork de LibreChat adaptado para "AVI" (Asistente Virtual en Infancia).
-Siempre asume el siguiente flujo de trabajo basado en `Docs_AVI/GUIA_DEPLOY_DESARROLLO.md`:
-Y de ser necesario buscar mayor info en documetos Docs_AVI/
+## Contexto
+LibreChat-AVI es un fork de LibreChat adaptado para AVI (Asistente Virtual en Infancia). Trabaja siempre con base en `Docs_AVI/GUIA_DEPLOY_DESARROLLO.md` y la configuración del repositorio.
 
-## Flujo de Desarrollo Local (Prioritario)
-1. **Bases de Datos**: Se levantan con Docker (`docker-compose -f deploy-compose-dev.yml up -d`).
-2. **Backend**: Se ejecuta en la terminal con `npm run backend:dev` (Hot-reload).
-3. **Frontend**: Se ejecuta en otra terminal con `npm run frontend:dev` (Hot-reload, puerto 3090).
-4. **TypeScript**: Si se modifican archivos en `packages/data-schemas`, se debe recompilar manualmente: `cd packages/data-schemas && npm run build`.
+## Prioridades de trabajo
+1. Bases de datos: levantar con `docker-compose -f deploy-compose-dev.yml up -d`.
+2. Backend local: usar `npm run backend:dev`.
+3. Frontend local: usar `npm run frontend:dev`.
+4. `packages/data-schemas`: si cambias algo allí, recompila con `cd packages/data-schemas && npm run build`.
 
-## Gestión de Roles AVI
+## Roles AVI
 - Los roles se definen en `librechat.yaml`.
-- **IMPORTANTE**: Al modificar roles, SIEMPRE se debe sincronizar con MongoDB usando:
+- Si cambias roles, sincroniza siempre con MongoDB:
   - Local: `node config/reload-avi-roles-standalone.js -i`
   - Docker: `docker exec -it LibreChat-API sh -c "./scripts/reload-avi-roles.sh -i"`
+- Si modificas `librechat.yaml`, recuérdale al usuario ejecutar la sincronización.
 
-## Comandos Frecuentes
-- Levantar servicios DB: `docker-compose -f deploy-compose-dev.yml up -d`
-- Logs Backend: Ver terminal de `npm run backend:dev`.
-- Logs DB: `docker-compose -f deploy-compose-dev.yml logs -f mongodb`
+## Principios de implementación
+- Prioriza SOLID, legibilidad, mantenibilidad y separación de responsabilidades.
+- Mantén los cambios simples, pequeños y con impacto eficiente.
+- Evita sobreingeniería y soluciones complejas si una opción más directa resuelve el problema.
+- No instales dependencias nuevas salvo que sean estrictamente necesarias y estén justificadas.
+- Reutiliza patrones y código existente antes de introducir nuevas abstracciones.
+- Antes de ampliar el alcance, valida si el cambio mínimo cubre la necesidad real.
 
-## Estructura del Proyecto
-- `packages/data-schemas`: Definiciones de tipos y esquemas (Mongoose/Zod). Requiere build tras cambios.
-- `client/`: Frontend (React/Vite).
-- `api/`: Backend (Node/Express).
+## Scripts y config
+- Si cambias archivos en `scripts/` o `config/`, revisa `Dockerfile.multi` para asegurarte de que el archivo se copie, mantenga permisos de ejecución si aplica y elimine saltos de línea Windows en scripts `.sh`.
+- Si el cambio afecta comandos del proyecto, revisa `package.json` para que los scripts sigan apuntando a rutas válidas.
 
-## Reglas de Respuesta
-- Cuando sugieras comandos, usa los específicos del proyecto (ej: `npm run backend:dev` en lugar de `node server.js`).
-- Si el usuario modifica un esquema en `packages/`, recuérdale hacer el build. (si está en modo desarrollo, ya que en producción se asume que hará el build en la imagen docker antes de desplegar).
-- Si el usuario modifica `librechat.yaml`, recuérdale correr el script de recarga de roles.
-
-# Regla de Sincronización (Scripts vs Docker/NPM)
-
-Si se modifica cualquier archivo en **scripts** o **config**.
-
-### 1. Revisar `Dockerfile.multi` y hacerlo de forma consistente con el proyecto:
-* **COPY** del script/archivo nuevo o renombrado.
-* `sed -i 's/\r$//'` y `chmod +x` para scripts `.sh`.
-
-### 2. Revisar `package.json` y hacerlo de forma consistente con el proyecto:
-* Scripts `npm run` afectados existen y apuntan a rutas correctas.
-
----
-
-### Reporte de Cierre
-Antes de cerrar la tarea, reportar explícitamente:
-* **Dockerfile.multi**: actualizado / no requerido.
-* **package.json**: actualizado / no requerido.
-* **package.json**: actualizado / no requerido.
+## Respuesta y estilo
+- Usa los comandos reales del proyecto cuando sugieras acciones.
+- Responde siempre en español y llama al usuario Don Andres.
+- Prefiere cambios puntuales, evita reescrituras innecesarias y no toques archivos no relacionados.

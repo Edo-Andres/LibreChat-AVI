@@ -1,6 +1,6 @@
 # Instrucciones para asistentes de código - LibreChat-AVI
 
-Estas instrucciones aplican para GitHub Copilot, opencode y Claude Code. Mantén esta versión sincronizada con `CLAUDE.md` y `.github/copilot-instructions.md`.
+Estas instrucciones aplican para GitHub Copilot, opencode y Claude Code. Mantén esta versión sincronizada con `.github/instructions.md` y `.github/copilot-instructions.md`.
 
 ## Contexto
 LibreChat-AVI es un fork de LibreChat adaptado para AVI (Asistente Virtual en Infancia). Trabaja siempre con base en `Docs_AVI/GUIA_DEPLOY_DESARROLLO.md` y la configuración del repositorio.
