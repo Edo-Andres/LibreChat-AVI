@@ -64,7 +64,8 @@ function parseCsvBuffer(csvBuffer, fileName) {
         headers.push(...headerList);
       })
       .on('data', (data) => {
-        rows.push(headers.map((h) => (data[h] ?? '').toString()));
+        // Se conserva el objeto para poder fusionar por nombre de columna.
+        rows.push(data);
       })
       .on('end', () => {
         resolve({ headers, rows, fileName });
@@ -95,20 +96,19 @@ async function listTargetCsvFiles(storage) {
   return csvFiles;
 }
 
-function assertCompatibleHeaders(baseHeaders, currentHeaders, fileName) {
-  if (baseHeaders.length !== currentHeaders.length) {
-    throw new Error(
-      `Encabezados incompatibles en ${fileName}: columnas esperadas ${baseHeaders.length}, recibidas ${currentHeaders.length}`,
-    );
+/**
+ * Fusiona encabezados por nombre: mantiene el orden del primer CSV y agrega al final
+ * las columnas nuevas. Permite convivir CSV historicos (sin columnas nuevas) con
+ * CSV recientes; las celdas faltantes quedan vacias.
+ */
+function mergeHeaders(baseHeaders, currentHeaders, fileName) {
+  const added = currentHeaders.filter((header) => !baseHeaders.includes(header));
+
+  if (baseHeaders.length && added.length) {
+    console.log(`Columnas nuevas detectadas en ${fileName}: ${added.join(', ')}`);
   }
 
-  for (let i = 0; i < baseHeaders.length; i += 1) {
-    if (baseHeaders[i] !== currentHeaders[i]) {
-      throw new Error(
-        `Encabezados incompatibles en ${fileName}: diferencia en columna ${i + 1} (${baseHeaders[i]} vs ${currentHeaders[i]})`,
-      );
-    }
-  }
+  return baseHeaders.concat(added);
 }
 
 function parseDateToMs(value) {
@@ -190,26 +190,26 @@ async function buildMergedDataFromGCS() {
 
   console.log(`CSV detectados en GCS: ${files.length}`);
 
-  let baseHeaders = null;
-  let allRows = [];
+  let baseHeaders = [];
+  let allRecords = [];
 
   for (const file of files) {
     const [csvBuffer] = await file.download();
     const parsed = await parseCsvBuffer(csvBuffer, file.name);
 
-    if (!baseHeaders) {
-      baseHeaders = parsed.headers;
-    } else {
-      assertCompatibleHeaders(baseHeaders, parsed.headers, file.name);
-    }
-
-    allRows = allRows.concat(parsed.rows);
+    baseHeaders = mergeHeaders(baseHeaders, parsed.headers, file.name);
+    allRecords = allRecords.concat(parsed.rows);
     console.log(`Procesado: ${file.name} -> ${parsed.rows.length} filas`);
   }
 
-  if (!baseHeaders || !baseHeaders.length) {
+  if (!baseHeaders.length) {
     throw new Error('No se pudo detectar encabezado en los CSV procesados');
   }
+
+  // Proyecta cada fila al encabezado consolidado (columnas ausentes quedan vacias).
+  const allRows = allRecords.map((record) =>
+    baseHeaders.map((header) => (record[header] ?? '').toString()),
+  );
 
   const messageEpochIndex = baseHeaders.indexOf('messageCreatedAtEpoch');
   const messageCreatedAtIndex = baseHeaders.indexOf('messageCreatedAt');
