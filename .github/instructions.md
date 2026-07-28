@@ -30,6 +30,12 @@ LibreChat-AVI es un fork de LibreChat adaptado para AVI (Asistente Virtual en In
 - Si cambias archivos en `scripts/` o `config/`, revisa `Dockerfile.multi` para asegurarte de que el archivo se copie, mantenga permisos de ejecución si aplica y elimine saltos de línea Windows en scripts `.sh`.
 - Si el cambio afecta comandos del proyecto, revisa `package.json` para que los scripts sigan apuntando a rutas válidas.
 
+## Verificación de cambios
+- Si modificas `packages/data-schemas`, **el agente debe ejecutar automáticamente** `cd packages/data-schemas && npm run build` (comando rápido y obligatorio).
+- **No ejecutes** `npm run lint` ni otros comandos lentos de verificación. En su lugar, **sugiere al usuario** que ejecute manualmente desde la raíz del repo:
+  - `npm run lint` — Verificar estilo general del monorepo (lento, ~varios minutos).
+  - `npm run test:api` o `npm run test:client` — Si existen tests unitarios.
+
 ## Respuesta y estilo
 - Usa los comandos reales del proyecto cuando sugieras acciones.
 - Responde siempre en español y llama al usuario Don Andres.

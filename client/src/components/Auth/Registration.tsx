@@ -15,7 +15,21 @@ import { useLocalize } from '~/hooks';
 import { ErrorMessage } from './ErrorMessage';
 
 // Extended type to include phone field
-type TRegisterUserWithPhone = TRegisterUser & { phone?: string };
+type TRegisterUserWithPhone = TRegisterUser & {
+  phone?: string;
+  participationConsent?: boolean;
+  ageRange?: string;
+};
+
+const AGE_RANGE_OPTIONS = [
+  'Menor de 18',
+  '18 a 24',
+  '25 a 34',
+  '35 a 44',
+  '45 a 54',
+  '55 a 64',
+  '65 o más',
+];
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -87,7 +101,7 @@ const Registration: React.FC = () => {
     let fieldsToValidate: (keyof TRegisterUserWithPhone)[] = [];
 
     if (currentStep === 1) {
-      fieldsToValidate = ['name', 'username', 'phone'];
+      fieldsToValidate = ['name', 'username', 'phone', 'ageRange'];
     } else if (currentStep === 2) {
       fieldsToValidate = ['email', 'aviRol_id'];
     }
@@ -290,6 +304,52 @@ const Registration: React.FC = () => {
                     <label htmlFor="phone" className={labelBaseClass}>
                       Teléfono <span className="text-xs text-gray-400">(opcional)</span>
                     </label>
+                  </div>
+
+                  {/* Age Range */}
+                  <div>
+                    <div className="relative">
+                      <select
+                        id="ageRange"
+                        defaultValue=""
+                        {...register('ageRange', {
+                          required: 'Selecciona tu rango de edad',
+                        })}
+                        className={`${inputBaseClass} cursor-pointer appearance-none`}
+                      >
+                        <option value="" disabled>
+                          Selecciona...
+                        </option>
+                        {AGE_RANGE_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <label htmlFor="ageRange" className={labelBaseClass}>
+                        Rango de edad
+                      </label>
+                      <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    {errors.ageRange && (
+                      <span className="mt-1 text-sm text-red-500">
+                        {String(errors.ageRange.message)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
