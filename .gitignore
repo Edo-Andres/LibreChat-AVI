@@ -147,3 +147,6 @@ client/dev-dist/
 
 opencode.json
 Docs_AVI/_archive/_ignore/
+
+# Resultados del evaluador interactivo AVI
+config/avi-eval/resultados/
