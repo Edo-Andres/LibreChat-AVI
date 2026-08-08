@@ -21,14 +21,13 @@ type TRegisterUserWithPhone = TRegisterUser & {
   ageRange?: string;
 };
 
-const AGE_RANGE_OPTIONS = [
-  'Menor de 18',
+const AGE_RANGE_OPTIONS = [  
   '18 a 24',
   '25 a 34',
   '35 a 44',
   '45 a 54',
   '55 a 64',
-  '65 o más',
+  '65 o más años',
 ];
 
 const Registration: React.FC = () => {
@@ -319,7 +318,7 @@ const Registration: React.FC = () => {
                         className={`${inputBaseClass} cursor-pointer appearance-none`}
                       >
                         <option value="" disabled>
-                          Selecciona...
+                          Selecciona tu rango de edad
                         </option>
                         {AGE_RANGE_OPTIONS.map((option) => (
                           <option key={option} value={option}>
