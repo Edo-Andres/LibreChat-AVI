@@ -17,6 +17,7 @@ LibreChat-AVI es un fork de LibreChat adaptado para AVI (Asistente Virtual en In
   - Local: `node config/reload-avi-roles-standalone.js -i`
   - Docker: `docker exec -it LibreChat-API sh -c "./scripts/reload-avi-roles.sh -i"`
 - Si modificas `librechat.yaml`, recuérdale al usuario ejecutar la sincronización.
+- **`librechat.yaml` es un archivo crítico: nunca lo edites ni lo elimines de forma automática.** Solo se modifica (y jamás se elimina) cuando el usuario lo solicita expresamente en su mensaje.
 
 ## Principios de implementación
 - Prioriza SOLID, legibilidad, mantenibilidad y separación de responsabilidades.
