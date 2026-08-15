@@ -19,15 +19,35 @@ type TRegisterUserWithPhone = TRegisterUser & {
   phone?: string;
   participationConsent?: boolean;
   ageRange?: string;
+  region?: string;
 };
 
-const AGE_RANGE_OPTIONS = [  
+const AGE_RANGE_OPTIONS = [
   '18 a 24',
   '25 a 34',
   '35 a 44',
   '45 a 54',
   '55 a 64',
   '65 o más años',
+];
+
+const REGION_OPTIONS = [
+  'Arica y Parinacota',
+  'Tarapacá',
+  'Antofagasta',
+  'Atacama',
+  'Coquimbo',
+  'Valparaíso',
+  'Metropolitana de Santiago',
+  "O'Higgins",
+  'Maule',
+  'Ñuble',
+  'Biobío',
+  'La Araucanía',
+  'Los Ríos',
+  'Los Lagos',
+  'Aysén',
+  'Magallanes y la Antártica Chilena',
 ];
 
 const Registration: React.FC = () => {
@@ -99,7 +119,7 @@ const Registration: React.FC = () => {
     let fieldsToValidate: (keyof TRegisterUserWithPhone)[] = [];
 
     if (currentStep === 1) {
-      fieldsToValidate = ['name', 'username', 'phone', 'ageRange'];
+      fieldsToValidate = ['name', 'username', 'phone', 'ageRange', 'region'];
     } else if (currentStep === 2) {
       fieldsToValidate = ['email', 'aviRol_id'];
     }
@@ -348,6 +368,52 @@ const Registration: React.FC = () => {
                     {errors.ageRange && (
                       <span className="mt-1 text-sm text-red-500">
                         {String(errors.ageRange.message)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Region */}
+                  <div>
+                    <div className="relative">
+                      <select
+                        id="region"
+                        defaultValue=""
+                        {...register('region', {
+                          required: 'Selecciona tu región',
+                        })}
+                        className={`${inputBaseClass} cursor-pointer appearance-none`}
+                      >
+                        <option value="" disabled>
+                          Selecciona tu región
+                        </option>
+                        {REGION_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <label htmlFor="region" className={labelBaseClass}>
+                        Región
+                      </label>
+                      <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    {errors.region && (
+                      <span className="mt-1 text-sm text-red-500">
+                        {String(errors.region.message)}
                       </span>
                     )}
                   </div>
