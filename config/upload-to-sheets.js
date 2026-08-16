@@ -7,7 +7,7 @@ require('dotenv').config();
 // Configuración
 const SPREADSHEET_ID =
   process.env.GOOGLE_SHEETS_ID || '1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U';
-const RANGE_NAME = 'Hoja 1';
+const RANGE_NAME = 'Daily';
 const CSV_FILE = path.join(__dirname, '..', 'api', 'chats.csv');
 
 /**

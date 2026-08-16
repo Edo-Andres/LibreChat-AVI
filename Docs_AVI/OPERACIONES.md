@@ -93,8 +93,8 @@ sh /app/scripts/backup-chats-gcs --force --days 15
 
 ### Sync b├ísico ÔÇö `scripts/sync-chats.sh`
 
-- Exporta `api/chats.csv` (b├ísico) y sube a Sheets.
-- **Spreadsheet:** `1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U`, tab `Hoja 1` (`config/upload-to-sheets.js:8-9`).
+- Exporta `api/chats.csv` (b├ísico con AVI roles) y sube a Sheets.
+- **Spreadsheet:** `1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U` (override v├¡a `GOOGLE_SHEETS_ID`), tab `Daily` (**hardcoded** en `config/upload-to-sheets.js:10`). CSV con 11 columnas: `userEmail,userName,userAviRole,userAviSubrole,conversationId,conversationTitle,sender,text,isCreatedByUser,messageId,createdAt`.
 - **Env vars:** `GOOGLE_CREDENTIALS_JSON` (req), `GOOGLE_SHEETS_ID` (opt, override del default).
 - Borra el CSV local tras subir (`:106-115`).
 
