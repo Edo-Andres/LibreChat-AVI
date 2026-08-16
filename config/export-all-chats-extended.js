@@ -105,7 +105,9 @@ function toEpochMs(date) {
     const users = await User.find({})
       .populate('aviRol_id', 'name')
       .populate('aviSubrol_id', 'name')
-      .select('email name phone ageRange aviRol_id aviSubrol_id participationConsent createdAt')
+      .select(
+        'email name phone ageRange region aviRol_id aviSubrol_id participationConsent createdAt',
+      )
       .lean();
 
     console.orange('📂 Obteniendo conversaciones con fechas...');
@@ -133,6 +135,7 @@ function toEpochMs(date) {
         name: user.name || '',
         phone: user.phone || '',
         ageRange: user.ageRange || '',
+        region: user.region || '',
         participationConsent: Boolean(user.participationConsent),
         // ⭐ Extraer NOMBRES de los aviRoles (no ObjectId)
         aviRole: user.aviRol_id?.name || '',
@@ -173,6 +176,7 @@ function toEpochMs(date) {
               name: user.name,
               phone: user.phone,
               ageRange: user.ageRange,
+              region: user.region,
               participationConsent: user.participationConsent,
               aviRole: user.aviRole,
               aviSubrole: user.aviSubrole,
@@ -213,6 +217,7 @@ function toEpochMs(date) {
         'userName',
         'userPhone',
         'userAgeRange',
+        'userRegion',
         'userParticipationConsent',
         'userAviRole',
         'userAviSubrole',
@@ -249,6 +254,7 @@ function toEpochMs(date) {
             `"${cleanTextForCSV(user.name)}"`,
             user.phone,
             `"${cleanTextForCSV(user.ageRange)}"`,
+            `"${cleanTextForCSV(user.region)}"`,
             user.participationConsent,
             user.aviRole,
             user.aviSubrole,
@@ -289,6 +295,9 @@ function toEpochMs(date) {
     );
     console.cyan(
       `   - Con rango de edad: ${users.filter((u) => userMap[u._id.toString()].ageRange).length}`,
+    );
+    console.cyan(
+      `   - Con región: ${users.filter((u) => userMap[u._id.toString()].region).length}`,
     );
     console.cyan(
       `   - Consentimiento participación: ${users.filter((u) => userMap[u._id.toString()].participationConsent).length}`,

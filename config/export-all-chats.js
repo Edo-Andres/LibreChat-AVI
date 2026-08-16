@@ -74,8 +74,11 @@ function formatDateWithTimezone(date) {
   format = format.toLowerCase();
 
   try {
-    console.orange('👥 Obteniendo usuarios...');
-    const users = await User.find({}, 'email name').lean();
+    console.orange('👥 Obteniendo usuarios con AVI Roles...');
+    const users = await User.find({}, 'email name aviRol_id aviSubrol_id')
+      .populate('aviRol_id', 'name')
+      .populate('aviSubrol_id', 'name')
+      .lean();
 
     console.orange('📂 Obteniendo todas las conversaciones...');
     const conversations = await Conversation.find({}).sort({ updatedAt: -1 }).lean();
@@ -90,7 +93,11 @@ function formatDateWithTimezone(date) {
     // Crear mapas para búsqueda rápida
     const userMap = {};
     users.forEach((user) => {
-      userMap[user._id.toString()] = user;
+      userMap[user._id.toString()] = {
+        ...user,
+        aviRole: user.aviRol_id?.name || '',
+        aviSubrole: user.aviSubrol_id?.name || '',
+      };
     });
 
     // Determinar archivo de salida
@@ -153,7 +160,7 @@ function formatDateWithTimezone(date) {
     } else {
       // Generar CSV - Solo las columnas requeridas
       const lines = [
-        'userEmail,userName,conversationId,conversationTitle,sender,text,isCreatedByUser,messageId,createdAt',
+        'userEmail,userName,userAviRole,userAviSubrole,conversationId,conversationTitle,sender,text,isCreatedByUser,messageId,createdAt',
       ];
 
       conversations.forEach((conv) => {
@@ -169,6 +176,8 @@ function formatDateWithTimezone(date) {
           const row = [
             user.email,
             `"${cleanTextForCSV(user.name || '')}"`,
+            `"${cleanTextForCSV(user.aviRole || '')}"`,
+            `"${cleanTextForCSV(user.aviSubrole || '')}"`,
             conv.conversationId,
             `"${cleanTextForCSV(conv.title || 'Sin título')}"`,
             msg.sender || '',

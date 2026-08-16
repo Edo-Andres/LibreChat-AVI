@@ -388,6 +388,7 @@ export type TRegisterUser = {
   confirm_password?: string;
   token?: string;
   ageRange?: string;
+  region?: string;
   aviRol_id?: string;
   aviSubrol_id?: string;
 };

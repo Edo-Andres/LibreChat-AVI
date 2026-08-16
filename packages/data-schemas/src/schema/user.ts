@@ -41,6 +41,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: false,
     },
+    region: {
+      type: String,
+      required: false,
+    },
     email: {
       type: String,
       required: [true, "can't be blank"],
