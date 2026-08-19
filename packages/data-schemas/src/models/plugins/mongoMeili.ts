@@ -124,6 +124,54 @@ const cleanUpPrimaryKeyValue = (value: string): string => {
 };
 
 /**
+ * Filtro de documentos permanentes (no temporales).
+ *
+ * Los chats temporales llevan `expiredAt` y MongoDB los borra por TTL. Ese borrado lo hace el
+ * demonio del servidor y NO dispara los middlewares de Mongoose, así que si se indexan quedan
+ * huérfanos en MeiliSearch de forma indefinida. Por eso nunca se indexan.
+ */
+const permanentDocumentFilter: FilterQuery<unknown> = {
+  $or: [{ expiredAt: { $exists: false } }, { expiredAt: null }],
+};
+
+/** `true` si el schema declara `expiredAt`, es decir, si admite documentos temporales. */
+const schemaHasExpiration = (schema: Schema): boolean =>
+  Object.prototype.hasOwnProperty.call(schema.obj, 'expiredAt');
+
+/** `true` si el documento es temporal y por tanto no debe indexarse. */
+const isTemporaryDocument = (doc: { expiredAt?: Date | null }): boolean => doc?.expiredAt != null;
+
+/**
+ * Normaliza un documento para el índice.
+ *
+ * Debe usarse en TODAS las rutas de indexación (hook de guardado, actualización y sync masivo):
+ * si el sync no aplica esta normalización, los mensajes de agente se indexan con `content[]` en
+ * crudo —incluidos los bloques `think` con el razonamiento interno del modelo— y su `text` queda
+ * vacío, con lo que no aparecen al buscar sobre `text`.
+ *
+ * @param doc documento plano ya filtrado a los atributos indexables
+ */
+const normalizeIndexObject = (doc: Record<string, unknown>): Record<string, unknown> => {
+  const object = _.omitBy(doc, (v, k) => k.startsWith('$')) as Record<string, unknown>;
+
+  if (
+    object.conversationId &&
+    typeof object.conversationId === 'string' &&
+    object.conversationId.includes('|')
+  ) {
+    object.conversationId = object.conversationId.replace(/\|/g, '--');
+  }
+
+  /** `parseTextParts` conserva solo las partes de tipo `text`, descartando `think` y similares. */
+  if (object.content && Array.isArray(object.content)) {
+    object.text = parseTextParts(object.content as ContentItem[]);
+    delete object.content;
+  }
+
+  return object;
+};
+
+/**
  * Validates the required options for configuring the mongoMeili plugin.
  */
 const validateOptions = (options: Partial<MongoMeiliOptions>): void => {
@@ -183,8 +231,10 @@ const createMeiliMongooseModel = ({
      * Get the current sync progress
      */
     static async getSyncProgress(this: SchemaWithMeiliMethods): Promise<SyncProgress> {
-      const totalDocuments = await this.countDocuments();
-      const indexedDocuments = await this.countDocuments({ _meiliIndex: true });
+      /** Los temporales nunca se indexan: contarlos impediría alcanzar `isComplete`. */
+      const baseFilter = schemaHasExpiration(this.schema) ? permanentDocumentFilter : {};
+      const totalDocuments = await this.countDocuments(baseFilter);
+      const indexedDocuments = await this.countDocuments({ ...baseFilter, _meiliIndex: true });
 
       return {
         totalProcessed: indexedDocuments,
@@ -210,7 +260,9 @@ const createMeiliMongooseModel = ({
         );
 
         // Build query with resume capability
-        const query: FilterQuery<unknown> = {};
+        const query: FilterQuery<unknown> = schemaHasExpiration(this.schema)
+          ? { ...permanentDocumentFilter }
+          : {};
         if (options?.resumeFromId) {
           query._id = { $gt: options.resumeFromId };
         }
@@ -230,7 +282,7 @@ const createMeiliMongooseModel = ({
           .cursor();
 
         const format = (doc: Record<string, unknown>) =>
-          _.omitBy(_.pick(doc, attributesToIndex), (v, k) => k.startsWith('$'));
+          normalizeIndexObject(_.pick(doc, attributesToIndex));
 
         let documentBatch: Array<Record<string, unknown>> = [];
         let updateOps: Array<{
@@ -344,10 +396,15 @@ const createMeiliMongooseModel = ({
           }
 
           const meiliIds = batch.results.map((doc) => doc[primaryKey]);
-          const query: Record<string, unknown> = {};
+          const query: Record<string, unknown> = schemaHasExpiration(this.schema)
+            ? { ...permanentDocumentFilter }
+            : {};
           query[primaryKey] = { $in: meiliIds };
 
-          // Find which documents exist in MongoDB
+          /**
+           * Documentos que existen en MongoDB Y son indexables. Un documento temporal indexado
+           * por una versión anterior no supera este filtro, así que se purga del índice.
+           */
           const existingDocs = await this.find(query).select(primaryKey).lean();
 
           const existingIds = new Set(
@@ -357,11 +414,15 @@ const createMeiliMongooseModel = ({
           // Delete documents that don't exist in MongoDB
           const toDelete = meiliIds.filter((id) => !existingIds.has(id));
           if (toDelete.length > 0) {
-            await Promise.all(toDelete.map((id) => index.deleteDocument(id as string)));
+            await index.deleteDocuments(toDelete as string[]);
             logger.debug(`[cleanupMeiliIndex] Deleted ${toDelete.length} orphaned documents`);
           }
 
-          offset += batchSize;
+          /**
+           * Los documentos borrados desaparecen de la paginación, así que avanzar el offset por
+           * `batchSize` completo saltaría tantos documentos como se hayan borrado.
+           */
+          offset += batchSize - toDelete.length;
 
           // Add delay between batches
           if (delayMs > 0) {
@@ -432,24 +493,7 @@ const createMeiliMongooseModel = ({
      * Preprocesses the current document for indexing
      */
     preprocessObjectForIndex(this: DocumentWithMeiliIndex): Record<string, unknown> {
-      const object = _.omitBy(_.pick(this.toJSON(), attributesToIndex), (v, k) =>
-        k.startsWith('$'),
-      );
-
-      if (
-        object.conversationId &&
-        typeof object.conversationId === 'string' &&
-        object.conversationId.includes('|')
-      ) {
-        object.conversationId = object.conversationId.replace(/\|/g, '--');
-      }
-
-      if (object.content && Array.isArray(object.content)) {
-        object.text = parseTextParts(object.content);
-        delete object.content;
-      }
-
-      return object;
+      return normalizeIndexObject(_.pick(this.toJSON(), attributesToIndex));
     }
 
     /**
@@ -459,6 +503,11 @@ const createMeiliMongooseModel = ({
       this: DocumentWithMeiliIndex,
       next: CallbackWithoutResultAndOptionalError,
     ): Promise<void> {
+      /** Los chats temporales no se indexan: ver `permanentDocumentFilter`. */
+      if (isTemporaryDocument(this)) {
+        return next();
+      }
+
       const object = this.preprocessObjectForIndex!();
       const maxRetries = 3;
       let retryCount = 0;
@@ -499,9 +548,20 @@ const createMeiliMongooseModel = ({
       next: CallbackWithoutResultAndOptionalError,
     ): Promise<void> {
       try {
-        const object = _.omitBy(_.pick(this.toJSON(), attributesToIndex), (v, k) =>
-          k.startsWith('$'),
-        );
+        /**
+         * Si el documento pasó a ser temporal, se elimina del índice en lugar de actualizarlo
+         * y se marca como no indexado, para que el sync no vuelva a intentarlo.
+         */
+        if (isTemporaryDocument(this)) {
+          await this.deleteObjectFromMeili!(() => {});
+          await this.collection.updateMany(
+            { _id: this._id as Types.ObjectId },
+            { $set: { _meiliIndex: false } },
+          );
+          return next();
+        }
+
+        const object = normalizeIndexObject(_.pick(this.toJSON(), attributesToIndex));
         await index.updateDocuments([object]);
         next();
       } catch (error) {
@@ -520,7 +580,15 @@ const createMeiliMongooseModel = ({
       next: CallbackWithoutResultAndOptionalError,
     ): Promise<void> {
       try {
-        await index.deleteDocument(this._id as string);
+        /**
+         * El primary key del índice es `attributesToIndex[0]` (messageId / conversationId),
+         * NO el `_id` de Mongo. Borrar por `_id` no elimina nada y deja huérfanos en Meili.
+         * Se aplica la misma normalización que `preprocessObjectForIndex`.
+         */
+        const primaryKeyValue = String(
+          (this as unknown as Record<string, unknown>)[primaryKey],
+        ).replace(/\|/g, '--');
+        await index.deleteDocument(primaryKeyValue);
         next();
       } catch (error) {
         logger.error('[deleteObjectFromMeili] Error deleting document from Meili:', error);
@@ -643,6 +711,21 @@ export default function mongoMeili(schema: Schema, options: MongoMeiliOptions): 
       } else {
         logger.error(`[mongoMeili] Error checking index ${indexName}:`, error);
       }
+    }
+
+    /**
+     * `user` debe ser filtrable para poder acotar cada búsqueda al usuario que la solicita.
+     * Sin esto, `filter: 'user = "..."'` devuelve `invalid_search_filter` y la búsqueda tendría
+     * que consultar el índice global y descartar después, devolviendo resultados incompletos.
+     * `indexSync` también lo asegura al arrancar; aquí se cubre el índice recién creado.
+     */
+    try {
+      await index.updateSettings({ filterableAttributes: ['user'] });
+    } catch (settingsError) {
+      logger.warn(
+        `[mongoMeili] Could not set filterable attributes for ${indexName}:`,
+        settingsError,
+      );
     }
   })();
 

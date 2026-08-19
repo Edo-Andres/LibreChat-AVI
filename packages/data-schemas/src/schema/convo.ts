@@ -4,6 +4,11 @@ import { IConversation } from '~/types';
 
 const convoSchema: Schema<IConversation> = new Schema(
   {
+    /**
+     * IMPORTANTE: el plugin mongoMeili infiere la primary key del indice como el PRIMER
+     * campo declarado con `meiliIndex: true` (ver mongoMeili.ts, `attributesToIndex[0]`).
+     * No reordenar los campos ni anteponer otro `meiliIndex` a este.
+     */
     conversationId: {
       type: String,
       unique: true,
@@ -19,6 +24,7 @@ const convoSchema: Schema<IConversation> = new Schema(
     user: {
       type: String,
       index: true,
+      meiliIndex: true,
     },
     messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],
     agentOptions: {

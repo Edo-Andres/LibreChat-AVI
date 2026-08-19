@@ -174,7 +174,10 @@ module.exports = {
 
     if (search) {
       try {
-        const meiliResults = await Conversation.meiliSearch(search);
+        /** Ver la nota de `api/server/routes/messages.js`: el filtro acota la búsqueda al usuario. */
+        const meiliResults = await Conversation.meiliSearch(search, {
+          filter: `user = "${user}"`,
+        });
         const matchingIds = Array.isArray(meiliResults.hits)
           ? meiliResults.hits.map((result) => result.conversationId)
           : [];

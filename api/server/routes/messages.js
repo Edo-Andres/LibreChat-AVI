@@ -58,7 +58,13 @@ router.get('/', async (req, res) => {
       const nextCursor = messages.length > pageSize ? messages.pop()[sortField] : null;
       response = { messages, nextCursor };
     } else if (search) {
-      const searchResults = await Message.meiliSearch(search, undefined, true);
+      /**
+       * El filtro por `user` acota la búsqueda en el propio Meili. Sin él, los hits que devuelve
+       * (20 por defecto) se reparten entre todos los usuarios de la instancia y luego se
+       * descartan en Mongo, con lo que el usuario recibe resultados incompletos o vacíos.
+       * El filtrado posterior con `getConvosQueried` se mantiene como red de seguridad.
+       */
+      const searchResults = await Message.meiliSearch(search, { filter: `user = "${user}"` }, true);
 
       const messages = searchResults.hits || [];
 

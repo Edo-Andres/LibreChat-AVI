@@ -1,5 +1,12 @@
 [
   {
+    "name": "Búsqueda en conversaciones",
+    "pluginKey": "conversation_search",
+    "description": "Consulta el historial de conversaciones anteriores del propio usuario para recuperar información que compartió antes.",
+    "icon": "/assets/logo.svg",
+    "authConfig": []
+  },
+  {
     "name": "Traversaal",
     "pluginKey": "traversaal_search",
     "description": "Traversaal is a robust search API tailored for LLM Agents. Get an API key here: https://api.traversaal.ai",

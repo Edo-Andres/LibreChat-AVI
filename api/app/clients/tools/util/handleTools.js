@@ -27,6 +27,7 @@ const {
   createYouTubeTools,
   TavilySearchResults,
   createOpenAIImageTools,
+  ConversationSearch,
 } = require('../');
 const { primeFiles: primeCodeFiles } = require('~/server/services/Files/Code/process');
 const { createFileSearchTool, primeFiles: primeSearchFiles } = require('./fileSearch');
@@ -174,6 +175,41 @@ const loadTools = async ({
   };
 
   const customConstructors = {
+    /**
+     * Va en `customConstructors` y no en `toolConstructors` porque necesita el `req`: de ahí salen
+     * la configuración (`req.config.conversationSearch`), el rol del usuario y el `conversationId`
+     * en curso, que se excluye de la búsqueda para no duplicar contexto que el modelo ya tiene.
+     */
+    conversation_search: async (_toolContextMap) => {
+      const conversationSearchConfig = options.req?.config?.conversationSearch ?? {};
+
+      if (conversationSearchConfig.enabled === false) {
+        logger.warn('[handleTools] `conversation_search` is disabled by configuration');
+        return null;
+      }
+
+      /**
+       * Gate por rol en tiempo de ejecución. El catálogo de `GET /api/agents/tools` se cachea de
+       * forma global, así que la tool aparecerá en el selector para todos; el límite efectivo es
+       * este, que es donde realmente se carga.
+       */
+      const { allowedRoles } = conversationSearchConfig;
+      const userRole = options.req?.user?.role;
+      if (Array.isArray(allowedRoles) && allowedRoles.length > 0) {
+        if (!allowedRoles.includes(userRole)) {
+          logger.warn(
+            `[handleTools] \`conversation_search\` not allowed for role "${userRole}"; skipping`,
+          );
+          return null;
+        }
+      }
+
+      return new ConversationSearch({
+        userId: user,
+        req: options.req,
+        conversationSearchConfig,
+      });
+    },
     serpapi: async (_toolContextMap) => {
       const authFields = getAuthFields('serpapi');
       let envVar = authFields[0] ?? '';

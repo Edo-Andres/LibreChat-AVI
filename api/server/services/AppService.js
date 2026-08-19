@@ -98,6 +98,7 @@ const AppService = async () => {
     turnstileConfig,
     fileStrategies: config.fileStrategies,
     conversationSuggestions: config.conversationSuggestions,
+    conversationSearch: config.conversationSearch,
   };
 
   const agentsDefaults = agentsConfigSetup(config);

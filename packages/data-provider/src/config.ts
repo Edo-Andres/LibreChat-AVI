@@ -847,6 +847,31 @@ const conversationSuggestionsSchema = z
   })
   .optional();
 
+/**
+ * Schema para conversationSearch — tool `conversation_search`.
+ *
+ * Complementa a `memory`: esa guarda hechos curados bajo claves fijas, mientras que esta permite
+ * al agente recuperar lo que se dijo literalmente en conversaciones anteriores del propio usuario.
+ */
+const conversationSearchSchema = z
+  .object({
+    enabled: z.boolean().default(true),
+    /** Conversaciones más recientes en las que se busca. */
+    conversationLimit: z.number().int().min(1).max(100).default(20),
+    /** Conversaciones distintas devueltas por invocación. */
+    maxResults: z.number().int().min(1).max(10).default(5),
+    /** Mensajes vecinos a cada acierto, a cada lado, para dar contexto. */
+    contextWindow: z.number().int().min(0).max(3).default(1),
+    maxTokensPerResult: z.number().int().min(50).max(1000).default(200),
+    maxTotalTokens: z.number().int().min(200).max(4000).default(800),
+    excludeCurrentConversation: z.boolean().default(true),
+    /** Roles del sistema autorizados. Omitir para permitir todos. */
+    allowedRoles: z.array(z.string()).optional(),
+  })
+  .optional();
+
+export type TConversationSearchConfig = z.infer<typeof conversationSearchSchema>;
+
 export const configSchema = z.object({
   version: z.string(),
   cache: z.boolean().default(true),
@@ -887,6 +912,7 @@ export const configSchema = z.object({
   modelSpecs: specsConfigSchema.optional(),
   aviRoles: aviRolesSchema,
   conversationSuggestions: conversationSuggestionsSchema,
+  conversationSearch: conversationSearchSchema,
   endpoints: z
     .object({
       all: baseEndpointSchema.optional(),
