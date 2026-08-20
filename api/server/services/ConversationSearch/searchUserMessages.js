@@ -5,15 +5,45 @@ const { Message } = require('~/db/models');
 const { getConvosByCursor } = require('~/models/Conversation');
 const { isEnabled } = require('~/server/utils');
 
-/** Valores por defecto; se sobrescriben con el bloque `conversationSearch` de librechat.yaml. */
+/**
+ * Valores por defecto; se sobrescriben con el bloque `conversationSearch` de librechat.yaml.
+ *
+ * `maxTokensPerResult`/`maxTotalTokens` son la red de seguridad si ese bloque falta o queda mal
+ * indentado en el yaml (ya ocurrió: quedó anidado dentro de `memory:` y sus campos se
+ * descartaron en silencio, sin error de validación). Con 200/800 un mensaje típico de este
+ * asistente (mediana 80 tokens, máximo medido 348) ya se recortaba SIEMPRE, perdiendo el final
+ * del mensaje —justo donde suele estar el dato específico que se pregunta ("la opción 4")—.
+ * 600/2500 cubren ese máximo con margen sin depender de que el yaml esté bien configurado.
+ */
 const DEFAULTS = {
   conversationLimit: 20,
   maxResults: 5,
   contextWindow: 1,
-  maxTokensPerResult: 200,
-  maxTotalTokens: 800,
+  maxTokensPerResult: 600,
+  maxTotalTokens: 2500,
   excludeCurrentConversation: true,
 };
+
+/**
+ * Tope de tokens para un mensaje VECINO (contexto, no el acierto de la búsqueda).
+ *
+ * No es configurable desde el yaml a propósito: es un reparto interno. Antes de este fix, todos
+ * los mensajes —hit o vecino— competían por el mismo presupuesto en el orden en que aparecían
+ * cronológicamente, así que un vecino largo podía agotar `maxTotalTokens` antes de llegar al
+ * mensaje que realmente había hecho match. Ver `searchUserMessages` para el reparto en dos
+ * pasadas: primero los aciertos, después los vecinos con lo que sobre.
+ */
+const MAX_TOKENS_PER_NEIGHBOR = 200;
+
+/**
+ * Aciertos que se expanden con contexto por conversación.
+ *
+ * Antes, el tope de mensajes a expandir dependía de `remaining` (pensado como "cuántas
+ * conversaciones faltan por mostrar") pero se usaba como límite de MENSAJES dentro de una sola
+ * conversación. Con varios aciertos en la misma conversación eso podía traer hasta 15 mensajes de
+ * un solo grupo y agotar el presupuesto que debía repartirse entre las demás conversaciones.
+ */
+const MAX_HITS_PER_CONVERSATION = 2;
 
 /** Mensajes devueltos al LLM cuando no hay resultados útiles. */
 const UNAVAILABLE =
@@ -85,28 +115,109 @@ function sanitize(text) {
 }
 
 /**
+ * Quita tildes/diacríticos para comparar términos de búsqueda sin depender de que coincidan
+ * exactamente en acentuación (p. ej. la palabra de búsqueda "sobrepeso" debe encontrar
+ * "Sobrepeso" en el texto).
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+function normalizeForMatch(text) {
+  return text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
+}
+
+/**
+ * Ubica dónde aparece la búsqueda dentro del texto, para centrar el recorte ahí en vez de perder
+ * siempre el contenido posterior. Prueba las palabras del query de la más larga a la más corta:
+ * las más largas suelen ser más específicas ("domingo" ubica mejor que "desayuno", que puede
+ * aparecer como palabra genérica al inicio del mensaje).
+ *
+ * @param {string} text
+ * @param {string} [query]
+ * @returns {number} índice de la coincidencia, o -1 si no se encontró ninguna
+ */
+function findQueryMatchIndex(text, query) {
+  if (!query) {
+    return -1;
+  }
+  const normalizedText = normalizeForMatch(text);
+  const words = query
+    .split(/\s+/)
+    .map((word) => normalizeForMatch(word))
+    .filter((word) => word.length >= 3)
+    .sort((a, b) => b.length - a.length);
+
+  for (const word of words) {
+    const index = normalizedText.indexOf(word);
+    if (index !== -1) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+/**
  * Trunca por tokens (no por caracteres): la relación caracteres/token es impredecible en español
  * acentuado y en terminología clínica poco frecuente.
  *
+ * Cuando se pasa `query`, centra el recorte alrededor de donde aparecen sus palabras en vez de
+ * cortar siempre desde el inicio. Es necesario para mensajes largos y estructurados (menús,
+ * rutinas, listas): sin esto, un mensaje que empieza con "Lunes..." y termina con "Domingo..."
+ * pierde el domingo aunque sea justo lo que se preguntó.
+ *
  * @param {string} text
  * @param {number} maxTokens
+ * @param {string} [query]
  * @returns {{ text: string, tokens: number }}
  */
-function truncateToTokens(text, maxTokens) {
+function truncateToTokens(text, maxTokens, query) {
   const tokens = Tokenizer.getTokenCount(text, 'o200k_base');
   if (tokens <= maxTokens) {
     return { text, tokens };
   }
 
-  /** Aproximación por proporción y recorte en el límite de palabra. */
-  const ratio = maxTokens / tokens;
-  const cutoff = Math.max(1, Math.floor(text.length * ratio));
-  let truncated = text.slice(0, cutoff);
-  const lastSpace = truncated.lastIndexOf(' ');
-  if (lastSpace > cutoff * 0.6) {
-    truncated = truncated.slice(0, lastSpace);
+  /** Aproximación por proporción, centrada en la coincidencia de búsqueda si se encuentra una. */
+  const charsPerToken = text.length / tokens;
+  const windowChars = Math.max(1, Math.floor(maxTokens * charsPerToken));
+  const matchIndex = findQueryMatchIndex(text, query);
+
+  let start = 0;
+  let end;
+  if (matchIndex !== -1) {
+    start = Math.max(0, matchIndex - Math.floor(windowChars / 2));
+    end = Math.min(text.length, start + windowChars);
+    /** Si el final tocó el borde del texto, recupera espacio corriendo el inicio hacia atrás. */
+    start = Math.max(0, end - windowChars);
+  } else {
+    end = Math.min(text.length, windowChars);
   }
-  truncated = `${truncated.trim()}…`;
+
+  let truncated = text.slice(start, end);
+
+  /** Ajustar a límite de palabra en ambos extremos, para no cortar una palabra a la mitad. */
+  if (end < text.length) {
+    const lastSpace = truncated.lastIndexOf(' ');
+    if (lastSpace > truncated.length * 0.6) {
+      truncated = truncated.slice(0, lastSpace);
+    }
+  }
+  if (start > 0) {
+    const firstSpace = truncated.indexOf(' ');
+    if (firstSpace !== -1 && firstSpace < truncated.length * 0.4) {
+      truncated = truncated.slice(firstSpace + 1);
+    }
+  }
+
+  truncated = truncated.trim();
+  if (end < text.length) {
+    truncated = `${truncated}…`;
+  }
+  if (start > 0) {
+    truncated = `…${truncated}`;
+  }
 
   return { text: truncated, tokens: Tokenizer.getTokenCount(truncated, 'o200k_base') };
 }
@@ -249,43 +360,125 @@ async function searchUserMessages({
     let rendered = 0;
     let truncatedOutput = false;
 
-    for (const conversationId of groups) {
-      if (rendered >= resultLimit || totalTokens >= settings.maxTotalTokens) {
-        truncatedOutput = true;
-        break;
-      }
+    /**
+     * Candidatos a mostrar, ya con sus mensajes (acierto + vecinos) cargados. Se hace ANTES de
+     * gastar presupuesto para poder repartirlo en dos pasadas: primero los aciertos de todas las
+     * conversaciones, después los vecinos. Si se hiciera en una sola pasada por conversación (el
+     * diseño anterior), un vecino de la primera conversación podía agotar `maxTotalTokens` antes
+     * de llegar siquiera al acierto de la segunda — el bug reportado ("perdí la opción 4"), que
+     * ocurría por un cap por-mensaje demasiado bajo, pero el mismo mecanismo de "vecino consume
+     * el presupuesto del acierto" también aplica entre conversaciones distintas.
+     */
+    const candidateGroups = groups.slice(0, resultLimit);
+    if (groups.length > candidateGroups.length) {
+      truncatedOutput = true;
+    }
 
+    const groupData = [];
+    for (const conversationId of candidateGroups) {
       const messages = await expandConversationHits({
         userId,
         conversationId,
         hitIds: confirmedByConvo.get(conversationId),
         contextWindow: settings.contextWindow,
-        remaining: resultLimit - rendered,
       });
-
-      if (messages.length === 0) {
-        continue;
+      if (messages.length > 0) {
+        groupData.push({ conversationId, messages });
       }
+    }
 
-      const lines = [];
+    /** conversationId -> Map(messageId -> texto ya truncado) */
+    const renderedByGroup = new Map();
+
+    /** Pasada 1: el mensaje que hizo match, con prioridad absoluta sobre cualquier vecino. */
+    for (const { conversationId, messages } of groupData) {
+      if (totalTokens >= settings.maxTotalTokens) {
+        truncatedOutput = true;
+        break;
+      }
+      const lineMap = new Map();
       for (const message of messages) {
+        if (!message.isHit) {
+          continue;
+        }
         const raw = sanitize(getMessageText(message)).trim();
         if (!raw) {
           continue;
         }
-        const { text, tokens } = truncateToTokens(raw, settings.maxTokensPerResult);
-        if (totalTokens + tokens > settings.maxTotalTokens) {
+        const available = settings.maxTotalTokens - totalTokens;
+        if (available <= 0) {
           truncatedOutput = true;
           break;
         }
+        const { text, tokens } = truncateToTokens(
+          raw,
+          Math.min(settings.maxTokensPerResult, available),
+          query,
+        );
+        if (!text) {
+          continue;
+        }
         totalTokens += tokens;
+        lineMap.set(message.messageId, text);
+      }
+      if (lineMap.size > 0) {
+        renderedByGroup.set(conversationId, lineMap);
+      }
+    }
+
+    /** Pasada 2: con lo que sobre del presupuesto, se agregan los vecinos como contexto. */
+    for (const { conversationId, messages } of groupData) {
+      const lineMap = renderedByGroup.get(conversationId);
+      if (!lineMap) {
+        continue;
+      }
+      if (totalTokens >= settings.maxTotalTokens) {
+        truncatedOutput = true;
+        break;
+      }
+      for (const message of messages) {
+        if (message.isHit || lineMap.has(message.messageId)) {
+          continue;
+        }
+        const raw = sanitize(getMessageText(message)).trim();
+        if (!raw) {
+          continue;
+        }
+        const available = settings.maxTotalTokens - totalTokens;
+        if (available <= 0) {
+          truncatedOutput = true;
+          break;
+        }
+        const { text, tokens } = truncateToTokens(
+          raw,
+          Math.min(MAX_TOKENS_PER_NEIGHBOR, available),
+          query,
+        );
+        if (!text) {
+          continue;
+        }
+        totalTokens += tokens;
+        lineMap.set(message.messageId, text);
+      }
+    }
+
+    /** Ensamblado final: por grupo (ya en orden de recencia), y dentro de cada uno en orden cronológico. */
+    for (const { conversationId, messages } of groupData) {
+      const lineMap = renderedByGroup.get(conversationId);
+      if (!lineMap) {
+        continue;
+      }
+      const lines = [];
+      for (const message of messages) {
+        const text = lineMap.get(message.messageId);
+        if (!text) {
+          continue;
+        }
         lines.push(`${message.isCreatedByUser ? 'Usuario' : 'AVI'}: ${text}`);
       }
-
       if (lines.length === 0) {
         continue;
       }
-
       rendered++;
       const convo = allowed.get(conversationId);
       const title = sanitize(convo.title || 'Sin título');
@@ -315,21 +508,17 @@ async function searchUserMessages({
  * entera: primero una consulta ligera de metadatos para localizar la ventana, y después una
  * segunda acotada por `$in` para el contenido.
  *
+ * Marca cada mensaje devuelto con `isHit`: el llamador necesita distinguir el mensaje que hizo
+ * match de sus vecinos para darle prioridad de presupuesto sobre ellos.
+ *
  * @param {object} params
  * @param {string} params.userId
  * @param {string} params.conversationId
  * @param {string[]} params.hitIds
  * @param {number} params.contextWindow
- * @param {number} params.remaining
- * @returns {Promise<Array<object>>} mensajes ordenados cronológicamente
+ * @returns {Promise<Array<object>>} mensajes ordenados cronológicamente, con `isHit` añadido
  */
-async function expandConversationHits({
-  userId,
-  conversationId,
-  hitIds,
-  contextWindow,
-  remaining,
-}) {
+async function expandConversationHits({ userId, conversationId, hitIds, contextWindow }) {
   const timeline = await Message.find({
     user: userId,
     conversationId,
@@ -343,20 +532,25 @@ async function expandConversationHits({
     return [];
   }
 
-  const wanted = new Set();
   const hits = new Set(hitIds);
+  const wanted = new Set();
 
-  for (let i = 0; i < timeline.length; i++) {
+  /**
+   * Recorrido del más reciente al más antiguo, con un tope FIJO de aciertos por conversación
+   * (`MAX_HITS_PER_CONVERSATION`). Cuando el usuario pregunta por algo dicho antes suele referirse
+   * a lo último que se habló del tema, así que se prioriza lo más reciente si hay más aciertos de
+   * los que caben.
+   */
+  let expandedHits = 0;
+  for (let i = timeline.length - 1; i >= 0 && expandedHits < MAX_HITS_PER_CONVERSATION; i--) {
     if (!hits.has(timeline[i].messageId)) {
       continue;
     }
+    expandedHits++;
     const start = Math.max(0, i - contextWindow);
     const end = Math.min(timeline.length - 1, i + contextWindow);
     for (let j = start; j <= end; j++) {
       wanted.add(timeline[j].messageId);
-    }
-    if (wanted.size >= (2 * contextWindow + 1) * Math.max(1, remaining)) {
-      break;
     }
   }
 
@@ -373,7 +567,7 @@ async function expandConversationHits({
     .sort({ createdAt: 1 })
     .lean();
 
-  return messages;
+  return messages.map((message) => ({ ...message, isHit: hits.has(message.messageId) }));
 }
 
 module.exports = { searchUserMessages };
