@@ -11,6 +11,7 @@ Documentaci├│n validada contra el c├│digo actual (rama `dev`, Junio 2026
 | **[GUIA_DEPLOY_DESARROLLO.md](./GUIA_DEPLOY_DESARROLLO.md)** | Deploy, entornos `avi` vs `avi-dev`, desarrollo local, gesti├│n de roles, comandos y troubleshooting. |
 | **[AVI_ROLES.md](./AVI_ROLES.md)** | Sistema de roles AVI: modelo de datos, campos (`knowledge`/`behavior`/`registerAnswer`), variables de plantilla, recarga din├ímica y migraci├│n. |
 | **[OPERACIONES.md](./OPERACIONES.md)** | Operaciones y mantenimiento: backup GCS, sync Google Sheets, Health Check, conversation suggestions, invitaciones y limpieza de chats. |
+| **[CHANGELOG_AVI.md](./CHANGELOG_AVI.md)** | Historial cronológico de cambios y features del fork AVI (búsqueda, roles, region, sync, etc.). |
 
 ---
 
@@ -25,6 +26,7 @@ La carpeta [`_archive/`](./_archive/) contiene documentaci├│n hist├│rica
 - **┬┐Desplegar o desarrollar?** ÔåÆ `GUIA_DEPLOY_DESARROLLO.md`
 - **┬┐Editar o sincronizar roles?** ÔåÆ `AVI_ROLES.md`
 - **┬┐Backups, health checks o sync de chats?** ÔåÆ `OPERACIONES.md`
+- **¿Qué cambió recientemente?** → `CHANGELOG_AVI.md`
 
 ---
 

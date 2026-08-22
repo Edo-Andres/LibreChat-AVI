@@ -37,6 +37,10 @@ LibreChat-AVI es un fork de LibreChat adaptado para AVI (Asistente Virtual en In
   - `npm run lint` — Verificar estilo general del monorepo (lento, ~varios minutos).
   - `npm run test:api` o `npm run test:client` — Si existen tests unitarios.
 
+## Historial de cambios
+- Si el cambio es una nueva feature, nueva documentación o un fix relevante, **actualiza `Docs_AVI/CHANGELOG_AVI.md`** siguiendo su sección "Cómo agregar una entrada" (fecha, categoría, descripción corta, commit/archivos).
+- Sé conciso: una línea por cambio, sin detalle innecesario. Omite cambios triviales (typos, formato, ajustes menores sin impacto para el equipo).
+
 ## Respuesta y estilo
 - Usa los comandos reales del proyecto cuando sugieras acciones.
 - Responde siempre en español y llama al usuario Don Andres.
