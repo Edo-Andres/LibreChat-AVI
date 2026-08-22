@@ -11,11 +11,29 @@ Este documento registra en español los cambios y features propios del fork AVI 
 
 ## 📋 Tabla de Contenidos
 
+- [2026-08-21](#2026-08-21)
 - [2026-08-20](#2026-08-20)
 - [2026-08-18](#2026-08-18)
 - [2026-08-17](#2026-08-17)
 - [2026-08-15](#2026-08-15)
 - [Cómo agregar una entrada](#cómo-agregar-una-entrada)
+
+---
+
+## 2026-08-21
+
+### ✨ Nuevas Features
+- **Segmentación de PostHog por rol AVI, sub-rol AVI y rango de edad**: el usuario logueado ahora se identifica en PostHog con las propiedades `avi_rol`, `avi_subrol`, `avi_rango_edad` y `avi_region` (vía `identify()` + `register()`). El backend resuelve los nombres de rol/sub-rol en `GET /api/user`. Documentado en [`POSTHOG_ANALYTICS.md`](./POSTHOG_ANALYTICS.md).
+  Archivos clave:
+  - `api/server/controllers/UserController.js` (helper `attachAviRoleNames`)
+  - `client/src/hooks/Analytics/usePostHogIdentify.ts` (nuevo hook)
+  - `client/src/components/Analytics/PostHogIdentify.tsx` (nuevo componente, montado en `AuthLayout`)
+  - `packages/data-provider/src/types.ts` (`ageRange` y `region` en `TUser`)
+
+### 🐛 Fixes
+- **`PostHogProvider` estaba montado dos veces** (`client/src/main.jsx` y `client/src/App.jsx`), causando doble `fetch('/api/config')` y doble init del singleton. Se conserva solo el de `App.jsx`.
+- **Carrera de inicialización de PostHog**: el provider ahora hace `posthog.init()` explícito y publica el cliente en el contexto solo tras inicializar, evitando que un consumidor llame `identify()`/`capture()` antes del init (posthog-js no encola esas llamadas y se perdían en silencio).
+  Archivo: `client/src/Providers/PostHogProvider.tsx`
 
 ---
 

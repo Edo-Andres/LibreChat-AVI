@@ -208,6 +208,10 @@ export type TUser = {
   updatedAt: string;
   aviRol?: string;
   aviSubrol?: string;
+  /** Rango etario declarado en el registro, p. ej. '25 a 34' */
+  ageRange?: string;
+  /** Región declarada en el registro */
+  region?: string;
   aviRolKnowledge?: string | null;
   aviRolBehavior?: string | null;
   aviSubrolKnowledge?: string | null;

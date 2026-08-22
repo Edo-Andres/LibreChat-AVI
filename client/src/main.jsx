@@ -6,7 +6,6 @@ import App from './App';
 import './style.css';
 import './mobile.css';
 import { ApiErrorBoundaryProvider } from './hooks/ApiErrorBoundaryContext';
-import { PostHogProvider } from './Providers';
 import 'katex/dist/katex.min.css';
 import 'katex/dist/contrib/copy-tex.js';
 
@@ -15,10 +14,8 @@ const root = createRoot(container);
 
 root.render(
   <StrictMode>
-    <PostHogProvider>
-      <ApiErrorBoundaryProvider>
-        <App />
-      </ApiErrorBoundaryProvider>
-    </PostHogProvider>
+    <ApiErrorBoundaryProvider>
+      <App />
+    </ApiErrorBoundaryProvider>
   </StrictMode>,
 );
