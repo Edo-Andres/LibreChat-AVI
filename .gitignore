@@ -146,6 +146,8 @@ Docs_AVI/Clear_versionsCount_agent/
 client/dev-dist/
 
 opencode.json
+
+Docs_AVI/_ignore/
 Docs_AVI/_archive/_ignore/
 
 # Resultados del evaluador interactivo AVI
