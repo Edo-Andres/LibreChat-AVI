@@ -15,14 +15,46 @@ import { useLocalize } from '~/hooks';
 import { ErrorMessage } from './ErrorMessage';
 
 // Extended type to include phone field
-type TRegisterUserWithPhone = TRegisterUser & { phone?: string };
+type TRegisterUserWithPhone = TRegisterUser & {
+  phone?: string;
+  participationConsent?: boolean;
+  ageRange?: string;
+  region?: string;
+};
+
+const AGE_RANGE_OPTIONS = [
+  '18 a 24',
+  '25 a 34',
+  '35 a 44',
+  '45 a 54',
+  '55 a 64',
+  '65 o más años',
+];
+
+const REGION_OPTIONS = [
+  'Arica y Parinacota',
+  'Tarapacá',
+  'Antofagasta',
+  'Atacama',
+  'Coquimbo',
+  'Valparaíso',
+  'Metropolitana de Santiago',
+  "O'Higgins",
+  'Maule',
+  'Ñuble',
+  'Biobío',
+  'La Araucanía',
+  'Los Ríos',
+  'Los Lagos',
+  'Aysén',
+  'Magallanes y la Antártica Chilena',
+];
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
   const localize = useLocalize();
   const { theme } = useContext(ThemeContext);
-  const { startupConfig, startupConfigError, isFetching } =
-    useOutletContext<TLoginLayoutContext>();
+  const { startupConfig, startupConfigError, isFetching } = useOutletContext<TLoginLayoutContext>();
 
   const {
     watch,
@@ -87,7 +119,7 @@ const Registration: React.FC = () => {
     let fieldsToValidate: (keyof TRegisterUserWithPhone)[] = [];
 
     if (currentStep === 1) {
-      fieldsToValidate = ['name', 'username', 'phone'];
+      fieldsToValidate = ['name', 'username', 'phone', 'ageRange', 'region'];
     } else if (currentStep === 2) {
       fieldsToValidate = ['email', 'aviRol_id'];
     }
@@ -153,9 +185,7 @@ const Registration: React.FC = () => {
     'absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-surface-primary px-2 text-sm text-text-secondary-alt duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-green-500';
 
   return (
-    <div
-      className="mx-auto flex h-auto w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 md:flex-row md:h-[600px] max-h-[calc(100vh-2rem)]"
-    >
+    <div className="mx-auto flex h-auto max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 md:h-[600px] md:flex-row">
       {/* Sidebar / Progress */}
       <div className="hidden w-[30%] flex-col justify-between border-r border-gray-100 bg-gray-50 p-8 dark:border-gray-800 dark:bg-gray-800/50 md:flex">
         <div>
@@ -216,9 +246,7 @@ const Registration: React.FC = () => {
             {currentStep === 1 && (
               <div className="flex-1">
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    ¿Quién eres?
-                  </h2>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">¿Quién eres?</h2>
                   <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Ingresa tus datos personales para comenzar.
                   </p>
@@ -260,8 +288,14 @@ const Registration: React.FC = () => {
                         autoComplete="username"
                         placeholder=" "
                         {...register('username', {
-                          minLength: { value: 2, message: localize('com_auth_username_min_length') },
-                          maxLength: { value: 80, message: localize('com_auth_username_max_length') },
+                          minLength: {
+                            value: 2,
+                            message: localize('com_auth_username_min_length'),
+                          },
+                          maxLength: {
+                            value: 80,
+                            message: localize('com_auth_username_max_length'),
+                          },
                         })}
                         className={inputBaseClass}
                       />
@@ -290,6 +324,98 @@ const Registration: React.FC = () => {
                     <label htmlFor="phone" className={labelBaseClass}>
                       Teléfono <span className="text-xs text-gray-400">(opcional)</span>
                     </label>
+                  </div>
+
+                  {/* Age Range */}
+                  <div>
+                    <div className="relative">
+                      <select
+                        id="ageRange"
+                        defaultValue=""
+                        {...register('ageRange', {
+                          required: 'Selecciona tu rango de edad',
+                        })}
+                        className={`${inputBaseClass} cursor-pointer appearance-none`}
+                      >
+                        <option value="" disabled>
+                          Selecciona tu rango de edad
+                        </option>
+                        {AGE_RANGE_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <label htmlFor="ageRange" className={labelBaseClass}>
+                        Rango de edad
+                      </label>
+                      <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    {errors.ageRange && (
+                      <span className="mt-1 text-sm text-red-500">
+                        {String(errors.ageRange.message)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Region */}
+                  <div>
+                    <div className="relative">
+                      <select
+                        id="region"
+                        defaultValue=""
+                        {...register('region', {
+                          required: 'Selecciona tu región',
+                        })}
+                        className={`${inputBaseClass} cursor-pointer appearance-none`}
+                      >
+                        <option value="" disabled>
+                          Selecciona tu región
+                        </option>
+                        {REGION_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <label htmlFor="region" className={labelBaseClass}>
+                        Región
+                      </label>
+                      <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    {errors.region && (
+                      <span className="mt-1 text-sm text-red-500">
+                        {String(errors.region.message)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -320,7 +446,10 @@ const Registration: React.FC = () => {
                           required: localize('com_auth_email_required'),
                           minLength: { value: 1, message: localize('com_auth_email_min_length') },
                           maxLength: { value: 120, message: localize('com_auth_email_max_length') },
-                          pattern: { value: /\S+@\S+\.\S+/, message: localize('com_auth_email_pattern') },
+                          pattern: {
+                            value: /\S+@\S+\.\S+/,
+                            message: localize('com_auth_email_pattern'),
+                          },
                         })}
                         className={inputBaseClass}
                       />
@@ -353,8 +482,18 @@ const Registration: React.FC = () => {
                       Rol AVI
                     </label>
                     <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </div>
                   </div>
@@ -378,8 +517,18 @@ const Registration: React.FC = () => {
                         Subrol AVI <span className="text-xs text-gray-400">(opcional)</span>
                       </label>
                       <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -413,7 +562,10 @@ const Registration: React.FC = () => {
                             value: startupConfig?.minPasswordLength || 8,
                             message: localize('com_auth_password_min_length'),
                           },
-                          maxLength: { value: 128, message: localize('com_auth_password_max_length') },
+                          maxLength: {
+                            value: 128,
+                            message: localize('com_auth_password_max_length'),
+                          },
                         })}
                         className={`${inputBaseClass} pr-10 [&::-ms-reveal]:hidden`}
                       />
@@ -425,7 +577,11 @@ const Registration: React.FC = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary transition-colors hover:text-text-primary"
                       >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
                       </button>
                     </div>
                     {errors.password && (
@@ -457,7 +613,11 @@ const Registration: React.FC = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary transition-colors hover:text-text-primary"
                       >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
                       </button>
                     </div>
                     {errors.confirm_password && (
@@ -479,7 +639,8 @@ const Registration: React.FC = () => {
                       htmlFor="participationConsent"
                       className="text-sm text-gray-600 dark:text-gray-300"
                     >
-                      Acepto ser contactado/a para participar en estudios o evaluaciones relacionadas con el uso de AVI.
+                      Acepto ser contactado/a para participar en estudios o evaluaciones
+                      relacionadas con el uso de AVI.
                     </label>
                   </div>
 

@@ -12,8 +12,8 @@ const connect = require('./connect');
 function extractTextFromContent(content) {
   if (!content || !Array.isArray(content)) return '';
   return content
-    .filter(item => item.type === 'text')
-    .map(item => item.text)
+    .filter((item) => item.type === 'text')
+    .map((item) => item.text)
     .join(' ');
 }
 
@@ -22,11 +22,7 @@ function extractTextFromContent(content) {
  */
 function cleanTextForCSV(text) {
   if (!text) return '';
-  return text
-    .replace(/\n/g, ' ')
-    .replace(/\r/g, ' ')
-    .replace(/"/g, '""')
-    .trim();
+  return text.replace(/\n/g, ' ').replace(/\r/g, ' ').replace(/"/g, '""').trim();
 }
 
 /**
@@ -39,15 +35,19 @@ function formatDateWithTimezone(date) {
 
   try {
     // Crear formato ISO compatible con CSV usando la zona horaria configurada
-    return new Date(date).toLocaleString('sv-SE', {
-      timeZone: timezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }).replace(' ', 'T') + '.000Z';
+    return (
+      new Date(date)
+        .toLocaleString('sv-SE', {
+          timeZone: timezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        })
+        .replace(' ', 'T') + '.000Z'
+    );
   } catch (error) {
     // Fallback a ISO si hay problemas
     console.warn(`⚠️ Error convirtiendo fecha a ${timezone}, usando UTC:`, error.message);
@@ -74,8 +74,11 @@ function formatDateWithTimezone(date) {
   format = format.toLowerCase();
 
   try {
-    console.orange('👥 Obteniendo usuarios...');
-    const users = await User.find({}, 'email name').lean();
+    console.orange('👥 Obteniendo usuarios con AVI Roles...');
+    const users = await User.find({}, 'email name aviRol_id aviSubrol_id')
+      .populate('aviRol_id', 'name')
+      .populate('aviSubrol_id', 'name')
+      .lean();
 
     console.orange('📂 Obteniendo todas las conversaciones...');
     const conversations = await Conversation.find({}).sort({ updatedAt: -1 }).lean();
@@ -83,12 +86,18 @@ function formatDateWithTimezone(date) {
     console.orange('💬 Obteniendo todos los mensajes...');
     const messages = await Message.find({}).sort({ createdAt: 1 }).lean();
 
-    console.green(`✅ ${users.length} usuarios, ${conversations.length} conversaciones, ${messages.length} mensajes`);
+    console.green(
+      `✅ ${users.length} usuarios, ${conversations.length} conversaciones, ${messages.length} mensajes`,
+    );
 
     // Crear mapas para búsqueda rápida
     const userMap = {};
-    users.forEach(user => {
-      userMap[user._id.toString()] = user;
+    users.forEach((user) => {
+      userMap[user._id.toString()] = {
+        ...user,
+        aviRole: user.aviRol_id?.name || '',
+        aviSubrole: user.aviSubrol_id?.name || '',
+      };
     });
 
     // Determinar archivo de salida
@@ -107,11 +116,11 @@ function formatDateWithTimezone(date) {
         totalUsers: users.length,
         totalConversations: conversations.length,
         totalMessages: messages.length,
-        users: {}
+        users: {},
       };
 
       // Agrupar por usuario
-      conversations.forEach(conv => {
+      conversations.forEach((conv) => {
         const user = userMap[conv.user];
         if (!user) return;
 
@@ -120,21 +129,21 @@ function formatDateWithTimezone(date) {
           result.users[userEmail] = {
             userInfo: {
               email: user.email,
-              name: user.name || ''
+              name: user.name || '',
             },
-            conversations: []
+            conversations: [],
           };
         }
 
         const convMessages = messages
-          .filter(msg => msg.conversationId === conv.conversationId)
-          .map(msg => ({
+          .filter((msg) => msg.conversationId === conv.conversationId)
+          .map((msg) => ({
             messageId: msg.messageId,
             sender: msg.sender || '',
             text: msg.text || extractTextFromContent(msg.content),
             isCreatedByUser: msg.isCreatedByUser || false,
             createdAt: formatDateWithTimezone(msg.createdAt),
-            parentMessageId: msg.parentMessageId || ''
+            parentMessageId: msg.parentMessageId || '',
           }));
 
         result.users[userEmail].conversations.push({
@@ -143,36 +152,39 @@ function formatDateWithTimezone(date) {
           createdAt: formatDateWithTimezone(conv.createdAt),
           updatedAt: formatDateWithTimezone(conv.updatedAt),
           messageCount: convMessages.length,
-          messages: convMessages
+          messages: convMessages,
         });
       });
 
       fs.writeFileSync(outputFile, JSON.stringify(result, null, 2), 'utf8');
-
     } else {
       // Generar CSV - Solo las columnas requeridas
-      const lines = ['userEmail,userName,conversationId,conversationTitle,sender,text,isCreatedByUser,messageId,createdAt'];
+      const lines = [
+        'userEmail,userName,userAviRole,userAviSubrole,conversationId,conversationTitle,sender,text,isCreatedByUser,messageId,createdAt',
+      ];
 
-      conversations.forEach(conv => {
+      conversations.forEach((conv) => {
         const user = userMap[conv.user];
         if (!user) return;
 
-        const convMessages = messages.filter(msg => msg.conversationId === conv.conversationId);
+        const convMessages = messages.filter((msg) => msg.conversationId === conv.conversationId);
 
-        convMessages.forEach(msg => {
+        convMessages.forEach((msg) => {
           let text = msg.text || extractTextFromContent(msg.content);
           text = cleanTextForCSV(text);
 
           const row = [
             user.email,
             `"${cleanTextForCSV(user.name || '')}"`,
+            `"${cleanTextForCSV(user.aviRole || '')}"`,
+            `"${cleanTextForCSV(user.aviSubrole || '')}"`,
             conv.conversationId,
             `"${cleanTextForCSV(conv.title || 'Sin título')}"`,
             msg.sender || '',
             `"${text}"`,
             msg.isCreatedByUser || false,
             msg.messageId,
-            formatDateWithTimezone(msg.createdAt)
+            formatDateWithTimezone(msg.createdAt),
           ];
           lines.push(row.join(','));
         });
@@ -194,7 +206,6 @@ function formatDateWithTimezone(date) {
     console.purple('----------------------------------------');
 
     silentExit(0);
-
   } catch (error) {
     console.red('❌ Error durante la exportación:');
     console.red(error.message);

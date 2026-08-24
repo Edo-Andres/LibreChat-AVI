@@ -50,6 +50,8 @@ const registerSchema = z
       .optional()
       .nullable(),
     phone: z.string().optional(),
+    ageRange: z.string().optional(),
+    region: z.string().optional(),
     email: z.string().email(),
     password: z
       .string()

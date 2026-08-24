@@ -24,11 +24,40 @@ const { updateUserPluginsService, deleteUserKey } = require('~/server/services/U
 const { verifyEmail, resendVerificationEmail } = require('~/server/services/AuthService');
 const { needsRefresh, getNewS3URL } = require('~/server/services/Files/S3/crud');
 const { processDeleteRequest } = require('~/server/services/Files/process');
-const { Transaction, Balance, User, Token } = require('~/db/models');
+const { Transaction, Balance, User, Token, AviRol, AviSubrol } = require('~/db/models');
 const { getMCPManager, getFlowStateManager } = require('~/config');
 const { getAppConfig } = require('~/server/services/Config');
 const { deleteToolCalls } = require('~/models/ToolCall');
 const { getLogStores } = require('~/cache');
+
+/**
+ * Resuelve los NOMBRES de rol/sub-rol AVI para el payload de /api/user.
+ * Solo se proyecta `name`: `knowledge`, `behavior` y `registerAnswer` son bloques
+ * de prompt de hasta 10.000 caracteres y NUNCA deben viajar al cliente.
+ * Falla en silencio: la analítica no debe tumbar el login.
+ * @param {IUser & { aviRol?: string, aviSubrol?: string }} userData
+ */
+const attachAviRoleNames = async (userData) => {
+  if (!userData.aviRol_id && !userData.aviSubrol_id) {
+    return;
+  }
+  try {
+    const [aviRol, aviSubrol] = await Promise.all([
+      userData.aviRol_id ? AviRol.findById(userData.aviRol_id).select('name').lean() : null,
+      userData.aviSubrol_id
+        ? AviSubrol.findById(userData.aviSubrol_id).select('name').lean()
+        : null,
+    ]);
+    if (aviRol?.name) {
+      userData.aviRol = aviRol.name;
+    }
+    if (aviSubrol?.name) {
+      userData.aviSubrol = aviSubrol.name;
+    }
+  } catch (error) {
+    logger.error('[getUserController] Error resolviendo nombres de rol AVI:', error);
+  }
+};
 
 const getUserController = async (req, res) => {
   const appConfig = await getAppConfig({ role: req.user?.role });
@@ -41,6 +70,9 @@ const getUserController = async (req, res) => {
   delete userData.password;
   delete userData.totpSecret;
   delete userData.backupCodes;
+
+  await attachAviRoleNames(userData);
+
   if (appConfig.fileStrategy === FileSources.s3 && userData.avatar) {
     const avatarNeedsRefresh = needsRefresh(userData.avatar, 3600);
     if (!avatarNeedsRefresh) {

@@ -16,7 +16,7 @@ const methods = createMethods(mongoose);
 async function migrateAviRoles() {
   try {
     console.log('🚀 Starting AVI Roles Migration...');
-    
+
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/LibreChat');
     console.log('✅ Connected to MongoDB');
@@ -25,7 +25,7 @@ async function migrateAviRoles() {
     console.log('\n1️⃣ Ensuring AVI Roles are initialized...');
     await methods.initializeAviRoles();
     await methods.initializeAviSubroles();
-    
+
     const roles = await methods.listAviRoles();
     const subroles = await methods.listAviSubroles();
     console.log(`📊 Found ${roles.length} roles and ${subroles.length} subroles`);
@@ -33,13 +33,13 @@ async function migrateAviRoles() {
     // 2. Check all users with AVI role assignments
     console.log('\n2️⃣ Validating existing user role assignments...');
     const User = mongoose.models.User;
-    
+
     // Find users with AVI role assignments
     const usersWithAviRoles = await User.find({
       $or: [
         { aviRol_id: { $exists: true, $ne: null } },
-        { aviSubrol_id: { $exists: true, $ne: null } }
-      ]
+        { aviSubrol_id: { $exists: true, $ne: null } },
+      ],
     }).lean();
 
     console.log(`👥 Found ${usersWithAviRoles.length} users with AVI role assignments`);
@@ -49,14 +49,14 @@ async function migrateAviRoles() {
 
     for (const user of usersWithAviRoles) {
       const validation = await methods.validateUserAviRoles(user._id.toString());
-      
+
       if (validation.isValid) {
         validUsers++;
       } else {
         invalidUsers.push({
           userId: user._id,
           email: user.email,
-          error: validation.error
+          error: validation.error,
         });
       }
     }
@@ -74,7 +74,7 @@ async function migrateAviRoles() {
 
     // 3. Summary
     console.log('\n📊 Migration Summary:');
-    console.log(`  - AVI Roles: ${roles.map(r => r.name).join(', ')}`);
+    console.log(`  - AVI Roles: ${roles.map((r) => r.name).join(', ')}`);
     console.log(`  - Total Subroles: ${subroles.length}`);
     console.log(`  - Users with assignments: ${usersWithAviRoles.length}`);
     console.log(`  - Valid assignments: ${validUsers}`);
@@ -85,7 +85,6 @@ async function migrateAviRoles() {
     } else {
       console.log('\n⚠️  Some assignments need attention. Consider running repair operations.');
     }
-    
   } catch (error) {
     console.error('❌ Migration failed:', error);
   } finally {

@@ -25,7 +25,7 @@ function getCredentials() {
 
     const auth = new google.auth.GoogleAuth({
       credentials,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets']
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
     return auth;
@@ -78,7 +78,7 @@ async function updateGoogleSheets(data) {
     const sheets = google.sheets({ version: 'v4', auth });
 
     console.log(`🔄 Limpiando hoja "${RANGE_NAME}"...`);
-    
+
     try {
       await sheets.spreadsheets.values.clear({
         spreadsheetId: SPREADSHEET_ID,
@@ -94,13 +94,14 @@ async function updateGoogleSheets(data) {
       range: `${RANGE_NAME}!A1`,
       valueInputOption: 'RAW',
       requestBody: {
-        values: data
-      }
+        values: data,
+      },
     });
 
-    console.log(`✅ Actualización exitosa! Filas: ${result.data.updatedRows}, Columnas: ${result.data.updatedColumns}`);
+    console.log(
+      `✅ Actualización exitosa! Filas: ${result.data.updatedRows}, Columnas: ${result.data.updatedColumns}`,
+    );
     return result;
-
   } catch (error) {
     throw new Error(`❌ Error actualizando Google Sheets: ${error.message}`);
   }
@@ -140,7 +141,6 @@ async function main() {
 
     console.log('✅ Proceso completado exitosamente!');
     process.exit(0);
-
   } catch (error) {
     console.error('❌ Error en el proceso:', error.message);
     cleanupFile();

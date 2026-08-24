@@ -67,7 +67,6 @@ const connect = require('./connect');
     console.purple('========================================\n');
 
     silentExit(0);
-
   } catch (error) {
     console.red('❌ Error verificando configuración:');
     console.red(error.message);

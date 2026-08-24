@@ -76,7 +76,9 @@ async function verifyTodayFileExists() {
   const matchingFiles = (files || []).filter((f) => f.name.includes(dateToken));
 
   if (matchingFiles.length === 0) {
-    console.error(`❌ No se encontró ningún archivo con token "${dateToken}" en: gs://${bucketName}/${folderPrefix}`);
+    console.error(
+      `❌ No se encontró ningún archivo con token "${dateToken}" en: gs://${bucketName}/${folderPrefix}`,
+    );
     // Mostrar archivos existentes en la carpeta para ayudar al diagnóstico
     if (files && files.length > 0) {
       console.log(`   ℹ️  Archivos existentes en la carpeta (últimos 5):`);
@@ -114,7 +116,9 @@ async function sendVerificationEmail({ isSuccess, result, errorMessage, duration
   const recipients = isSuccess ? adminEmails.success : adminEmails.error;
 
   if (!recipients) {
-    console.warn('⚠️ No hay destinatarios configurados en HEALTH_CHECK_ADMIN_EMAIL. Se omite envío de email.');
+    console.warn(
+      '⚠️ No hay destinatarios configurados en HEALTH_CHECK_ADMIN_EMAIL. Se omite envío de email.',
+    );
     return;
   }
 
@@ -188,7 +192,9 @@ async function main() {
     await sendVerificationEmail({
       isSuccess: result.exists,
       result,
-      errorMessage: result.exists ? null : `No se encontró archivo para la fecha UTC ${result.dateUTC}`,
+      errorMessage: result.exists
+        ? null
+        : `No se encontró archivo para la fecha UTC ${result.dateUTC}`,
       durationMs: Date.now() - startTime,
     });
     process.exit(result.exists ? 0 : 2);

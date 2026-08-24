@@ -3,6 +3,11 @@ import type { IMessage } from '~/types/message';
 
 const messageSchema: Schema<IMessage> = new Schema(
   {
+    /**
+     * IMPORTANTE: el plugin mongoMeili infiere la primary key del indice como el PRIMER
+     * campo declarado con `meiliIndex: true` (ver mongoMeili.ts, `attributesToIndex[0]`).
+     * No reordenar los campos ni anteponer otro `meiliIndex` a este.
+     */
     messageId: {
       type: String,
       unique: true,
@@ -21,6 +26,7 @@ const messageSchema: Schema<IMessage> = new Schema(
       index: true,
       required: true,
       default: null,
+      meiliIndex: true,
     },
     model: {
       type: String,

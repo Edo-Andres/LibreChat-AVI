@@ -3,31 +3,33 @@ export function createAviRolMethods(mongoose: typeof import('mongoose')) {
   /**
    * Initialize AVI roles in the system.
    * Now uses dynamic configuration from librechat.yaml via avi-roles-config
-   * 
+   *
    * NOTA: Esta función solo se debe ejecutar manualmente o en primera instalación.
    * Para migraciones, usar scripts/reload-avi-roles.sh
    */
   async function initializeAviRoles() {
     const AviRol = mongoose.models.AviRol;
-    
+
     // Verificar si ya existen roles en la BD
     const existingRolesCount = await AviRol.countDocuments({});
-    
+
     if (existingRolesCount > 0) {
-      console.log(`[AVI Roles] ${existingRolesCount} roles ya existen. Omitiendo inicialización automática.`);
+      console.log(
+        `[AVI Roles] ${existingRolesCount} roles ya existen. Omitiendo inicialización automática.`,
+      );
       console.log('[AVI Roles] Para actualizar roles, use: scripts/reload-avi-roles.sh');
       return;
     }
-    
+
     console.log('[AVI Roles] Base de datos vacía. Inicializando roles por primera vez...');
-    
+
     try {
       // Cargar roles desde configuración dinámica
       const { getConfiguredRoles } = require('../../../../../config/avi-roles-config');
       const configuredRoles = await getConfiguredRoles();
-      
+
       console.log(`[AVI Roles] Inicializando ${configuredRoles.length} roles desde configuración`);
-      
+
       for (const roleName of configuredRoles) {
         const newRole = new AviRol({ name: roleName });
         await newRole.save();
@@ -66,7 +68,11 @@ export function createAviRolMethods(mongoose: typeof import('mongoose')) {
   /**
    * Create a new AVI role
    */
-  async function createAviRol(data: { name: string; knowledge?: string | null; behavior?: string | null }) {
+  async function createAviRol(data: {
+    name: string;
+    knowledge?: string | null;
+    behavior?: string | null;
+  }) {
     const AviRol = mongoose.models.AviRol;
     const newRole = new AviRol(data);
     return await newRole.save();
@@ -75,7 +81,10 @@ export function createAviRolMethods(mongoose: typeof import('mongoose')) {
   /**
    * Update an AVI role
    */
-  async function updateAviRol(id: string, updates: { name?: string; knowledge?: string | null; behavior?: string | null }) {
+  async function updateAviRol(
+    id: string,
+    updates: { name?: string; knowledge?: string | null; behavior?: string | null },
+  ) {
     const AviRol = mongoose.models.AviRol;
     return await AviRol.findByIdAndUpdate(id, updates, { new: true, lean: true });
   }
@@ -86,13 +95,13 @@ export function createAviRolMethods(mongoose: typeof import('mongoose')) {
   async function deleteAviRol(id: string) {
     const AviRol = mongoose.models.AviRol;
     const AviSubrol = mongoose.models.AviSubrol;
-    
+
     // Check if role has subroles
     const hasSubroles = await AviSubrol.countDocuments({ parentRolId: id });
     if (hasSubroles > 0) {
       throw new Error('Cannot delete role that has subroles assigned');
     }
-    
+
     return await AviRol.findByIdAndDelete(id);
   }
 

@@ -44,8 +44,9 @@ export default function AuthSlider() {
       {slides.map((slide, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-0' : 'opacity-0 z-0'
-            }`}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            index === currentSlide ? 'z-0 opacity-100' : 'z-0 opacity-0'
+          }`}
         >
           {/* Desktop Media */}
           <div className="hidden h-full w-full lg:block">
@@ -98,14 +99,14 @@ export default function AuthSlider() {
         className="absolute inset-0 z-0 bg-gradient-to-br from-green-900/80 to-black/80"
       ></div>
 
-      <div className="relative z-10 flex h-full w-full flex-col justify-center items-center p-6 text-center text-white lg:items-start lg:justify-between lg:p-16 lg:text-left">
+      <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-6 text-center text-white lg:items-start lg:justify-between lg:p-16 lg:text-left">
         {/* AVI Logo */}
         <div className="flex w-full justify-center lg:justify-center">
           <img
             src="/assets/img_avi/avi-modern-blue.png"
             alt="AVI Logo"
             style={{ filter: 'hue-rotate(300deg)' }}
-            className="w-[60px] lg:w-[80px] h-auto"
+            className="h-auto w-[60px] lg:w-[80px]"
           />
         </div>
 
@@ -115,10 +116,9 @@ export default function AuthSlider() {
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 flex flex-col justify-center items-center transition-opacity duration-700 ease-in-out lg:items-start ${index === currentSlide
-                  ? 'z-10 opacity-100'
-                  : 'pointer-events-none z-0 opacity-0'
-                  }`}
+                className={`absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out lg:items-start ${
+                  index === currentSlide ? 'z-10 opacity-100' : 'pointer-events-none z-0 opacity-0'
+                }`}
               >
                 <h2 className="mb-3 whitespace-pre-line text-3xl font-bold leading-tight lg:mb-6 lg:text-5xl">
                   {slide.title}
@@ -134,10 +134,11 @@ export default function AuthSlider() {
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`h-1.5 flex-1 rounded-full bg-white transition-all duration-300 ${index === currentSlide
-                  ? 'opacity-100 hover:opacity-100'
-                  : 'opacity-40 hover:opacity-70'
-                  }`}
+                className={`h-1.5 flex-1 rounded-full bg-white transition-all duration-300 ${
+                  index === currentSlide
+                    ? 'opacity-100 hover:opacity-100'
+                    : 'opacity-40 hover:opacity-70'
+                }`}
               />
             ))}
           </div>
@@ -147,7 +148,7 @@ export default function AuthSlider() {
             src="/assets/img_avi/ccm-logo-black2.png"
             alt="Corporación Crecer Mejor"
             style={{ filter: 'invert(1)' }}
-            className="w-[80px] h-auto opacity-80 mb-2"
+            className="mb-2 h-auto w-[80px] opacity-80"
           />
           <div className="text-xs uppercase tracking-widest text-gray-400">
             © 2025 Corporación Crecer Mejor.

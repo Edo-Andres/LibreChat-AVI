@@ -1,10 +1,10 @@
 /**
  * AVI Roles Dynamic Configuration System
- * 
+ *
  * Este módulo gestiona la configuración dinámica de roles y subroles AVI.
  * Lee desde librechat.yaml (vía getAppConfig) con fallback a variable de entorno
  * y configuración por defecto.
- * 
+ *
  * Implementa:
  * - Lectura de configuración desde múltiples fuentes
  * - Validación de estructura y conflictos
@@ -47,14 +47,17 @@ async function getAviRolesFromConfig() {
   try {
     // Intento 1: Leer desde librechat.yaml via getAppConfig
     const appConfig = await getAppConfig({ refresh: true });
-    
+
     if (appConfig && appConfig.config && appConfig.config.aviRoles) {
       console.log('[DEBUG] appConfig.config.aviRoles existe');
-      console.log('[DEBUG] appConfig.config.aviRoles:', JSON.stringify(appConfig.config.aviRoles, null, 2));
+      console.log(
+        '[DEBUG] appConfig.config.aviRoles:',
+        JSON.stringify(appConfig.config.aviRoles, null, 2),
+      );
       logger.info('[AVI Roles] Configuración cargada desde librechat.yaml');
       logger.info('[AVI Roles] appConfig.aviRoles existe, intentando validar...');
       logger.debug('[AVI Roles] Config raw:', JSON.stringify(appConfig.config.aviRoles, null, 2));
-      
+
       try {
         logger.info('[AVI Roles] Llamando a validateAndNormalizeConfig...');
         const validated = validateAndNormalizeConfig(appConfig.config.aviRoles);
@@ -82,7 +85,6 @@ async function getAviRolesFromConfig() {
     // Fallback: Configuración por defecto
     logger.warn('[AVI Roles] Usando configuración por defecto (hardcoded)');
     return validateAndNormalizeConfig(DEFAULT_CONFIG);
-
   } catch (error) {
     logger.error('[AVI Roles] Error al cargar configuración:', error.message);
     logger.error('[AVI Roles] Stack:', error.stack);
@@ -110,7 +112,6 @@ function parseEnvConfig(envValue) {
     const decoded = Buffer.from(envValue, 'base64').toString('utf-8');
     const parsed = JSON.parse(decoded);
     return parsed.aviRoles || parsed;
-
   } catch (error) {
     logger.error('[AVI Roles] Error parseando AVI_ROLES_CONFIG:', error.message);
     return null;
@@ -119,10 +120,10 @@ function parseEnvConfig(envValue) {
 
 /**
  * Normaliza subroles para aceptar formato antiguo (string[]) o nuevo (objeto[])
- * 
+ *
  * Formato antiguo: ["Cuidador", "Psicólogo"]
  * Formato nuevo: [{name: "Cuidador", knowledge: "...", behavior: "...", registerAnswer: "..."}]
- * 
+ *
  * @param {Array} subroles - Array de strings u objetos
  * @returns {Array} Array de objetos normalizados con estructura completa
  */
@@ -130,31 +131,33 @@ function normalizeSubroles(subroles) {
   if (!subroles || !Array.isArray(subroles)) {
     return [];
   }
-  
-  return subroles.map(subrol => {
-    // Formato antiguo: "Cuidador" (string)
-    if (typeof subrol === 'string') {
-      return {
-        name: subrol.trim(),
-        knowledge: null,
-        behavior: null,
-        registerAnswer: null,
-      };
-    }
-    
-    // Formato nuevo: { name: "Cuidador", knowledge: "...", ... } (objeto)
-    if (typeof subrol === 'object' && subrol.name) {
-      return {
-        name: subrol.name.trim(),
-        knowledge: subrol.knowledge || null,
-        behavior: subrol.behavior || null,
-        registerAnswer: subrol.registerAnswer || null,
-      };
-    }
-    
-    // Formato inválido, ignorar
-    return null;
-  }).filter(s => s !== null); // Eliminar elementos inválidos
+
+  return subroles
+    .map((subrol) => {
+      // Formato antiguo: "Cuidador" (string)
+      if (typeof subrol === 'string') {
+        return {
+          name: subrol.trim(),
+          knowledge: null,
+          behavior: null,
+          registerAnswer: null,
+        };
+      }
+
+      // Formato nuevo: { name: "Cuidador", knowledge: "...", ... } (objeto)
+      if (typeof subrol === 'object' && subrol.name) {
+        return {
+          name: subrol.name.trim(),
+          knowledge: subrol.knowledge || null,
+          behavior: subrol.behavior || null,
+          registerAnswer: subrol.registerAnswer || null,
+        };
+      }
+
+      // Formato inválido, ignorar
+      return null;
+    })
+    .filter((s) => s !== null); // Eliminar elementos inválidos
 }
 
 /**
@@ -170,14 +173,14 @@ function validateAndNormalizeConfig(config) {
   }
 
   // Validar que no haya roles con nombres duplicados
-  const roleNames = config.roles.map(r => r.name);
+  const roleNames = config.roles.map((r) => r.name);
   const duplicates = roleNames.filter((name, index) => roleNames.indexOf(name) !== index);
   if (duplicates.length > 0) {
     throw new Error(`Roles duplicados en configuración: ${duplicates.join(', ')}`);
   }
 
   // Validar estructura de cada rol
-  config.roles.forEach(role => {
+  config.roles.forEach((role) => {
     if (!role.name || typeof role.name !== 'string') {
       throw new Error('Cada rol debe tener un "name" (string)');
     }
@@ -199,9 +202,13 @@ function validateAndNormalizeConfig(config) {
 
   // Validar que no haya conflictos en migrations.roles
   const targetRoles = Object.values(config.migrations.roles || {});
-  const conflictingTargets = targetRoles.filter((name, index) => targetRoles.indexOf(name) !== index);
+  const conflictingTargets = targetRoles.filter(
+    (name, index) => targetRoles.indexOf(name) !== index,
+  );
   if (conflictingTargets.length > 0) {
-    throw new Error(`Conflicto: múltiples roles mapean al mismo nombre: ${conflictingTargets.join(', ')}`);
+    throw new Error(
+      `Conflicto: múltiples roles mapean al mismo nombre: ${conflictingTargets.join(', ')}`,
+    );
   }
 
   return config;
@@ -212,7 +219,7 @@ function validateAndNormalizeConfig(config) {
  */
 async function getConfiguredRoles() {
   const config = await getAviRolesFromConfig();
-  return config.roles.map(r => r.name);
+  return config.roles.map((r) => r.name);
 }
 
 /**
@@ -220,7 +227,7 @@ async function getConfiguredRoles() {
  */
 async function getConfiguredSubroles(roleName) {
   const config = await getAviRolesFromConfig();
-  const role = config.roles.find(r => r.name === roleName);
+  const role = config.roles.find((r) => r.name === roleName);
   return role ? role.subroles : [];
 }
 
@@ -254,7 +261,9 @@ async function migrateAviRoles(interactive = false) {
     const currentSubroles = await AviSubrol.find({}).lean();
     const userCount = await User.countDocuments({});
 
-    logger.info(`[AVI Roles Migration] Estado actual: ${currentRoles.length} roles, ${currentSubroles.length} subroles, ${userCount} usuarios`);
+    logger.info(
+      `[AVI Roles Migration] Estado actual: ${currentRoles.length} roles, ${currentSubroles.length} subroles, ${userCount} usuarios`,
+    );
 
     // Analizar cambios
     const changes = analyzeChanges(config, currentRoles, currentSubroles);
@@ -274,20 +283,28 @@ async function migrateAviRoles(interactive = false) {
       const adminDb = mongoose.connection.db.admin();
       const serverStatus = await adminDb.serverStatus();
       const isReplicaSet = serverStatus.repl && serverStatus.repl.setName;
-      
+
       if (isReplicaSet) {
         session = await mongoose.startSession();
         session.startTransaction();
         useTransaction = true;
-        logger.info('[AVI Roles Migration] ✅ Usando transacciones MongoDB (Replica Set detectado)');
+        logger.info(
+          '[AVI Roles Migration] ✅ Usando transacciones MongoDB (Replica Set detectado)',
+        );
       } else {
-        logger.warn('[AVI Roles Migration] ⚠️  MongoDB standalone detectado. Ejecutando SIN transacciones.');
-        logger.warn('[AVI Roles Migration] ℹ️  Para habilitar transacciones, configure MongoDB como Replica Set');
+        logger.warn(
+          '[AVI Roles Migration] ⚠️  MongoDB standalone detectado. Ejecutando SIN transacciones.',
+        );
+        logger.warn(
+          '[AVI Roles Migration] ℹ️  Para habilitar transacciones, configure MongoDB como Replica Set',
+        );
         useTransaction = false;
         session = null;
       }
     } catch (error) {
-      logger.warn('[AVI Roles Migration] ⚠️  No se pudo verificar soporte de transacciones, ejecutando sin transacción');
+      logger.warn(
+        '[AVI Roles Migration] ⚠️  No se pudo verificar soporte de transacciones, ejecutando sin transacción',
+      );
       logger.debug('[AVI Roles Migration] Error al verificar:', error.message);
       useTransaction = false;
       session = null;
@@ -318,7 +335,6 @@ async function migrateAviRoles(interactive = false) {
     logger.info(`[AVI Roles Migration] ✅ Migración completada exitosamente en ${duration}s`);
 
     return { success: true, duration, changes };
-
   } catch (error) {
     // Rollback en caso de error
     if (useTransaction && session) {
@@ -327,7 +343,6 @@ async function migrateAviRoles(interactive = false) {
     }
     logger.error('[AVI Roles Migration] ❌ Error en migración:', error);
     throw error;
-
   } finally {
     if (session) {
       session.endSession();
@@ -343,21 +358,21 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
     rolesToRename: [],
     rolesToCreate: [],
     rolesToDelete: [],
-    rolesToUpdate: [],        // ✅ NUEVO: Roles con cambios en knowledge/behavior
+    rolesToUpdate: [], // ✅ NUEVO: Roles con cambios en knowledge/behavior
     subrolesToRename: [],
     subrolesToCreate: [],
     subrolesToDelete: [],
-    subrolesToUpdate: [],     // ✅ NUEVO: Subroles con cambios (preparado para futuro)
+    subrolesToUpdate: [], // ✅ NUEVO: Subroles con cambios (preparado para futuro)
     warnings: [],
   };
 
-  const configRoleNames = config.roles.map(r => r.name);
-  const currentRoleNames = currentRoles.map(r => r.name);
+  const configRoleNames = config.roles.map((r) => r.name);
+  const currentRoleNames = currentRoles.map((r) => r.name);
   const migrations = config.migrations || {};
 
   // Analizar roles
   for (const [oldName, newName] of Object.entries(migrations.roles || {})) {
-    const oldRole = currentRoles.find(r => r.name === oldName);
+    const oldRole = currentRoles.find((r) => r.name === oldName);
     if (oldRole) {
       changes.rolesToRename.push({ oldName, newName, id: oldRole._id });
     }
@@ -367,8 +382,8 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
   for (const roleConfig of config.roles) {
     const roleName = roleConfig.name;
     const isRenamed = Object.values(migrations.roles || {}).includes(roleName);
-    const exists = currentRoles.find(r => r.name === roleName);
-    
+    const exists = currentRoles.find((r) => r.name === roleName);
+
     if (!exists && !isRenamed) {
       changes.rolesToCreate.push({
         name: roleName,
@@ -380,47 +395,47 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
 
   // ✅ NUEVO: Detectar roles que se actualizarán (knowledge/behavior)
   for (const roleConfig of config.roles) {
-    const existingRole = currentRoles.find(r => r.name === roleConfig.name);
-    
+    const existingRole = currentRoles.find((r) => r.name === roleConfig.name);
+
     if (existingRole) {
       const updates = {};
-      
+
       // Comparar knowledge
       const currentKnowledge = existingRole.knowledge || null;
       const newKnowledge = roleConfig.knowledge || null;
       if (currentKnowledge !== newKnowledge) {
         updates.knowledge = {
           from: currentKnowledge,
-          to: newKnowledge
+          to: newKnowledge,
         };
       }
-      
+
       // Comparar behavior
       const currentBehavior = existingRole.behavior || null;
       const newBehavior = roleConfig.behavior || null;
       if (currentBehavior !== newBehavior) {
         updates.behavior = {
           from: currentBehavior,
-          to: newBehavior
+          to: newBehavior,
         };
       }
-      
+
       // Comparar registerAnswer
       const currentRegisterAnswer = existingRole.registerAnswer || null;
       const newRegisterAnswer = roleConfig.registerAnswer || null;
       if (currentRegisterAnswer !== newRegisterAnswer) {
         updates.registerAnswer = {
           from: currentRegisterAnswer,
-          to: newRegisterAnswer
+          to: newRegisterAnswer,
         };
       }
-      
+
       // Si hay cambios, agregar a la lista
       if (Object.keys(updates).length > 0) {
         changes.rolesToUpdate.push({
           name: roleConfig.name,
           id: existingRole._id,
-          updates: updates
+          updates: updates,
         });
       }
     }
@@ -446,17 +461,17 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
 
   // ✅ NUEVO: Detectar subroles nuevos a crear Y cambios en subroles existentes
   for (const roleConfig of config.roles) {
-    const dbRole = currentRoles.find(r => r.name === roleConfig.name);
+    const dbRole = currentRoles.find((r) => r.name === roleConfig.name);
     if (dbRole && roleConfig.subroles) {
       const currentRolSubroles = currentSubroles.filter(
-        s => s.parentRolId.toString() === dbRole._id.toString()
+        (s) => s.parentRolId.toString() === dbRole._id.toString(),
       );
-      
+
       for (const subrolConfig of roleConfig.subroles) {
         const subrolName = subrolConfig.name;
-        const exists = currentRolSubroles.find(s => s.name === subrolName);
+        const exists = currentRolSubroles.find((s) => s.name === subrolName);
         const wasRenamed = Object.values(migrations.subroles || {}).includes(subrolName);
-        
+
         if (!exists && !wasRenamed) {
           // Subrol nuevo
           changes.subrolesToCreate.push({
@@ -470,38 +485,38 @@ function analyzeChanges(config, currentRoles, currentSubroles) {
         } else if (exists) {
           // Subrol existente - verificar cambios
           const updates = {};
-          
+
           // Comparar knowledge
           if ((exists.knowledge || null) !== (subrolConfig.knowledge || null)) {
             updates.knowledge = {
               from: exists.knowledge || null,
-              to: subrolConfig.knowledge || null
+              to: subrolConfig.knowledge || null,
             };
           }
-          
+
           // Comparar behavior
           if ((exists.behavior || null) !== (subrolConfig.behavior || null)) {
             updates.behavior = {
               from: exists.behavior || null,
-              to: subrolConfig.behavior || null
+              to: subrolConfig.behavior || null,
             };
           }
-          
+
           // Comparar registerAnswer
           if ((exists.registerAnswer || null) !== (subrolConfig.registerAnswer || null)) {
             updates.registerAnswer = {
               from: exists.registerAnswer || null,
-              to: subrolConfig.registerAnswer || null
+              to: subrolConfig.registerAnswer || null,
             };
           }
-          
+
           // Si hay cambios, agregar a la lista
           if (Object.keys(updates).length > 0) {
             changes.subrolesToUpdate.push({
               name: subrolName,
               parentRole: roleConfig.name,
               id: exists._id,
-              updates: updates
+              updates: updates,
             });
           }
         }
@@ -531,13 +546,13 @@ async function mostrarResumenYConfirmar(changes) {
 
   if (changes.rolesToRename.length > 0) {
     console.log('🔄 RENOMBRES DE ROLES:');
-    changes.rolesToRename.forEach(r => console.log(`   • "${r.oldName}" → "${r.newName}"`));
+    changes.rolesToRename.forEach((r) => console.log(`   • "${r.oldName}" → "${r.newName}"`));
     console.log('');
   }
 
   if (changes.rolesToCreate.length > 0) {
     console.log('➕ ROLES NUEVOS:');
-    changes.rolesToCreate.forEach(r => {
+    changes.rolesToCreate.forEach((r) => {
       console.log(`   • ${r.name}`);
       if (r.knowledge) {
         console.log(`     - knowledge: "${truncateText(r.knowledge, 60)}"`);
@@ -552,34 +567,34 @@ async function mostrarResumenYConfirmar(changes) {
   // ✅ NUEVO: Mostrar roles a actualizar
   if (changes.rolesToUpdate.length > 0) {
     console.log(`🔄 ROLES A ACTUALIZAR (${changes.rolesToUpdate.length}):`);
-    changes.rolesToUpdate.forEach(r => {
+    changes.rolesToUpdate.forEach((r) => {
       console.log(`   • ${r.name} (ID: ${r.id.toString().substring(0, 8)}...)`);
-      
+
       if (r.updates.knowledge) {
-        const fromText = r.updates.knowledge.from 
+        const fromText = r.updates.knowledge.from
           ? `"${truncateText(r.updates.knowledge.from, 60)}"`
           : 'null';
-        const toText = r.updates.knowledge.to 
+        const toText = r.updates.knowledge.to
           ? `"${truncateText(r.updates.knowledge.to, 60)}"`
           : 'null';
         console.log(`     - knowledge: ${fromText} → ${toText}`);
       }
-      
+
       if (r.updates.behavior) {
-        const fromText = r.updates.behavior.from 
+        const fromText = r.updates.behavior.from
           ? `"${truncateText(r.updates.behavior.from, 60)}"`
           : 'null';
-        const toText = r.updates.behavior.to 
+        const toText = r.updates.behavior.to
           ? `"${truncateText(r.updates.behavior.to, 60)}"`
           : 'null';
         console.log(`     - behavior: ${fromText} → ${toText}`);
       }
-      
+
       if (r.updates.registerAnswer) {
-        const fromText = r.updates.registerAnswer.from 
+        const fromText = r.updates.registerAnswer.from
           ? `"${truncateText(r.updates.registerAnswer.from, 60)}"`
           : 'null';
-        const toText = r.updates.registerAnswer.to 
+        const toText = r.updates.registerAnswer.to
           ? `"${truncateText(r.updates.registerAnswer.to, 60)}"`
           : 'null';
         console.log(`     - registerAnswer: ${fromText} → ${toText}`);
@@ -590,20 +605,20 @@ async function mostrarResumenYConfirmar(changes) {
 
   if (changes.rolesToDelete.length > 0) {
     console.log('🗑️  ROLES A ELIMINAR:');
-    changes.rolesToDelete.forEach(r => console.log(`   • ${r.name}`));
+    changes.rolesToDelete.forEach((r) => console.log(`   • ${r.name}`));
     console.log('');
   }
 
   if (changes.subrolesToRename.length > 0) {
     console.log('🔄 RENOMBRES DE SUBROLES:');
-    changes.subrolesToRename.forEach(s => console.log(`   • "${s.oldName}" → "${s.newName}"`));
+    changes.subrolesToRename.forEach((s) => console.log(`   • "${s.oldName}" → "${s.newName}"`));
     console.log('');
   }
 
   // ✅ NUEVO: Mostrar subroles nuevos
   if (changes.subrolesToCreate.length > 0) {
     console.log(`➕ SUBROLES NUEVOS (${changes.subrolesToCreate.length}):`);
-    changes.subrolesToCreate.forEach(s => {
+    changes.subrolesToCreate.forEach((s) => {
       console.log(`   • ${s.name} (rol padre: ${s.parentRole})`);
       if (s.knowledge) {
         console.log(`     - knowledge: "${truncateText(s.knowledge, 60)}"`);
@@ -621,34 +636,34 @@ async function mostrarResumenYConfirmar(changes) {
   // ✅ NUEVO: Mostrar subroles a actualizar
   if (changes.subrolesToUpdate && changes.subrolesToUpdate.length > 0) {
     console.log(`🔄 SUBROLES A ACTUALIZAR (${changes.subrolesToUpdate.length}):`);
-    changes.subrolesToUpdate.forEach(s => {
+    changes.subrolesToUpdate.forEach((s) => {
       console.log(`   • ${s.name} (rol padre: ${s.parentRole})`);
-      
+
       if (s.updates.knowledge) {
-        const fromText = s.updates.knowledge.from 
+        const fromText = s.updates.knowledge.from
           ? `"${truncateText(s.updates.knowledge.from, 60)}"`
           : 'null';
-        const toText = s.updates.knowledge.to 
+        const toText = s.updates.knowledge.to
           ? `"${truncateText(s.updates.knowledge.to, 60)}"`
           : 'null';
         console.log(`     - knowledge: ${fromText} → ${toText}`);
       }
-      
+
       if (s.updates.behavior) {
-        const fromText = s.updates.behavior.from 
+        const fromText = s.updates.behavior.from
           ? `"${truncateText(s.updates.behavior.from, 60)}"`
           : 'null';
-        const toText = s.updates.behavior.to 
+        const toText = s.updates.behavior.to
           ? `"${truncateText(s.updates.behavior.to, 60)}"`
           : 'null';
         console.log(`     - behavior: ${fromText} → ${toText}`);
       }
-      
+
       if (s.updates.registerAnswer) {
-        const fromText = s.updates.registerAnswer.from 
+        const fromText = s.updates.registerAnswer.from
           ? `"${truncateText(s.updates.registerAnswer.from, 60)}"`
           : 'null';
-        const toText = s.updates.registerAnswer.to 
+        const toText = s.updates.registerAnswer.to
           ? `"${truncateText(s.updates.registerAnswer.to, 60)}"`
           : 'null';
         console.log(`     - registerAnswer: ${fromText} → ${toText}`);
@@ -659,18 +674,18 @@ async function mostrarResumenYConfirmar(changes) {
 
   if (changes.subrolesToDelete.length > 0) {
     console.log('🗑️  SUBROLES A ELIMINAR:');
-    changes.subrolesToDelete.forEach(s => console.log(`   • ${s}`));
+    changes.subrolesToDelete.forEach((s) => console.log(`   • ${s}`));
     console.log('');
   }
 
   if (changes.warnings.length > 0) {
     console.log('⚠️  ADVERTENCIAS:');
-    changes.warnings.forEach(w => console.log(`   • ${w}`));
+    changes.warnings.forEach((w) => console.log(`   • ${w}`));
     console.log('');
   }
 
   console.log('════════════════════════════════════════════════════════');
-  
+
   // Pedir confirmación
   const readline = require('readline');
   const rl = readline.createInterface({
@@ -692,17 +707,13 @@ async function mostrarResumenYConfirmar(changes) {
 async function migrateRoles(config, currentRoles, sessionOpt) {
   const AviRol = mongoose.models.AviRol;
   const migrations = config.migrations || {};
-  const configRoleNames = config.roles.map(r => r.name);
+  const configRoleNames = config.roles.map((r) => r.name);
 
   // Renombrar roles existentes
   for (const [oldName, newName] of Object.entries(migrations.roles || {})) {
-    const role = currentRoles.find(r => r.name === oldName);
+    const role = currentRoles.find((r) => r.name === oldName);
     if (role) {
-      await AviRol.updateOne(
-        { _id: role._id },
-        { $set: { name: newName } },
-        sessionOpt || {}
-      );
+      await AviRol.updateOne({ _id: role._id }, { $set: { name: newName } }, sessionOpt || {});
       logger.info(`   🔄 Renombrado: "${oldName}" → "${newName}" (ID: ${role._id})`);
     }
   }
@@ -711,9 +722,9 @@ async function migrateRoles(config, currentRoles, sessionOpt) {
   const renamedTargets = Object.values(migrations.roles || {});
   for (const roleConfig of config.roles) {
     const roleName = roleConfig.name;
-    const exists = currentRoles.find(r => r.name === roleName);
+    const exists = currentRoles.find((r) => r.name === roleName);
     const isRenamed = renamedTargets.includes(roleName);
-    
+
     if (!exists && !isRenamed) {
       const newRole = new AviRol({
         name: roleName,
@@ -726,7 +737,9 @@ async function migrateRoles(config, currentRoles, sessionOpt) {
       } else {
         await newRole.save();
       }
-      logger.info(`   ➕ Creado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'}, registerAnswer: ${roleConfig.registerAnswer ? 'Yes' : 'No'})`);
+      logger.info(
+        `   ➕ Creado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'}, registerAnswer: ${roleConfig.registerAnswer ? 'Yes' : 'No'})`,
+      );
     } else if (exists) {
       // Actualizar knowledge, behavior y registerAnswer si el rol ya existe
       const updateFields = {};
@@ -739,15 +752,13 @@ async function migrateRoles(config, currentRoles, sessionOpt) {
       if (roleConfig.registerAnswer !== undefined) {
         updateFields.registerAnswer = roleConfig.registerAnswer || null;
       }
-      
+
       if (Object.keys(updateFields).length > 0) {
         updateFields.updatedAt = new Date();
-        await AviRol.updateOne(
-          { _id: exists._id },
-          { $set: updateFields },
-          sessionOpt || {}
+        await AviRol.updateOne({ _id: exists._id }, { $set: updateFields }, sessionOpt || {});
+        logger.info(
+          `   🔄 Actualizado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'}, registerAnswer: ${roleConfig.registerAnswer ? 'Yes' : 'No'})`,
         );
-        logger.info(`   🔄 Actualizado: "${roleName}" (knowledge: ${roleConfig.knowledge ? 'Yes' : 'No'}, behavior: ${roleConfig.behavior ? 'Yes' : 'No'}, registerAnswer: ${roleConfig.registerAnswer ? 'Yes' : 'No'})`);
       }
     }
   }
@@ -757,7 +768,7 @@ async function migrateRoles(config, currentRoles, sessionOpt) {
   for (const role of currentRoles) {
     const inConfig = configRoleNames.includes(role.name);
     const willBeRenamed = migrations.roles && migrations.roles[role.name];
-    
+
     if (!inConfig && !willBeRenamed) {
       const userCount = await User.countDocuments({ aviRol_id: role._id });
       if (userCount === 0) {
@@ -792,19 +803,19 @@ async function migrateSubroles(config, currentRoles, currentSubroles, sessionOpt
     logger.info(`   📁 Procesando subroles de "${roleName}":`);
 
     const currentRolSubroles = currentSubroles.filter(
-      s => s.parentRolId.toString() === roleData.id.toString()
+      (s) => s.parentRolId.toString() === roleData.id.toString(),
     );
 
     // Renombrar subroles según migrations
     for (const [oldName, newName] of Object.entries(migrations.subroles || {})) {
       if (newName === null) continue; // Eliminación se maneja después
 
-      const subrol = currentRolSubroles.find(s => s.name === oldName);
+      const subrol = currentRolSubroles.find((s) => s.name === oldName);
       if (subrol) {
         await AviSubrol.updateOne(
           { _id: subrol._id },
           { $set: { name: newName } },
-          sessionOpt || {}
+          sessionOpt || {},
         );
         logger.info(`      🔄 Renombrado: "${oldName}" → "${newName}"`);
       }
@@ -813,9 +824,9 @@ async function migrateSubroles(config, currentRoles, currentSubroles, sessionOpt
     // Crear subroles nuevos Y actualizar existentes
     for (const subrolConfig of roleData.subroles) {
       const subrolName = subrolConfig.name;
-      const exists = currentRolSubroles.find(s => s.name === subrolName);
+      const exists = currentRolSubroles.find((s) => s.name === subrolName);
       const wasRenamed = Object.values(migrations.subroles || {}).includes(subrolName);
-      
+
       if (!exists && !wasRenamed) {
         // CREAR subrol nuevo
         const newSubrol = new AviSubrol({
@@ -830,11 +841,13 @@ async function migrateSubroles(config, currentRoles, currentSubroles, sessionOpt
         } else {
           await newSubrol.save();
         }
-        logger.info(`      ➕ Creado: "${subrolName}" (knowledge: ${subrolConfig.knowledge ? 'Yes' : 'No'}, behavior: ${subrolConfig.behavior ? 'Yes' : 'No'}, registerAnswer: ${subrolConfig.registerAnswer ? 'Yes' : 'No'})`);
+        logger.info(
+          `      ➕ Creado: "${subrolName}" (knowledge: ${subrolConfig.knowledge ? 'Yes' : 'No'}, behavior: ${subrolConfig.behavior ? 'Yes' : 'No'}, registerAnswer: ${subrolConfig.registerAnswer ? 'Yes' : 'No'})`,
+        );
       } else if (exists) {
         // ACTUALIZAR subrol existente
         const updateFields = {};
-        
+
         if ((exists.knowledge || null) !== (subrolConfig.knowledge || null)) {
           updateFields.knowledge = subrolConfig.knowledge || null;
         }
@@ -844,35 +857,41 @@ async function migrateSubroles(config, currentRoles, currentSubroles, sessionOpt
         if ((exists.registerAnswer || null) !== (subrolConfig.registerAnswer || null)) {
           updateFields.registerAnswer = subrolConfig.registerAnswer || null;
         }
-        
+
         if (Object.keys(updateFields).length > 0) {
           updateFields.updatedAt = new Date();
           await AviSubrol.updateOne({ _id: exists._id }, { $set: updateFields }, sessionOpt || {});
-          logger.info(`      🔄 Actualizado: "${subrolName}" (${Object.keys(updateFields).filter(k => k !== 'updatedAt').join(', ')})`);
+          logger.info(
+            `      🔄 Actualizado: "${subrolName}" (${Object.keys(updateFields)
+              .filter((k) => k !== 'updatedAt')
+              .join(', ')})`,
+          );
         }
       }
     }
 
     // Eliminar subroles no listados en la nueva configuración
-    const configuredSubrolNames = roleData.subroles.map(s => s.name);
+    const configuredSubrolNames = roleData.subroles.map((s) => s.name);
     for (const subrol of currentRolSubroles) {
       const inConfig = configuredSubrolNames.includes(subrol.name);
       const markedForDeletion = migrations.subroles && migrations.subroles[subrol.name] === null;
       const wasRenamed = Object.keys(migrations.subroles || {}).includes(subrol.name);
-      
+
       // NO eliminar si el subrol fue renombrado (ya se procesó en el paso anterior)
       if ((!inConfig || markedForDeletion) && !wasRenamed) {
         const userCount = await User.countDocuments({ aviSubrol_id: subrol._id });
         await AviSubrol.deleteOne({ _id: subrol._id }, sessionOpt || {});
-        
+
         // Actualizar usuarios afectados
         if (userCount > 0) {
           await User.updateMany(
             { aviSubrol_id: subrol._id },
             { $unset: { aviSubrol_id: '' } },
-            sessionOpt || {}
+            sessionOpt || {},
           );
-          logger.info(`      🗑️  Eliminado: "${subrol.name}" (${userCount} usuarios afectados → aviSubrol_id: null)`);
+          logger.info(
+            `      🗑️  Eliminado: "${subrol.name}" (${userCount} usuarios afectados → aviSubrol_id: null)`,
+          );
         } else {
           logger.info(`      🗑️  Eliminado: "${subrol.name}" (0 usuarios)`);
         }
@@ -891,10 +910,7 @@ async function validateReferentialIntegrity(config, sessionOpt) {
   // Caso A: Usuarios con aviSubrol_id pero sin aviRol_id
   const usersWithOrphanSubroles = await User.find({
     aviSubrol_id: { $exists: true, $ne: null },
-    $or: [
-      { aviRol_id: { $exists: false } },
-      { aviRol_id: null },
-    ],
+    $or: [{ aviRol_id: { $exists: false } }, { aviRol_id: null }],
   });
 
   for (const user of usersWithOrphanSubroles) {
@@ -903,7 +919,7 @@ async function validateReferentialIntegrity(config, sessionOpt) {
       await User.updateOne(
         { _id: user._id },
         { $set: { aviRol_id: subrol.parentRolId } },
-        sessionOpt || {}
+        sessionOpt || {},
       );
       logger.info(`   ✅ Corregido usuario ${user._id}: asignado aviRol_id desde subrol`);
     }
@@ -918,14 +934,16 @@ async function validateReferentialIntegrity(config, sessionOpt) {
     if (!parentExists) {
       const userCount = await User.countDocuments({ aviSubrol_id: subrol._id });
       await AviSubrol.deleteOne({ _id: subrol._id }, sessionOpt || {});
-      
+
       if (userCount > 0) {
         await User.updateMany(
           { aviSubrol_id: subrol._id },
           { $unset: { aviSubrol_id: '' } },
-          sessionOpt || {}
+          sessionOpt || {},
         );
-        logger.info(`   🗑️  Eliminado subrol huérfano "${subrol.name}" (${userCount} usuarios afectados)`);
+        logger.info(
+          `   🗑️  Eliminado subrol huérfano "${subrol.name}" (${userCount} usuarios afectados)`,
+        );
       } else {
         logger.info(`   🗑️  Eliminado subrol huérfano "${subrol.name}"`);
       }

@@ -1,28 +1,28 @@
-# 🎭 Sistema AVI Roles - Referencia Canónica
+﻿# ­ƒÄ¡ Sistema AVI Roles - Referencia Can├│nica
 
-**Validado contra código:** Junio 2026 (rama `dev`)
+**Validado contra c├│digo:** Junio 2026 (rama `dev`)
 **Proyecto:** LibreChat-AVI - Asistente Virtual en Infancia
 
 ---
 
-## 📋 Tabla de Contenidos
+## ­ƒôï Tabla de Contenidos
 
-1. [Visión General](#visión-general)
+1. [Visi├│n General](#visi├│n-general)
 2. [Modelo de Datos](#modelo-de-datos)
 3. [Roles Actuales en `librechat.yaml`](#roles-actuales-en-librechatyaml)
 4. [Campos `knowledge`, `behavior` y `registerAnswer`](#campos-knowledge-behavior-y-registeranswer)
 5. [Variables de Plantilla en Prompts](#variables-de-plantilla-en-prompts)
 6. [Sugerencias Iniciales (`initial_suggestions`)](#sugerencias-iniciales-initial_suggestions)
-7. [Recarga Dinámica de Roles](#recarga-dinámica-de-roles)
-8. [Migración y Renombrado](#migración-y-renombrado)
-9. [API de Métodos](#api-de-métodos)
+7. [Recarga Din├ímica de Roles](#recarga-din├ímica-de-roles)
+8. [Migraci├│n y Renombrado](#migraci├│n-y-renombrado)
+9. [API de M├®todos](#api-de-m├®todos)
 10. [Notas y Advertencias](#notas-y-advertencias)
 
 ---
 
-## Visión General
+## Visi├│n General
 
-El sistema AVI Roles implementa un esquema jerárquico de **roles** y **subroles** para usuarios del proyecto AVI. Coexiste con el sistema de roles nativo de LibreChat (`ADMIN`, `USER`) sin reemplazarlo.
+El sistema AVI Roles implementa un esquema jer├írquico de **roles** y **subroles** para usuarios del proyecto AVI. Coexiste con el sistema de roles nativo de LibreChat (`ADMIN`, `USER`) sin reemplazarlo.
 
 Cada rol/subrol puede definir:
 - **`knowledge`**: perfil de conocimientos inyectado en el prompt del agente.
@@ -30,7 +30,7 @@ Cada rol/subrol puede definir:
 - **`registerAnswer`**: etiqueta mostrada en el formulario de registro.
 - **`initial_suggestions`**: sugerencias iniciales por rol (en MongoDB, no en YAML).
 
-Los roles se configuran en `librechat.yaml` (sección `aviRoles`) y se sincronizan a MongoDB mediante scripts de migración.
+Los roles se configuran en `librechat.yaml` (secci├│n `aviRoles`) y se sincronizan a MongoDB mediante scripts de migraci├│n.
 
 ---
 
@@ -40,49 +40,49 @@ Los roles se configuran en `librechat.yaml` (sección `aviRoles`) y se sincroniz
 
 #### `avirols`
 
-Definición: `packages/data-schemas/src/schema/aviRol.ts`
+Definici├│n: `packages/data-schemas/src/schema/aviRol.ts`
 
-| Campo | Tipo | Requerido | Único | Índice | Default | Restricciones |
+| Campo | Tipo | Requerido | ├Ünico | ├ìndice | Default | Restricciones |
 |---|---|---|---|---|---|---|
-| `name` | String | ✅ | ✅ | ✅ | — | `trim: true` |
-| `knowledge` | String | — | — | — | `null` | `maxlength: 10000`, `trim` |
-| `behavior` | String | — | — | — | `null` | `maxlength: 10000`, `trim` |
-| `initial_suggestions` | [String] | — | — | — | `[]` | máx 4 entradas |
-| `registerAnswer` | String | — | — | — | `null` | `maxlength: 10000`, `trim` |
-| `createdAt` | Date | — | — | — | auto | `{ timestamps: true }` |
-| `updatedAt` | Date | — | — | — | auto | `{ timestamps: true }` |
+| `name` | String | Ô£à | Ô£à | Ô£à | ÔÇö | `trim: true` |
+| `knowledge` | String | ÔÇö | ÔÇö | ÔÇö | `null` | `maxlength: 10000`, `trim` |
+| `behavior` | String | ÔÇö | ÔÇö | ÔÇö | `null` | `maxlength: 10000`, `trim` |
+| `initial_suggestions` | [String] | ÔÇö | ÔÇö | ÔÇö | `[]` | m├íx 4 entradas |
+| `registerAnswer` | String | ÔÇö | ÔÇö | ÔÇö | `null` | `maxlength: 10000`, `trim` |
+| `createdAt` | Date | ÔÇö | ÔÇö | ÔÇö | auto | `{ timestamps: true }` |
+| `updatedAt` | Date | ÔÇö | ÔÇö | ÔÇö | auto | `{ timestamps: true }` |
 
-Índice adicional: `aviRolSchema.index({ name: 1 })`.
+├ìndice adicional: `aviRolSchema.index({ name: 1 })`.
 
 #### `avisubrols`
 
-Definición: `packages/data-schemas/src/schema/aviSubrol.ts`
+Definici├│n: `packages/data-schemas/src/schema/aviSubrol.ts`
 
-| Campo | Tipo | Requerido | Único | Índice | Default | Restricciones |
+| Campo | Tipo | Requerido | ├Ünico | ├ìndice | Default | Restricciones |
 |---|---|---|---|---|---|---|
-| `name` | String | ✅ | (compuesto) | — | — | `trim: true` |
-| `parentRolId` | ObjectId → `AviRol` | ✅ | — | ✅ | — | `ref: 'AviRol'` |
-| `knowledge` | String | — | — | — | `null` | `maxlength: 10000`, `trim` |
-| `behavior` | String | — | — | — | `null` | `maxlength: 10000`, `trim` |
-| `initial_suggestions` | [String] | — | — | — | `[]` | máx 4 entradas |
-| `registerAnswer` | String | — | — | — | `null` | `maxlength: 10000`, `trim` |
-| `createdAt` | Date | — | — | — | auto | `{ timestamps: true }` |
-| `updatedAt` | Date | — | — | — | auto | `{ timestamps: true }` |
+| `name` | String | Ô£à | (compuesto) | ÔÇö | ÔÇö | `trim: true` |
+| `parentRolId` | ObjectId ÔåÆ `AviRol` | Ô£à | ÔÇö | Ô£à | ÔÇö | `ref: 'AviRol'` |
+| `knowledge` | String | ÔÇö | ÔÇö | ÔÇö | `null` | `maxlength: 10000`, `trim` |
+| `behavior` | String | ÔÇö | ÔÇö | ÔÇö | `null` | `maxlength: 10000`, `trim` |
+| `initial_suggestions` | [String] | ÔÇö | ÔÇö | ÔÇö | `[]` | m├íx 4 entradas |
+| `registerAnswer` | String | ÔÇö | ÔÇö | ÔÇö | `null` | `maxlength: 10000`, `trim` |
+| `createdAt` | Date | ÔÇö | ÔÇö | ÔÇö | auto | `{ timestamps: true }` |
+| `updatedAt` | Date | ÔÇö | ÔÇö | ÔÇö | auto | `{ timestamps: true }` |
 
-Índices:
-- **Compuesto único**: `{ name: 1, parentRolId: 1 }` → el nombre del subrol es único **dentro de un mismo rol padre**.
-- `{ parentRolId: 1 }` → búsqueda por rol padre.
+├ìndices:
+- **Compuesto ├║nico**: `{ name: 1, parentRolId: 1 }` ÔåÆ el nombre del subrol es ├║nico **dentro de un mismo rol padre**.
+- `{ parentRolId: 1 }` ÔåÆ b├║squeda por rol padre.
 
-> **Nota:** `name` por sí solo **no** es único en `aviSubrol`. La unicidad es conjunta con `parentRolId`, por lo que pueden existir subroles con el mismo nombre bajo distintos roles.
+> **Nota:** `name` por s├¡ solo **no** es ├║nico en `aviSubrol`. La unicidad es conjunta con `parentRolId`, por lo que pueden existir subroles con el mismo nombre bajo distintos roles.
 
-#### `users` (campos AVI añadidos)
+#### `users` (campos AVI a├▒adidos)
 
-Definición: `packages/data-schemas/src/schema/user.ts:73-84`
+Definici├│n: `packages/data-schemas/src/schema/user.ts:73-84`
 
-| Campo | Tipo | Requerido | Índice | Referencia |
+| Campo | Tipo | Requerido | ├ìndice | Referencia |
 |---|---|---|---|---|
-| `aviRol_id` | ObjectId | — | ✅ | `AviRol` |
-| `aviSubrol_id` | ObjectId | — | ✅ | `AviSubrol` |
+| `aviRol_id` | ObjectId | ÔÇö | Ô£à | `AviRol` |
+| `aviSubrol_id` | ObjectId | ÔÇö | Ô£à | `AviSubrol` |
 
 Ambos opcionales. Interfaces TypeScript: `IUser` (`packages/data-schemas/src/types/user.ts:14-15`).
 
@@ -96,7 +96,7 @@ Ambos opcionales. Interfaces TypeScript: `IUser` (`packages/data-schemas/src/typ
 
 ## Roles Actuales en `librechat.yaml`
 
-Ubicación: `librechat.yaml:96-500`. Validación Zod: `packages/data-provider/src/config.ts:808-833`.
+Ubicaci├│n: `librechat.yaml:96-500`. Validaci├│n Zod: `packages/data-provider/src/config.ts:808-833`.
 
 ### Estructura YAML
 
@@ -118,34 +118,34 @@ aviRoles:
     defaultRoleForOrphans: "<nombre>"
 ```
 
-> El formato de subroles acepta **string** (legacy) u **objeto** `{ name, knowledge, behavior, registerAnswer }` (actual). La normalización corre en `config/avi-roles-config.js:129-158` (`normalizeSubroles`).
+> El formato de subroles acepta **string** (legacy) u **objeto** `{ name, knowledge, behavior, registerAnswer }` (actual). La normalizaci├│n corre en `config/avi-roles-config.js:129-158` (`normalizeSubroles`).
 
 ### Roles definidos actualmente
 
 | Rol | Subroles | `registerAnswer` |
 |---|---|---|
-| **`Residencia`** | Director Ejecutivo Organización, Director Social o similar, Director de residencia, Trabajador Social de Dupla Psicosocial, Psicólogo de Dupla Psicosocial, Educador de Trato Directo (ETD), Encargado de vida familiar, Terapeuta Ocupacional, Pedagoga/o o psicopedagoga/o, Administrativa/o, Servicio de mantención, Manipuladora de alimentos, Guardia, Estudiante, Docente, Psiquiatra, Investigador, Voluntaria/o | `"Residencia"` |
+| **`Residencia`** | Director Ejecutivo Organizaci├│n, Director Social o similar, Director de residencia, Trabajador Social de Dupla Psicosocial, Psic├│logo de Dupla Psicosocial, Educador de Trato Directo (ETD), Encargado de vida familiar, Terapeuta Ocupacional, Pedagoga/o o psicopedagoga/o, Administrativa/o, Servicio de mantenci├│n, Manipuladora de alimentos, Guardia, Estudiante, Docente, Psiquiatra, Investigador, Voluntaria/o | `"Residencia"` |
 | **`FAE`** | Familias Extensas, Familias Externas, Equipo | `"FAE"` |
 
-> **El fallback `DEFAULT_CONFIG`** en `config/avi-roles-config.js:20-40` define `generico`/`cuidador`/`administrativo`, pero **solo se usa si el YAML no existe**. En producción/staging los roles reales son `Residencia` y `FAE`.
+> **El fallback `DEFAULT_CONFIG`** en `config/avi-roles-config.js:20-40` define `generico`/`cuidador`/`administrativo`, pero **solo se usa si el YAML no existe**. En producci├│n/staging los roles reales son `Residencia` y `FAE`.
 
 ---
 
 ## Campos `knowledge`, `behavior` y `registerAnswer`
 
-### `knowledge` y `behavior` — Inyección en prompts
+### `knowledge` y `behavior` ÔÇö Inyecci├│n en prompts
 
-**Dónde se inyectan:** `api/server/services/Endpoints/agents/agent.js:185-216` (`initializeAgent`).
+**D├│nde se inyectan:** `api/server/services/Endpoints/agents/agent.js:185-216` (`initializeAgent`).
 
 Flujo:
 1. Si el usuario tiene `aviRol_id` o `aviSubrol_id`, se llama `getUserWithAviRoles(req.user.id)` (`packages/data-schemas/src/methods/user.ts:329-335`), que popula `aviRol_id`/`aviSubrol_id` con `name knowledge behavior registerAnswer`.
 2. Los valores se copian al objeto `userWithRoles` como `aviRolKnowledge`, `aviRolBehavior`, `aviSubrolKnowledge`, `aviSubrolBehavior`, `aviRolRegisterAnswer`, `aviSubrolRegisterAnswer`.
-3. `replaceSpecialVars({ text: agent.instructions, user: userWithRoles })` reemplaza las variables de plantilla en las instrucciones del agente (ver sección siguiente).
-4. La inyección ocurre **solo en el endpoint Agents** (system prompt del agente).
+3. `replaceSpecialVars({ text: agent.instructions, user: userWithRoles })` reemplaza las variables de plantilla en las instrucciones del agente (ver secci├│n siguiente).
+4. La inyecci├│n ocurre **solo en el endpoint Agents** (system prompt del agente).
 
-### `registerAnswer` — Etiqueta del formulario de registro
+### `registerAnswer` ÔÇö Etiqueta del formulario de registro
 
-**Dónde se usa:** `client/src/components/Auth/Registration.tsx:348` y `:373`.
+**D├│nde se usa:** `client/src/components/Auth/Registration.tsx:348` y `:373`.
 
 ```tsx
 // Rol (L348)
@@ -154,13 +154,13 @@ Flujo:
 {subrol.registerAnswer || subrol.name}
 ```
 
-`registerAnswer` es la **etiqueta visible** por el usuario en el dropdown del formulario de registro. Si no está definido, se muestra `name`. Útil para mostrar textos más amables que el nombre interno.
+`registerAnswer` es la **etiqueta visible** por el usuario en el dropdown del formulario de registro. Si no est├í definido, se muestra `name`. ├Ütil para mostrar textos m├ís amables que el nombre interno.
 
 ---
 
 ## Variables de Plantilla en Prompts
 
-Definición: `packages/data-provider/src/config.ts:1721-1734` (`specialVariables`).
+Definici├│n: `packages/data-provider/src/config.ts:1721-1734` (`specialVariables`).
 Reemplazo: `packages/data-provider/src/parsers.ts:413-491` (`replaceSpecialVars`).
 
 ### Lista completa (8 variables)
@@ -178,7 +178,7 @@ Escribir en el `instructions` del agente (case-insensitive):
 | `{{user_avi_rol_registerAnswer}}` | `registerAnswer` del rol | `''` |
 | `{{user_avi_subrol_registerAnswer}}` | `registerAnswer` del subrol | `''` |
 
-Variables no-AVI también soportadas en la misma función: `{{current_date}}`, `{{current_datetime}}`, `{{iso_datetime}}`, `{{current_user}}`.
+Variables no-AVI tambi├®n soportadas en la misma funci├│n: `{{current_date}}`, `{{current_datetime}}`, `{{iso_datetime}}`, `{{current_user}}`.
 
 ### Ejemplo de uso en `librechat.yaml`
 
@@ -186,7 +186,7 @@ El `knowledge` del rol `Residencia` usa `{{user_avi_rol}}` como autorreferencia 
 
 ```yaml
 knowledge: |
-  Actúas como AVI para el rol {{user_avi_rol}}.
+  Act├║as como AVI para el rol {{user_avi_rol}}.
   ...
 ```
 
@@ -196,76 +196,76 @@ knowledge: |
 
 ### Almacenamiento
 
-- **`defaultInitialSuggestions`**: en `librechat.yaml` (`conversationSuggestions.defaultInitialSuggestions`, máx 4). Servido vía `/api/config`.
-- **`initial_suggestions` por rol/subrol**: **solo en MongoDB** (campos del schema `aviRol`/`aviSubrol`). **No se definen en YAML** — el schema Zod de `aviRoles` no las incluye, por lo que cualquier valor en YAML se descarta al parsear.
+- **`defaultInitialSuggestions`**: en `librechat.yaml` (`conversationSuggestions.defaultInitialSuggestions`, m├íx 4). Servido v├¡a `/api/config`.
+- **`initial_suggestions` por rol/subrol**: **solo en MongoDB** (campos del schema `aviRol`/`aviSubrol`). **No se definen en YAML** ÔÇö el schema Zod de `aviRoles` no las incluye, por lo que cualquier valor en YAML se descarta al parsear.
 
 ### Carga (prioridad)
 
-Ruta: `GET /api/suggestions/initial` → `api/server/routes/suggestions.js:15-47`.
+Ruta: `GET /api/suggestions/initial` ÔåÆ `api/server/routes/suggestions.js:15-47`.
 
 ```
-aviSubrol.initial_suggestions  →  aviRol.initial_suggestions  →  config.conversationSuggestions.defaultInitialSuggestions
+aviSubrol.initial_suggestions  ÔåÆ  aviRol.initial_suggestions  ÔåÆ  config.conversationSuggestions.defaultInitialSuggestions
 ```
 
-Máximo 4 sugerencias. El cliente (`client/src/components/Chat/Input/InitialSuggestions.tsx`) consulta la API con `staleTime` 5 min y usa el default del config como fallback de render.
+M├íximo 4 sugerencias. El cliente (`client/src/components/Chat/Input/InitialSuggestions.tsx`) consulta la API con `staleTime` 5 min y usa el default del config como fallback de render.
 
-### Cómo editarlas
+### C├│mo editarlas
 
-| Tipo | Dónde editar | Requiere reload |
+| Tipo | D├│nde editar | Requiere reload |
 |---|---|---|
-| Default global | `librechat.yaml` → `conversationSuggestions.defaultInitialSuggestions` | Stop + redeploy en Dokploy |
+| Default global | `librechat.yaml` ÔåÆ `conversationSuggestions.defaultInitialSuggestions` | Stop + redeploy en Dokploy |
 | Por rol / subrol | Directo en MongoDB (`avirols` / `avisubrols`) | No (se lee en runtime) |
 
 > El script `reload-avi-roles.sh` **NO** sincroniza `initial_suggestions` desde el YAML.
 
 ---
 
-## Recarga Dinámica de Roles
+## Recarga Din├ímica de Roles
 
 Existen **dos rutas** para sincronizar cambios en `librechat.yaml` hacia MongoDB. Difieren en capacidad.
 
-### Ruta A — Docker (script oficial completo)
+### Ruta A ÔÇö Docker (script oficial completo)
 
 ```bash
 docker exec -it LibreChat-API sh -c "./scripts/reload-avi-roles.sh -i"
-# Sin confirmación interactiva:
+# Sin confirmaci├│n interactiva:
 docker exec -it LibreChat-API sh -c "./scripts/reload-avi-roles.sh"
 ```
 
-- Script: `scripts/reload-avi-roles.sh` (120 líneas).
-- Lógica: reutiliza `config/avi-roles-config.js` → `migrateAviRoles()` (migración completa con transacciones, renombrado y validación de integridad).
+- Script: `scripts/reload-avi-roles.sh` (120 l├¡neas).
+- L├│gica: reutiliza `config/avi-roles-config.js` ÔåÆ `migrateAviRoles()` (migraci├│n completa con transacciones, renombrado y validaci├│n de integridad).
 - Mongo URI default: `mongodb://mongodb:27017/LibreChat` (hostname del servicio Docker).
-- Orden de inicialización del script temporal (crítico para `module-alias`):
-  1. `dotenv.config()` — variables de entorno
-  2. `require('module-alias')({ base: apiRoot })` — alias `~`
-  3. `require('mongoose')` — dependencias
-  4. `require('../api/models')` — modelos (usan `~`)
-  5. `migrateAviRoles(interactive)` — migración
+- Orden de inicializaci├│n del script temporal (cr├¡tico para `module-alias`):
+  1. `dotenv.config()` ÔÇö variables de entorno
+  2. `require('module-alias')({ base: apiRoot })` ÔÇö alias `~`
+  3. `require('mongoose')` ÔÇö dependencias
+  4. `require('../api/models')` ÔÇö modelos (usan `~`)
+  5. `migrateAviRoles(interactive)` ÔÇö migraci├│n
 
-### Ruta B — Local (script standalone simplificado)
+### Ruta B ÔÇö Local (script standalone simplificado)
 
 ```powershell
 node config/reload-avi-roles-standalone.js -i
-# Sin confirmación:
+# Sin confirmaci├│n:
 node config/reload-avi-roles-standalone.js
 ```
 
-- Script: `config/reload-avi-roles-standalone.js` (289 líneas).
-- Lógica: **migración inline simplificada** — NO reutiliza `avi-roles-config.js`.
+- Script: `config/reload-avi-roles-standalone.js` (289 l├¡neas).
+- L├│gica: **migraci├│n inline simplificada** ÔÇö NO reutiliza `avi-roles-config.js`.
 - Mongo URI default: `mongodb://127.0.0.1:27017/LibreChat` (localhost).
 
-### ⚠️ Diferencias críticas entre ambas rutas
+### ÔÜá´©Å Diferencias cr├¡ticas entre ambas rutas
 
 | Aspecto | `reload-avi-roles.sh` (Docker) | `reload-avi-roles-standalone.js` (Local) |
 |---|---|---|
-| Sincroniza `registerAnswer` | ✅ Sí | ❌ **No** |
-| Sincroniza `knowledge`/`behavior` de subroles | ✅ Sí | ❌ **No** (los setea en `null`) |
-| Sincroniza `knowledge`/`behavior` de roles | ✅ Sí | ✅ Sí |
-| Renombrado vía `migrations.roles/subroles` | ✅ Sí | ❌ No |
-| Validación de integridad referencial | ✅ Sí (Paso 3) | ❌ No |
-| Transacciones (replica set) | ✅ Sí | ❌ No |
+| Sincroniza `registerAnswer` | Ô£à S├¡ | ÔØî **No** |
+| Sincroniza `knowledge`/`behavior` de subroles | Ô£à S├¡ | ÔØî **No** (los setea en `null`) |
+| Sincroniza `knowledge`/`behavior` de roles | Ô£à S├¡ | Ô£à S├¡ |
+| Renombrado v├¡a `migrations.roles/subroles` | Ô£à S├¡ | ÔØî No |
+| Validaci├│n de integridad referencial | Ô£à S├¡ (Paso 3) | ÔØî No |
+| Transacciones (replica set) | Ô£à S├¡ | ÔØî No |
 
-> **Importante, Don Andres:** si editas `registerAnswer` o `knowledge`/`behavior` de subroles en el YAML y solo corres el script standalone local, esos cambios **no se propagarán** a MongoDB. Para sincronización completa usa la ruta Docker, aunque sea en desarrollo local (levantando el contenedor `api` o ejecutando contra la BD remota).
+> **Importante, Don Andres:** si editas `registerAnswer` o `knowledge`/`behavior` de subroles en el YAML y solo corres el script standalone local, esos cambios **no se propagar├ín** a MongoDB. Para sincronizaci├│n completa usa la ruta Docker, aunque sea en desarrollo local (levantando el contenedor `api` o ejecutando contra la BD remota).
 
 ### Matriz de comandos por entorno
 
@@ -273,26 +273,26 @@ node config/reload-avi-roles-standalone.js
 |---|---|
 | Desarrollo local (sincr. parcial) | `node config/reload-avi-roles-standalone.js -i` |
 | Docker dev | `docker exec -it LibreChat-API sh -c "./scripts/reload-avi-roles.sh -i"` |
-| Docker producción | `docker exec -it LibreChat-API sh -c "./scripts/reload-avi-roles.sh -i"` |
+| Docker producci├│n | `docker exec -it LibreChat-API sh -c "./scripts/reload-avi-roles.sh -i"` |
 
 ---
 
-## Migración y Renombrado
+## Migraci├│n y Renombrado
 
-Lógica: `config/avi-roles-config.js:231-336` (`migrateAviRoles`).
+L├│gica: `config/avi-roles-config.js:231-336` (`migrateAviRoles`).
 
-### Pasos de la migración (ruta Docker)
+### Pasos de la migraci├│n (ruta Docker)
 
 1. **`analyzeChanges`** (`:341-513`): calcula roles/subroles a crear, renombrar, actualizar (diffs de `knowledge`/`behavior`/`registerAnswer`) y eliminar.
-2. Si `--interactive`, muestra resumen y pide confirmación `(y/n)` (`:527-687`).
-3. Detecta replica set → usa transacciones si hay, sino corre sin ellas (compatible con standalone).
-4. **Paso 1 — `migrateRoles`** (`:692-771`): renombra, crea, actualiza `knowledge`/`behavior`/`registerAnswer`, elimina roles ausentes en config (solo si no tienen usuarios asignados).
-5. **Paso 2 — `migrateSubroles`** (`:776-882`): renombra, crea, actualiza `knowledge`/`behavior`/`registerAnswer`, elimina subroles ausentes o marcados `null` en `migrations.subroles`. Limpia `aviSubrol_id` de usuarios afectados.
-6. **Paso 3 — `validateReferentialIntegrity`** (`:887-936`):
-   - **Caso A:** usuario con `aviSubrol_id` pero sin `aviRol_id` → asigna rol desde `subrol.parentRolId`.
-   - **Caso B:** subroles cuyo `parentRolId` ya no existe → eliminan + `$unset` en usuarios.
+2. Si `--interactive`, muestra resumen y pide confirmaci├│n `(y/n)` (`:527-687`).
+3. Detecta replica set ÔåÆ usa transacciones si hay, sino corre sin ellas (compatible con standalone).
+4. **Paso 1 ÔÇö `migrateRoles`** (`:692-771`): renombra, crea, actualiza `knowledge`/`behavior`/`registerAnswer`, elimina roles ausentes en config (solo si no tienen usuarios asignados).
+5. **Paso 2 ÔÇö `migrateSubroles`** (`:776-882`): renombra, crea, actualiza `knowledge`/`behavior`/`registerAnswer`, elimina subroles ausentes o marcados `null` en `migrations.subroles`. Limpia `aviSubrol_id` de usuarios afectados.
+6. **Paso 3 ÔÇö `validateReferentialIntegrity`** (`:887-936`):
+   - **Caso A:** usuario con `aviSubrol_id` pero sin `aviRol_id` ÔåÆ asigna rol desde `subrol.parentRolId`.
+   - **Caso B:** subroles cuyo `parentRolId` ya no existe ÔåÆ eliminan + `$unset` en usuarios.
 
-### Renombrado vía `migrations`
+### Renombrado v├¡a `migrations`
 
 ```yaml
 aviRoles:
@@ -305,30 +305,30 @@ aviRoles:
     defaultRoleForOrphans: "Residencia"
 ```
 
-> `defaultRoleForOrphans` está declarado en el config pero **no es aplicado activamente** por el código de migración. La integridad referencial solo reasigna rol desde el `parentRolId` del subrol (Caso A), nunca cae al default. Alinear este valor con un rol existente (hoy apunta a `generico` que no existe en el YAML actual).
+> `defaultRoleForOrphans` est├í declarado en el config pero **no es aplicado activamente** por el c├│digo de migraci├│n. La integridad referencial solo reasigna rol desde el `parentRolId` del subrol (Caso A), nunca cae al default. Alinear este valor con un rol existente (hoy apunta a `generico` que no existe en el YAML actual).
 
-### Qué se sincroniza y qué no
+### Qu├® se sincroniza y qu├® no
 
-| Cambio en `librechat.yaml` | ¿Se sincroniza a MongoDB? |
+| Cambio en `librechat.yaml` | ┬┐Se sincroniza a MongoDB? |
 |---|---|
-| `name` de rol/subrol | ✅ (con `migrations` para renombrar) |
-| `knowledge` / `behavior` / `registerAnswer` | ✅ vía Docker · ⚠️ parcial vía standalone |
-| `subroles` (agregar/eliminar) | ✅ |
-| `initial_suggestions` | ❌ No (editar directo en MongoDB) |
-| `instructionSuggestion` | ❌ No (campo muerto, ver Notas) |
-| `conversationSuggestions.defaultInitialSuggestions` | ❌ No (requiere redeploy) |
+| `name` de rol/subrol | Ô£à (con `migrations` para renombrar) |
+| `knowledge` / `behavior` / `registerAnswer` | Ô£à v├¡a Docker ┬À ÔÜá´©Å parcial v├¡a standalone |
+| `subroles` (agregar/eliminar) | Ô£à |
+| `initial_suggestions` | ÔØî No (editar directo en MongoDB) |
+| `instructionSuggestion` | ÔØî No (campo muerto, ver Notas) |
+| `conversationSuggestions.defaultInitialSuggestions` | ÔØî No (requiere redeploy) |
 
 ---
 
-## API de Métodos
+## API de M├®todos
 
-Métodos factoría en `packages/data-schemas/src/methods/`. Exportados vía `createAviRolMethods` / `createAviSubrolMethods`.
+M├®todos factor├¡a en `packages/data-schemas/src/methods/`. Exportados v├¡a `createAviRolMethods` / `createAviSubrolMethods`.
 
 ### `aviRol.ts` (`:1-111`)
 
-| Método | Firma | Descripción |
+| M├®todo | Firma | Descripci├│n |
 |---|---|---|
-| `initializeAviRoles` | `async ()` | Crea roles por defecto **solo si** `avirols` está vacío. Persiste solo `name` (sin `knowledge`/`behavior`). |
+| `initializeAviRoles` | `async ()` | Crea roles por defecto **solo si** `avirols` est├í vac├¡o. Persiste solo `name` (sin `knowledge`/`behavior`). |
 | `listAviRoles` | `async ()` | `find({}).sort({ name: 1 }).lean()` |
 | `getAviRolById` | `async (id)` | `findById(id).lean()` |
 | `getAviRolByName` | `async (name)` | `findOne({ name }).lean()` |
@@ -338,9 +338,9 @@ Métodos factoría en `packages/data-schemas/src/methods/`. Exportados vía `cre
 
 ### `aviSubrol.ts` (`:1-165`)
 
-| Método | Firma | Descripción |
+| M├®todo | Firma | Descripci├│n |
 |---|---|---|
-| `initializeAviSubroles` | `async ()` | Crea subroles solo si la colección está vacía. Persiste `name` + `parentRolId`. |
+| `initializeAviSubroles` | `async ()` | Crea subroles solo si la colecci├│n est├í vac├¡a. Persiste `name` + `parentRolId`. |
 | `listAviSubroles` | `async ()` | `find({}).populate('parentRolId', 'name').sort({ parentRolId: 1, name: 1 }).lean()` |
 | `getAviSubrolesByParentId` | `async (parentRolId)` | Subroles de un rol. |
 | `getAviSubrolById` | `async (id)` | `findById(id).populate('parentRolId', 'name').lean()` |
@@ -349,9 +349,9 @@ Métodos factoría en `packages/data-schemas/src/methods/`. Exportados vía `cre
 | `updateAviSubrol` | `async (id, { name?, parentRolId?, knowledge?, behavior? })` | Valida padre si se provee. |
 | `deleteAviSubrol` | `async (id)` | `findByIdAndDelete`. No valida usuarios asignados. |
 
-### `user.ts` — métodos AVI (`:282-406`)
+### `user.ts` ÔÇö m├®todos AVI (`:282-406`)
 
-| Método | Firma | Descripción |
+| M├®todo | Firma | Descripci├│n |
 |---|---|---|
 | `assignUserAviRoles` | `async (userId, aviRolId, aviSubrolId?)` | Valida rol y subrol, y que el subrol pertenezca al rol. |
 | `getUserWithAviRoles` | `async (userId)` | Popula `aviRol_id`/`aviSubrol_id` con `name knowledge behavior registerAnswer`. |
@@ -359,35 +359,35 @@ Métodos factoría en `packages/data-schemas/src/methods/`. Exportados vía `cre
 | `getUsersByAviRole` | `async (aviRolId)` | Popula `name knowledge behavior` (sin `registerAnswer`). |
 | `validateUserAviRoles` | `async (userId)` | Devuelve `{ isValid, error? }`. |
 
-> **Inconsistencia menor:** `getUsersByAviRole` no popula `registerAnswer`, mientras que `getUserWithAviRoles` sí. Relevante si reutilizas estos métodos en código nuevo.
+> **Inconsistencia menor:** `getUsersByAviRole` no popula `registerAnswer`, mientras que `getUserWithAviRoles` s├¡. Relevante si reutilizas estos m├®todos en c├│digo nuevo.
 
 ---
 
 ## Notas y Advertencias
 
-1. **`instructionSuggestion` es un campo muerto.** Aparece en `librechat.yaml` (ej. `:176`, `:206`) pero **no está en el schema Zod** (`config.ts:808-833`), por lo que se descarta al parsear y nunca llega a MongoDB ni al runtime. No tiene efecto alguno en la actualidad.
+1. **`instructionSuggestion` es un campo muerto.** Aparece en `librechat.yaml` (ej. `:176`, `:206`) pero **no est├í en el schema Zod** (`config.ts:808-833`), por lo que se descarta al parsear y nunca llega a MongoDB ni al runtime. No tiene efecto alguno en la actualidad.
 
-2. **`initializeAviRoles` / `initializeAviSubroles` solo persisten `name`** (y `parentRolId`). Los campos ricos (`knowledge`, `behavior`, `registerAnswer`) solo se propagan vía la migración (`migrateAviRoles`).
+2. **`initializeAviRoles` / `initializeAviSubroles` solo persisten `name`** (y `parentRolId`). Los campos ricos (`knowledge`, `behavior`, `registerAnswer`) solo se propagan v├¡a la migraci├│n (`migrateAviRoles`).
 
-3. **`defaultRoleForOrphans: 'generico'`** en el YAML apunta a un rol que **no existe** en el `roles` actual (solo `Residencia` y `FAE`). Es efectivamente inoperante porque la migración no lo aplica. Alinearlo a un rol real.
+3. **`defaultRoleForOrphans: 'generico'`** en el YAML apunta a un rol que **no existe** en el `roles` actual (solo `Residencia` y `FAE`). Es efectivamente inoperante porque la migraci├│n no lo aplica. Alinearlo a un rol real.
 
-4. **Las firmas TS de `createAviRol`/`updateAviRol`/`createAviSubrol`/`updateAviSubrol`** no declaran `initial_suggestions` ni `registerAnswer`, aunque el schema de Mongoose sí los soporta. Funciona en runtime (Mongoose no valida tipos TS), pero no están tipados.
+4. **Las firmas TS de `createAviRol`/`updateAviRol`/`createAviSubrol`/`updateAviSubrol`** no declaran `initial_suggestions` ni `registerAnswer`, aunque el schema de Mongoose s├¡ los soporta. Funciona en runtime (Mongoose no valida tipos TS), pero no est├ín tipados.
 
-5. **Validación de integridad referencial:** la migración repara usuarios con subrol pero sin rol (Caso A) derivando el rol desde `subrol.parentRolId`. No reasigna huérfanos al `defaultRoleForOrphans`.
+5. **Validaci├│n de integridad referencial:** la migraci├│n repara usuarios con subrol pero sin rol (Caso A) derivando el rol desde `subrol.parentRolId`. No reasigna hu├®rfanos al `defaultRoleForOrphans`.
 
-6. **Endpoint de inyección:** `knowledge`/`behavior`/`registerAnswer` solo se inyectan en el system prompt del **endpoint Agents** (`agent.js`). Otros endpoints no los usan.
+6. **Endpoint de inyecci├│n:** `knowledge`/`behavior`/`registerAnswer` solo se inyectan en el system prompt del **endpoint Agents** (`agent.js`). Otros endpoints no los usan.
 
-7. **`getUserWithAviRoles` NO popula `initial_suggestions`** — solo `name knowledge behavior registerAnswer`. Las sugerencias se leen por separado en `routes/suggestions.js`.
+7. **`getUserWithAviRoles` NO popula `initial_suggestions`** ÔÇö solo `name knowledge behavior registerAnswer`. Las sugerencias se leen por separado en `routes/suggestions.js`.
 
 ---
 
-## 📚 Documentación Relacionada
+## ­ƒôÜ Documentaci├│n Relacionada
 
 - `Docs_AVI/GUIA_DEPLOY_DESARROLLO.md` - Deploy, entornos y desarrollo local
 - `Docs_AVI/OPERACIONES.md` - Backups, sync Sheets, Health Check, invitaciones
-- `Docs_AVI/README.md` - Índice de documentación
+- `Docs_AVI/README.md` - ├ìndice de documentaci├│n
 
 ---
 
-**Validada contra código:** rama `dev`, Junio 2026
+**Validada contra c├│digo:** rama `dev`, Junio 2026
 **Mantenida por:** Equipo de Desarrollo AVI

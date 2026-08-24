@@ -41,13 +41,13 @@ async function connectToMongoDB() {
   try {
     const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/LibreChat';
     console.log(`\n🔌 Conectando a MongoDB: ${mongoUri}`);
-    
+
     await mongoose.connect(mongoUri, {
       bufferCommands: false,
       autoIndex: false,
       autoCreate: false,
     });
-    
+
     console.log('✅ Conectado a MongoDB\n');
     return true;
   } catch (error) {
@@ -64,7 +64,7 @@ function loadModels() {
     // Los modelos se crean automáticamente desde @librechat/data-schemas
     const { createModels } = require('@librechat/data-schemas');
     createModels(mongoose);
-    
+
     return {
       AviRol: mongoose.models.AviRol,
       AviSubrol: mongoose.models.AviSubrol,
@@ -81,55 +81,55 @@ function loadModels() {
  */
 async function migrateRoles(config, models) {
   const { AviRol, AviSubrol, User } = models;
-  
+
   console.log('📊 ANÁLISIS DE CAMBIOS:');
   console.log('═'.repeat(60));
-  
+
   // Obtener roles actuales de BD
   const currentRoles = await AviRol.find({});
-  const configRoleNames = config.aviRoles.roles.map(r => r.name);
-  
+  const configRoleNames = config.aviRoles.roles.map((r) => r.name);
+
   const rolesToCreate = [];
   const rolesToUpdate = [];
   const rolesToDelete = [];
-  
+
   // Detectar cambios
   for (const configRole of config.aviRoles.roles) {
-    const existingRole = currentRoles.find(r => r.name === configRole.name);
-    
+    const existingRole = currentRoles.find((r) => r.name === configRole.name);
+
     if (!existingRole) {
       rolesToCreate.push(configRole);
     } else {
       // Verificar si cambió knowledge o behavior
       const knowledgeChanged = (existingRole.knowledge || null) !== (configRole.knowledge || null);
       const behaviorChanged = (existingRole.behavior || null) !== (configRole.behavior || null);
-      
+
       if (knowledgeChanged || behaviorChanged) {
         rolesToUpdate.push({
           name: configRole.name,
           id: existingRole._id,
-          changes: { knowledge: configRole.knowledge, behavior: configRole.behavior }
+          changes: { knowledge: configRole.knowledge, behavior: configRole.behavior },
         });
       }
     }
   }
-  
+
   // Roles a eliminar
   for (const currentRole of currentRoles) {
     if (!configRoleNames.includes(currentRole.name)) {
       rolesToDelete.push(currentRole);
     }
   }
-  
+
   // Mostrar resumen
   if (rolesToCreate.length > 0) {
     console.log(`\n➕ ROLES NUEVOS (${rolesToCreate.length}):`);
-    rolesToCreate.forEach(r => console.log(`   • ${r.name}`));
+    rolesToCreate.forEach((r) => console.log(`   • ${r.name}`));
   }
-  
+
   if (rolesToUpdate.length > 0) {
     console.log(`\n🔄 ROLES A ACTUALIZAR (${rolesToUpdate.length}):`);
-    rolesToUpdate.forEach(r => {
+    rolesToUpdate.forEach((r) => {
       console.log(`   • ${r.name}`);
       if (r.changes.knowledge !== undefined) {
         console.log(`     - knowledge: ${r.changes.knowledge ? 'Actualizado' : 'null'}`);
@@ -139,41 +139,41 @@ async function migrateRoles(config, models) {
       }
     });
   }
-  
+
   if (rolesToDelete.length > 0) {
     console.log(`\n🗑️  ROLES A ELIMINAR:`);
-    rolesToDelete.forEach(r => {
+    rolesToDelete.forEach((r) => {
       const userCount = 0; // Simplificado, podrías contar usuarios
       console.log(`   • ${r.name} (${userCount} usuarios)`);
     });
   }
-  
+
   if (rolesToCreate.length === 0 && rolesToUpdate.length === 0 && rolesToDelete.length === 0) {
     console.log('\n✅ No hay cambios en roles');
     return true;
   }
-  
+
   // Confirmación interactiva
   if (INTERACTIVE) {
     console.log('\n' + '═'.repeat(60));
     const readline = require('readline').createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
-    
-    const answer = await new Promise(resolve => {
+
+    const answer = await new Promise((resolve) => {
       readline.question('¿Desea continuar con la migración? (y/n): ', resolve);
     });
     readline.close();
-    
+
     if (answer.toLowerCase() !== 'y' && answer.toLowerCase() !== 'yes') {
       console.log('\n❌ Migración cancelada por el usuario');
       return false;
     }
   }
-  
+
   console.log('\n🔧 APLICANDO CAMBIOS...\n');
-  
+
   // Crear roles nuevos
   for (const roleData of rolesToCreate) {
     await AviRol.create({
@@ -183,28 +183,30 @@ async function migrateRoles(config, models) {
     });
     console.log(`   ✅ Creado: ${roleData.name}`);
   }
-  
+
   // Actualizar roles existentes
   for (const roleUpdate of rolesToUpdate) {
     await AviRol.findByIdAndUpdate(roleUpdate.id, roleUpdate.changes);
     console.log(`   ✅ Actualizado: ${roleUpdate.name}`);
   }
-  
+
   // Eliminar roles (simplificado)
   for (const role of rolesToDelete) {
     // Verificar usuarios antes de eliminar
     const userCount = await User.countDocuments({ aviRol_id: role._id });
     if (userCount > 0) {
-      console.log(`   ⚠️  No se puede eliminar "${role.name}": tiene ${userCount} usuarios asignados`);
+      console.log(
+        `   ⚠️  No se puede eliminar "${role.name}": tiene ${userCount} usuarios asignados`,
+      );
     } else {
       await AviRol.findByIdAndDelete(role._id);
       console.log(`   ✅ Eliminado: ${role.name}`);
     }
   }
-  
+
   // Migrar subroles (similar lógica, simplificado aquí)
   await migrateSubroles(config, models);
-  
+
   return true;
 }
 
@@ -213,19 +215,19 @@ async function migrateRoles(config, models) {
  */
 async function migrateSubroles(config, models) {
   const { AviRol, AviSubrol } = models;
-  
+
   console.log('\n🔧 Migrando subroles...');
-  
+
   for (const configRole of config.aviRoles.roles) {
     const dbRole = await AviRol.findOne({ name: configRole.name });
     if (!dbRole) continue;
-    
+
     const currentSubroles = await AviSubrol.find({ parentRolId: dbRole._id });
     const configSubroleNames = configRole.subroles || [];
-    
+
     // Crear subroles faltantes
     for (const subroleName of configSubroleNames) {
-      const exists = currentSubroles.find(s => s.name === subroleName);
+      const exists = currentSubroles.find((s) => s.name === subroleName);
       if (!exists) {
         await AviSubrol.create({
           name: subroleName,
@@ -236,7 +238,7 @@ async function migrateSubroles(config, models) {
         console.log(`   ✅ Subrol creado: "${subroleName}" (padre: ${configRole.name})`);
       }
     }
-    
+
     // Eliminar subroles que ya no están en config
     for (const currentSubrol of currentSubroles) {
       if (!configSubroleNames.includes(currentSubrol.name)) {
@@ -258,27 +260,26 @@ async function main() {
       console.error('❌ No se encontró configuración aviRoles en librechat.yaml');
       process.exit(1);
     }
-    
+
     // Conectar a MongoDB
     const connected = await connectToMongoDB();
     if (!connected) {
       process.exit(1);
     }
-    
+
     // Cargar modelos
     const models = loadModels();
-    
+
     // Ejecutar migración
     const success = await migrateRoles(config, models);
-    
+
     if (success) {
       console.log('\n✅ Configuración actualizada exitosamente');
       console.log(`✅ Recarga completada - ${new Date().toISOString()}\n`);
     }
-    
+
     await mongoose.disconnect();
     process.exit(0);
-    
   } catch (error) {
     console.error('\n❌ Error durante la migración:', error);
     await mongoose.disconnect();

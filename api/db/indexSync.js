@@ -32,6 +32,70 @@ class MeiliSearchClient {
 }
 
 /**
+ * Marca todos los documentos como no indexados para forzar una resincronización completa.
+ *
+ * @param {import('mongoose').Model} model
+ * @param {string} label
+ * @returns {Promise<number>} documentos marcados
+ */
+async function resetMeiliFlags(model, label) {
+  const result = await model.updateMany({ _meiliIndex: true }, { $set: { _meiliIndex: false } });
+  const count = result.modifiedCount ?? 0;
+  logger.info(`[indexSync] Reset sync flags for ${count} ${label}`);
+  return count;
+}
+
+/**
+ * Asegura que los índices puedan filtrarse por `user`.
+ *
+ * Sin `filterableAttributes: ['user']`, la consulta `filter: 'user = "..."'` devuelve
+ * `invalid_search_filter` y la búsqueda tendría que consultar el índice global de todos los
+ * usuarios y descartar después, devolviendo resultados incompletos de forma impredecible.
+ *
+ * Además detecta documentos indexados por versiones anteriores que carecen del campo `user`:
+ * esos no los devuelve ningún filtro, así que hay que reindexarlos.
+ *
+ * @param {MeiliSearch} client
+ * @returns {Promise<{ settingsUpdated: boolean, staleDocsFound: boolean }>}
+ */
+async function ensureFilterableAttributes(client) {
+  let settingsUpdated = false;
+  let staleDocsFound = false;
+
+  const indexes = [
+    { name: 'messages', label: 'messages' },
+    { name: 'convos', label: 'conversations' },
+  ];
+
+  for (const { name, label } of indexes) {
+    try {
+      const index = client.index(name);
+      const settings = await index.getSettings();
+
+      if (!settings.filterableAttributes?.includes('user')) {
+        logger.info(`[indexSync] Configuring ${label} index to filter by user...`);
+        await index.updateSettings({ filterableAttributes: ['user'] });
+        logger.info(`[indexSync] ${label} index configured for user filtering`);
+        settingsUpdated = true;
+      }
+
+      /** Un documento indexado sin el campo `user` es invisible para el filtro por usuario. */
+      const probe = await index.search('', { limit: 1 });
+      if (probe.hits.length > 0 && probe.hits[0].user == null) {
+        logger.info(`[indexSync] Existing ${label} are missing the user field, will reindex...`);
+        staleDocsFound = true;
+      }
+    } catch (error) {
+      if (error?.code !== 'index_not_found') {
+        logger.warn(`[indexSync] Could not check/update ${label} index settings:`, error.message);
+      }
+    }
+  }
+
+  return { settingsUpdated, staleDocsFound };
+}
+
+/**
  * Performs the actual sync operations for messages and conversations
  */
 async function performSync() {
@@ -40,6 +104,15 @@ async function performSync() {
   const { status } = await client.health();
   if (status !== 'available') {
     throw new Error('Meilisearch not available');
+  }
+
+  if (indexingDisabled !== true) {
+    const { settingsUpdated, staleDocsFound } = await ensureFilterableAttributes(client);
+    if (settingsUpdated || staleDocsFound) {
+      logger.info('[indexSync] Forcing a full resync so documents are indexed with the user field');
+      await resetMeiliFlags(Message, 'messages');
+      await resetMeiliFlags(Conversation, 'conversations');
+    }
   }
 
   if (indexingDisabled === true) {

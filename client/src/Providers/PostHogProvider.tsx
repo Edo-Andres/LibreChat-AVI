@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { PostHogProvider as PHProvider } from 'posthog-js/react';
 import posthog from 'posthog-js';
 
@@ -34,6 +34,8 @@ interface ProviderProps {
 export const PostHogProvider = ({ children }: ProviderProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [config, setConfig] = useState<PostHogConfig | null>(null);
+  const [client, setClient] = useState<typeof posthog | null>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -77,25 +79,40 @@ export const PostHogProvider = ({ children }: ProviderProps) => {
     };
   }, []);
 
-  const contextValue = useMemo(() => ({
-    posthog: config?.posthogKey ? posthog : null,
-    isLoaded,
-  }), [config, isLoaded]);
+  /**
+   * Init explícito: `PHProvider` inicializa dentro de un `useEffect` propio, y los
+   * efectos de React corren bottom-up, así que un consumidor descendiente podría
+   * llamar a identify/capture antes del init — posthog-js no encola esas llamadas
+   * y se perderían en silencio. Inicializando aquí, el contexto solo publica el
+   * cliente una vez listo, y `usePostHog()` devuelve null hasta entonces.
+   */
+  useEffect(() => {
+    if (!config?.posthogKey || initializedRef.current) {
+      return;
+    }
+    initializedRef.current = true; // idempotente bajo StrictMode (doble efecto en dev)
+    posthog.init(config.posthogKey, {
+      api_host: config.posthogHost ?? 'https://us.i.posthog.com',
+      defaults: '2025-05-24',
+      capture_exceptions: true,
+      debug: import.meta.env.MODE === 'development',
+    });
+    setClient(posthog);
+  }, [config?.posthogKey, config?.posthogHost]);
 
-  if (config?.posthogKey) {
+  const contextValue = useMemo(
+    () => ({
+      posthog: client,
+      isLoaded,
+    }),
+    [client, isLoaded],
+  );
+
+  if (client) {
     return (
       <PostHogContext.Provider value={contextValue}>
-        <PHProvider
-          apiKey={config.posthogKey}
-          options={{
-            api_host: config.posthogHost ?? 'https://us.i.posthog.com',
-            defaults: '2025-05-24',
-            capture_exceptions: true,
-            debug: import.meta.env.MODE === 'development',
-          }}
-        >
-          {children}
-        </PHProvider>
+        {/* al recibir `client`, PHProvider no vuelve a inicializar */}
+        <PHProvider client={client}>{children}</PHProvider>
       </PostHogContext.Provider>
     );
   }

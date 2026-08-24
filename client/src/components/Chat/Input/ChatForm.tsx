@@ -276,7 +276,9 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
             return;
           }
 
-          const anyButton = elevenLabsWidget.shadowRoot?.querySelector('button') as HTMLButtonElement;
+          const anyButton = elevenLabsWidget.shadowRoot?.querySelector(
+            'button',
+          ) as HTMLButtonElement;
           if (anyButton) {
             anyButton.click();
             console.log('Primer botón disponible activado automáticamente');
@@ -344,7 +346,9 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
           }
 
           if (hiddenCount > 0) {
-            console.log(`Botón "Collapse" y contenedor(es) ocultados completamente - ${hiddenCount} elementos`);
+            console.log(
+              `Botón "Collapse" y contenedor(es) ocultados completamente - ${hiddenCount} elementos`,
+            );
             return true;
           }
         } catch (error) {
@@ -632,7 +636,8 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                     {...registerProps}
                     ref={(e) => {
                       ref(e);
-                      (textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e;
+                      (textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current =
+                        e;
                     }}
                     disabled={disableInputs || isNotAppendable}
                     onPaste={handlePaste}
@@ -676,7 +681,9 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                   <AttachFileChat conversation={conversation} disableInputs={disableInputs} />
                 </div>
                 <BadgeRow
-                  showEphemeralBadges={!isAgentsEndpoint(endpoint) && !isAssistantsEndpoint(endpoint)}
+                  showEphemeralBadges={
+                    !isAgentsEndpoint(endpoint) && !isAssistantsEndpoint(endpoint)
+                  }
                   isSubmitting={isSubmitting || isSubmittingAdded}
                   conversationId={conversationId}
                   onChange={setBadges}
@@ -708,10 +715,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                   )}
                 </div>
                 <div className={`${isRTL ? 'ml-2' : 'mr-2'}`}>
-                  <PhoneButton
-                    disabled={disableInputs}
-                    onClick={handlePhoneClick}
-                  />
+                  <PhoneButton disabled={disableInputs} onClick={handlePhoneClick} />
                 </div>
               </div>
               {/* Initial Suggestions - shown below action buttons */}
@@ -723,7 +727,9 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
       </form>
       {/* Widget de ElevenLabs ConvAI */}
       <div style={{ display: showElevenLabsWidget ? 'block' : 'none' }}>
-        <elevenlabs-convai agent-id={(config as any)?.elevenLabsAgentId || import.meta.env.VITE_ELEVENLABS_AGENT_ID}></elevenlabs-convai>
+        <elevenlabs-convai
+          agent-id={(config as any)?.elevenLabsAgentId || import.meta.env.VITE_ELEVENLABS_AGENT_ID}
+        ></elevenlabs-convai>
       </div>
     </>
   );

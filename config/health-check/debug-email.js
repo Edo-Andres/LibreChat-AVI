@@ -28,8 +28,8 @@ const emailConfig = {
   secure: process.env.EMAIL_ENCRYPTION === 'ssl',
   auth: {
     user: process.env.EMAIL_USERNAME,
-    pass: process.env.EMAIL_PASSWORD
-  }
+    pass: process.env.EMAIL_PASSWORD,
+  },
 };
 
 if (process.env.EMAIL_SERVICE === 'gmail') {
@@ -40,14 +40,14 @@ console.log('Config (sin passwords):', {
   ...emailConfig,
   auth: {
     user: emailConfig.auth.user,
-    pass: emailConfig.auth.pass ? '***configurado***' : 'NO CONFIGURADO'
-  }
+    pass: emailConfig.auth.pass ? '***configurado***' : 'NO CONFIGURADO',
+  },
 });
 
 try {
   const transporter = nodemailer.createTransporter(emailConfig);
   console.log('✅ Transporter creado exitosamente');
-  
+
   // Verificar conexión
   console.log('\n🔗 Verificando conexión SMTP...');
   transporter.verify((error, success) => {
@@ -57,7 +57,6 @@ try {
       console.log('✅ Conexión SMTP exitosa');
     }
   });
-  
 } catch (error) {
   console.log('❌ Error creando transporter:', error.message);
 }

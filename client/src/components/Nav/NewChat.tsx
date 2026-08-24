@@ -67,9 +67,7 @@ export default function NewChat({
               </Button>
             }
           />
-          <div className="flex gap-0.5">
-            {headerButtons}
-          </div>
+          <div className="flex gap-0.5">{headerButtons}</div>
         </div>
 
         <TooltipAnchor
@@ -79,7 +77,7 @@ export default function NewChat({
               variant="default"
               data-testid="nav-new-chat-button"
               aria-label={localize('com_ui_new_chat')}
-              className="w-full rounded-lg border-none bg-gradient-to-r from-chat-user-light to-chat-user-dark px-4 py-2.5 text-white transition-opacity hover:opacity-90 shadow-lg"
+              className="w-full rounded-lg border-none bg-gradient-to-r from-chat-user-light to-chat-user-dark px-4 py-2.5 text-white shadow-lg transition-opacity hover:opacity-90"
               onClick={clickHandler}
             >
               <div className="flex items-center justify-center gap-2">

@@ -1,7 +1,7 @@
 /**
  * Test script for AVI Roles Variables in Prompts
  * This script tests the new {{user_avi_rol}} and {{user_avi_subrol}} variables
- * 
+ *
  * Usage: node config/test-avi-roles-variables.js
  */
 
@@ -29,7 +29,7 @@ async function testAviRolesVariables() {
     // Get or create a test user
     console.log('🔧 Setting up test user...');
     let testUser = await methods.findUser({ email: 'test-avi-roles@example.com' });
-    
+
     if (!testUser) {
       testUser = await methods.createUser({
         email: 'test-avi-roles@example.com',
@@ -45,8 +45,8 @@ async function testAviRolesVariables() {
 
     // Get AVI roles
     const aviRoles = await methods.listAviRoles();
-    const administrativoRole = aviRoles.find(r => r.name === 'administrativo');
-    const cuidadorRole = aviRoles.find(r => r.name === 'cuidador');
+    const administrativoRole = aviRoles.find((r) => r.name === 'administrativo');
+    const cuidadorRole = aviRoles.find((r) => r.name === 'cuidador');
 
     if (!administrativoRole || !cuidadorRole) {
       throw new Error('AVI roles not found. Please run initialize scripts first.');
@@ -56,32 +56,32 @@ async function testAviRolesVariables() {
     const adminSubroles = await methods.getAviSubrolesByParentId(administrativoRole._id.toString());
     const cuidadorSubroles = await methods.getAviSubrolesByParentId(cuidadorRole._id.toString());
 
-    const gestorUsuarios = adminSubroles.find(s => s.name === 'Gestor de Usuarios');
-    const cuidadorPrincipal = cuidadorSubroles.find(s => s.name === 'Cuidador Principal');
+    const gestorUsuarios = adminSubroles.find((s) => s.name === 'Gestor de Usuarios');
+    const cuidadorPrincipal = cuidadorSubroles.find((s) => s.name === 'Cuidador Principal');
 
     console.log('\n📋 Available AVI Roles:');
-    aviRoles.forEach(role => {
+    aviRoles.forEach((role) => {
       console.log(`  - ${role.name} (ID: ${role._id})`);
     });
 
     console.log('\n📋 Available Subroles for "administrativo":');
-    adminSubroles.forEach(subrol => {
+    adminSubroles.forEach((subrol) => {
       console.log(`  - ${subrol.name} (ID: ${subrol._id})`);
     });
 
     console.log('\n📋 Available Subroles for "cuidador":');
-    cuidadorSubroles.forEach(subrol => {
+    cuidadorSubroles.forEach((subrol) => {
       console.log(`  - ${subrol.name} (ID: ${subrol._id})`);
     });
 
     // Test Case 1: User with administrativo role and Gestor de Usuarios subrol
     console.log('\n\n🧪 TEST CASE 1: User with administrativo role and Gestor de Usuarios subrol');
     console.log('═'.repeat(80));
-    
+
     await methods.assignUserAviRoles(
       testUser._id.toString(),
       administrativoRole._id.toString(),
-      gestorUsuarios._id.toString()
+      gestorUsuarios._id.toString(),
     );
     console.log('✅ Assigned roles to user');
 
@@ -126,11 +126,11 @@ Fecha: {{current_date}}
     // Test Case 2: User with cuidador role and Cuidador Principal subrol
     console.log('\n\n🧪 TEST CASE 2: User with cuidador role and Cuidador Principal subrol');
     console.log('═'.repeat(80));
-    
+
     await methods.assignUserAviRoles(
       testUser._id.toString(),
       cuidadorRole._id.toString(),
-      cuidadorPrincipal._id.toString()
+      cuidadorPrincipal._id.toString(),
     );
     console.log('✅ Assigned roles to user');
 
@@ -172,7 +172,7 @@ Como {{user_avi_subrol}}, debes gestionar el cuidado principal del paciente.
     // Test Case 3: User without AVI roles
     console.log('\n\n🧪 TEST CASE 3: User without AVI roles');
     console.log('═'.repeat(80));
-    
+
     await methods.removeUserAviRoles(testUser._id.toString());
     console.log('✅ Removed roles from user');
 
@@ -214,7 +214,6 @@ Nota: Si no hay rol asignado, las variables estarán vacías.
     console.log('  ✓ Variables {{user_avi_rol}} and {{user_avi_subrol}} work correctly');
     console.log('  ✓ Empty strings are used when roles are not assigned');
     console.log('  ✓ Role names are correctly extracted and replaced');
-
   } catch (error) {
     console.error('\n❌ Error during testing:', error);
     throw error;

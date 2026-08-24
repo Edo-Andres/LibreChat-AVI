@@ -90,7 +90,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
       >
         <div className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
               {useUsernameLogin
                 ? localize('com_auth_username').replace(/ \(.*$/, '')
                 : localize('com_auth_email')}
@@ -109,14 +109,14 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
                 },
               })}
               aria-invalid={!!errors.email}
-              className="w-full px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-              placeholder={useUsernameLogin ? "usuario" : "usuario@corporacionccm.cl"}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 outline-none transition-all focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              placeholder={useUsernameLogin ? 'usuario' : 'usuario@corporacionccm.cl'}
             />
             {renderError('email')}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
               {localize('com_auth_password')}
             </label>
             <div className="relative">
@@ -134,7 +134,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
                   maxLength: { value: 128, message: localize('com_auth_password_max_length') },
                 })}
                 aria-invalid={!!errors.password}
-                className="w-full px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 outline-none transition-all focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                 placeholder="••••••••"
               />
               <button
@@ -142,11 +142,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
               >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
             {renderError('password')}
@@ -157,7 +153,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
           {startupConfig.passwordResetEnabled && (
             <a
               href="/forgot-password"
-              className="text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
+              className="text-sm font-medium text-green-600 transition-colors hover:text-green-700"
             >
               {localize('com_auth_password_forgot')}
             </a>
@@ -185,7 +181,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
           type="submit"
           disabled={(requireCaptcha && !turnstileToken) || isSubmitting}
           variant="submit"
-          className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg shadow-green-500/30 text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:-translate-y-0.5"
+          className="flex w-full transform justify-center rounded-xl border border-transparent bg-green-600 px-4 py-4 text-sm font-bold text-white shadow-lg shadow-green-500/30 transition-all hover:-translate-y-0.5 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
         >
           {isSubmitting ? <Spinner /> : 'ACCEDER AHORA'}
         </Button>

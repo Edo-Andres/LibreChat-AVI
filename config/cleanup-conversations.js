@@ -1,11 +1,7 @@
 const path = require('path');
 const mongoose = require('mongoose');
-const {
-  Conversation,
-  Message,
-  ToolCall,
-  User
-} = require('@librechat/data-schemas').createModels(mongoose);
+const { Conversation, Message, ToolCall, User } =
+  require('@librechat/data-schemas').createModels(mongoose);
 require('module-alias')({ base: path.resolve(__dirname, '..', 'api') });
 const connect = require('./connect');
 
@@ -38,9 +34,11 @@ async function cleanupOldConversations() {
 
     // Query: buscar conversaciones cuya última actualización sea anterior o igual a la fecha de corte
     const query = { updatedAt: { $lte: cutoffDate } };
-    
+
     // Proyección ligera para listar
-    const conversations = await Conversation.find(query).select('conversationId title updatedAt user');
+    const conversations = await Conversation.find(query).select(
+      'conversationId title updatedAt user',
+    );
     const count = conversations.length;
 
     console.log(`📊 Se encontraron ${count} conversaciones inactivas.`);
@@ -52,7 +50,9 @@ async function cleanupOldConversations() {
 
     if (isDryRun) {
       console.log('\n⚠️  MODO SIMULACRO (DRY RUN) ⚠️');
-      console.log('ℹ️  No se ha borrado nada. Para borrar realmente, ejecuta el script con: --force');
+      console.log(
+        'ℹ️  No se ha borrado nada. Para borrar realmente, ejecuta el script con: --force',
+      );
 
       // Resumen por usuario
       console.log('\n👥 Resumen de chats por Usuario:');
@@ -63,7 +63,9 @@ async function cleanupOldConversations() {
 
       // Obtener emails de los usuarios
       const userIds = Object.keys(userCounts);
-      const users = await User.find({ _id: { $in: userIds } }).select('email').lean();
+      const users = await User.find({ _id: { $in: userIds } })
+        .select('email')
+        .lean();
       const emailMap = users.reduce((acc, u) => {
         acc[u._id.toString()] = u.email;
         return acc;
@@ -77,21 +79,22 @@ async function cleanupOldConversations() {
         });
 
       console.log('\n📜 Ejemplos de chats que SE BORRARÍAN:');
-      
+
       const sample = conversations.slice(0, 10);
 
       sample.forEach((c, i) => {
         const email = emailMap[c.user] || 'Email no encontrado';
-        console.log(`   ${i + 1}. [${email}] [${c.updatedAt.toISOString().split('T')[0]}] "${c.title}"`);
+        console.log(
+          `   ${i + 1}. [${email}] [${c.updatedAt.toISOString().split('T')[0]}] "${c.title}"`,
+        );
       });
-      
+
       if (count > 10) console.log(`   ... y ${count - 10} conversaciones más.`);
-      
     } else {
       console.log('\n🗑️  INICIANDO LIMPIEZA REAL...');
-      
-      const conversationIds = conversations.map(c => c.conversationId);
-      
+
+      const conversationIds = conversations.map((c) => c.conversationId);
+
       console.log('   1. Eliminando mensajes...');
       const msgs = await Message.deleteMany({ conversationId: { $in: conversationIds } });
       console.log(`      -> ${msgs.deletedCount} mensajes eliminados.`);
@@ -106,7 +109,6 @@ async function cleanupOldConversations() {
 
       console.log('\n🎉 Limpieza completada con éxito.');
     }
-
   } catch (error) {
     console.error('\n❌ Ocurrió un error durante la limpieza:', error);
     process.exit(1);

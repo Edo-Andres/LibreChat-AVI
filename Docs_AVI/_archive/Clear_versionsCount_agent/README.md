@@ -10,13 +10,13 @@ En este caso se detecto un agente con `versionsCount: 15`, y la solucion fue pod
 1. Contar versiones del agente puntual:
 
 ```javascript
-db.agents.aggregate([{ $match: { id: "agent_sZT_zwg0DxMN39gTemMss" } }, { $project: { _id: 0, id: 1, name: 1, versionsCount: { $size: { $ifNull: ["$versions", []] } } } }])
+db.agents.aggregate([{ $match: { id: "agent_nC338LEca541Mt80BSC0i" } }, { $project: { _id: 0, id: 1, name: 1, versionsCount: { $size: { $ifNull: ["$versions", []] } } } }])
 ```
 
 2. Dejar solo las ultimas 5 versiones:
 
 ```javascript
-db.agents.updateOne({ id: "agent_sZT_zwg0DxMN39gTemMss" }, [{ $set: { versions: { $slice: ["$versions", -5] } } }])
+db.agents.updateOne({ id: "agent_nC338LEca541Mt80BSC0i" }, [{ $set: { versions: { $slice: ["$versions", -5] } } }])
 ```
 
 ## Verificacion recomendada

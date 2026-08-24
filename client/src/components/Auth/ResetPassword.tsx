@@ -95,7 +95,7 @@ function ResetPassword() {
               },
             })}
             aria-invalid={!!errors.password}
-            className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 pr-10 text-text-primary duration-200 focus:border-green-500 focus:outline-none [&::-ms-reveal]:hidden"
+            className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pr-10 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none [&::-ms-reveal]:hidden"
             placeholder=" "
           />
           <label
@@ -107,7 +107,7 @@ function ResetPassword() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-text-secondary transition-colors hover:text-text-primary focus:outline-none"
+            className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center text-text-secondary transition-colors hover:text-text-primary focus:outline-none"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             <span className="flex h-5 w-5 items-center justify-center">
@@ -136,7 +136,7 @@ function ResetPassword() {
               validate: (value) => value === password || localize('com_auth_password_not_match'),
             })}
             aria-invalid={!!errors.confirm_password}
-            className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 pr-10 text-text-primary duration-200 focus:border-green-500 focus:outline-none [&::-ms-reveal]:hidden"
+            className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pr-10 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none [&::-ms-reveal]:hidden"
             placeholder=" "
           />
           <label
@@ -148,7 +148,7 @@ function ResetPassword() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-text-secondary transition-colors hover:text-text-primary focus:outline-none"
+            className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center text-text-secondary transition-colors hover:text-text-primary focus:outline-none"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             <span className="flex h-5 w-5 items-center justify-center">

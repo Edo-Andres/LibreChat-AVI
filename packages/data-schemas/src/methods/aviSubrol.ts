@@ -3,7 +3,7 @@ export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
   /**
    * Initialize AVI subroles in the system.
    * Now uses dynamic configuration from librechat.yaml via avi-roles-config
-   * 
+   *
    * NOTA: Esta función solo se debe ejecutar manualmente o en primera instalación.
    * Para migraciones, usar scripts/reload-avi-roles.sh
    */
@@ -13,28 +13,32 @@ export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
 
     // Verificar si ya existen subroles en la BD
     const existingSubrolesCount = await AviSubrol.countDocuments({});
-    
+
     if (existingSubrolesCount > 0) {
-      console.log(`[AVI Subroles] ${existingSubrolesCount} subroles ya existen. Omitiendo inicialización automática.`);
+      console.log(
+        `[AVI Subroles] ${existingSubrolesCount} subroles ya existen. Omitiendo inicialización automática.`,
+      );
       console.log('[AVI Subroles] Para actualizar subroles, use: scripts/reload-avi-roles.sh');
       return;
     }
-    
+
     console.log('[AVI Subroles] Base de datos vacía. Inicializando subroles por primera vez...');
 
     try {
       // Cargar configuración dinámica
       const { getAviRolesFromConfig } = require('../../../../../config/avi-roles-config');
       const config = await getAviRolesFromConfig();
-      
+
       console.log(`[AVI Subroles] Inicializando subroles desde configuración`);
 
       // Procesar cada rol configurado
       for (const roleConfig of config.roles) {
         const parentRole = await AviRol.findOne({ name: roleConfig.name });
-        
+
         if (!parentRole) {
-          console.warn(`[AVI Subroles] Rol padre "${roleConfig.name}" no encontrado, omitiendo subroles`);
+          console.warn(
+            `[AVI Subroles] Rol padre "${roleConfig.name}" no encontrado, omitiendo subroles`,
+          );
           continue;
         }
 
@@ -70,9 +74,7 @@ export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
    */
   async function getAviSubrolesByParentId(parentRolId: string) {
     const AviSubrol = mongoose.models.AviSubrol;
-    return await AviSubrol.find({ parentRolId })
-      .sort({ name: 1 })
-      .lean();
+    return await AviSubrol.find({ parentRolId }).sort({ name: 1 }).lean();
   }
 
   /**
@@ -80,9 +82,7 @@ export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
    */
   async function getAviSubrolById(id: string) {
     const AviSubrol = mongoose.models.AviSubrol;
-    return await AviSubrol.findById(id)
-      .populate('parentRolId', 'name')
-      .lean();
+    return await AviSubrol.findById(id).populate('parentRolId', 'name').lean();
   }
 
   /**
@@ -91,34 +91,39 @@ export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
   async function validateSubrolBelongsToRole(subrolId: string, expectedParentRolId: string) {
     const AviSubrol = mongoose.models.AviSubrol;
     const subrol = await AviSubrol.findById(subrolId);
-    
+
     if (!subrol) {
       return { isValid: false, error: 'Subrol not found' };
     }
-    
+
     if (subrol.parentRolId.toString() !== expectedParentRolId.toString()) {
-      return { 
-        isValid: false, 
-        error: 'Subrol does not belong to the specified role' 
+      return {
+        isValid: false,
+        error: 'Subrol does not belong to the specified role',
       };
     }
-    
+
     return { isValid: true };
   }
 
   /**
    * Create a new AVI subrol
    */
-  async function createAviSubrol(data: { name: string; parentRolId: string; knowledge?: string | null; behavior?: string | null }) {
+  async function createAviSubrol(data: {
+    name: string;
+    parentRolId: string;
+    knowledge?: string | null;
+    behavior?: string | null;
+  }) {
     const AviRol = mongoose.models.AviRol;
     const AviSubrol = mongoose.models.AviSubrol;
-    
+
     // Validate parent role exists
     const parentRole = await AviRol.findById(data.parentRolId);
     if (!parentRole) {
       throw new Error('Parent role not found');
     }
-    
+
     const newSubrol = new AviSubrol(data);
     return await newSubrol.save();
   }
@@ -126,10 +131,18 @@ export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
   /**
    * Update an AVI subrol
    */
-  async function updateAviSubrol(id: string, updates: { name?: string; parentRolId?: string; knowledge?: string | null; behavior?: string | null }) {
+  async function updateAviSubrol(
+    id: string,
+    updates: {
+      name?: string;
+      parentRolId?: string;
+      knowledge?: string | null;
+      behavior?: string | null;
+    },
+  ) {
     const AviRol = mongoose.models.AviRol;
     const AviSubrol = mongoose.models.AviSubrol;
-    
+
     // If updating parentRolId, validate it exists
     if (updates.parentRolId) {
       const parentRole = await AviRol.findById(updates.parentRolId);
@@ -137,7 +150,7 @@ export function createAviSubrolMethods(mongoose: typeof import('mongoose')) {
         throw new Error('Parent role not found');
       }
     }
-    
+
     return await AviSubrol.findByIdAndUpdate(id, updates, { new: true, lean: true });
   }
 

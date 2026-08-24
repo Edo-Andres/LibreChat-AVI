@@ -973,7 +973,9 @@ export function getInitialSuggestions(): Promise<{ suggestions: string[] }> {
   return request.get(endpoints.initialSuggestions());
 }
 
-export function getFollowUpSuggestions(params: { conversationId: string }): Promise<{ suggestions: string[] }> {
+export function getFollowUpSuggestions(params: {
+  conversationId: string;
+}): Promise<{ suggestions: string[] }> {
   return request.post(endpoints.followUpSuggestions(), params);
 }
 

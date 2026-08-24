@@ -10,7 +10,7 @@ const testUser = {
   email: `phonetest_${Date.now()}@example.com`,
   password: 'password123',
   confirm_password: 'password123',
-  phone: '555-0199'
+  phone: '555-0199',
 };
 
 async function verify() {
@@ -22,19 +22,21 @@ async function verify() {
     // Use dynamic import for node-fetch if needed, or native fetch
     let response;
     try {
-        response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(testUser)
-        });
+      response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(testUser),
+      });
     } catch (e) {
-        console.error('Error conectando a la API. Asegúrate de que el backend esté corriendo en el puerto 3080.');
-        console.error(e.message);
-        process.exit(1);
+      console.error(
+        'Error conectando a la API. Asegúrate de que el backend esté corriendo en el puerto 3080.',
+      );
+      console.error(e.message);
+      process.exit(1);
     }
 
     const data = await response.json();
-    
+
     if (!response.ok) {
       console.error('❌ Registro fallido:', data);
       process.exit(1);
@@ -43,7 +45,7 @@ async function verify() {
 
     console.log('2. Verificando en Base de Datos (MongoDB)...');
     await mongoose.connect(MONGO_URI);
-    
+
     const User = mongoose.connection.db.collection('users');
     const user = await User.findOne({ email: testUser.email });
 
@@ -55,21 +57,24 @@ async function verify() {
     console.log('   Usuario encontrado:', {
       _id: user._id,
       email: user.email,
-      phone: user.phone
+      phone: user.phone,
     });
 
     if (user.phone === testUser.phone) {
       console.log('✅ ÉXITO: El campo "phone" se guardó correctamente en la base de datos.');
     } else {
-      console.error(`❌ FALLO: El campo "phone" no coincide. Esperado: "${testUser.phone}", Obtenido: "${user.phone}"`);
-      console.log('   Posible causa: El backend no se ha reconstruido o reiniciado con los nuevos esquemas.');
+      console.error(
+        `❌ FALLO: El campo "phone" no coincide. Esperado: "${testUser.phone}", Obtenido: "${user.phone}"`,
+      );
+      console.log(
+        '   Posible causa: El backend no se ha reconstruido o reiniciado con los nuevos esquemas.',
+      );
     }
-
   } catch (error) {
     console.error('Error inesperado:', error);
   } finally {
     if (mongoose.connection.readyState !== 0) {
-        await mongoose.disconnect();
+      await mongoose.disconnect();
     }
   }
 }

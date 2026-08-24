@@ -1,32 +1,36 @@
-# 📚 Docs_AVI - Documentación del Proyecto LibreChat-AVI
+﻿# ­ƒôÜ Docs_AVI - Documentaci├│n del Proyecto LibreChat-AVI
 
-Documentación validada contra el código actual (rama `dev`, Junio 2026).
+Documentaci├│n validada contra el c├│digo actual (rama `dev`, Junio 2026).
 
 ---
 
-## Documentación Vigente
+## Documentaci├│n Vigente
 
-| Documento | Descripción |
+| Documento | Descripci├│n |
 |---|---|
-| **[GUIA_DEPLOY_DESARROLLO.md](./GUIA_DEPLOY_DESARROLLO.md)** | Deploy, entornos `avi` vs `avi-dev`, desarrollo local, gestión de roles, comandos y troubleshooting. |
-| **[AVI_ROLES.md](./AVI_ROLES.md)** | Sistema de roles AVI: modelo de datos, campos (`knowledge`/`behavior`/`registerAnswer`), variables de plantilla, recarga dinámica y migración. |
+| **[GUIA_DEPLOY_DESARROLLO.md](./GUIA_DEPLOY_DESARROLLO.md)** | Deploy, entornos `avi` vs `avi-dev`, desarrollo local, gesti├│n de roles, comandos y troubleshooting. |
+| **[AVI_ROLES.md](./AVI_ROLES.md)** | Sistema de roles AVI: modelo de datos, campos (`knowledge`/`behavior`/`registerAnswer`), variables de plantilla, recarga din├ímica y migraci├│n. |
 | **[OPERACIONES.md](./OPERACIONES.md)** | Operaciones y mantenimiento: backup GCS, sync Google Sheets, Health Check, conversation suggestions, invitaciones y limpieza de chats. |
+| **[POSTHOG_ANALYTICS.md](./POSTHOG_ANALYTICS.md)** | Analítica con PostHog: propiedades `avi_*` (rol, sub-rol, rango de edad, región), entornos, separación por dominio, verificación y MCP. |
+| **[CHANGELOG_AVI.md](./CHANGELOG_AVI.md)** | Historial cronológico de cambios y features del fork AVI (búsqueda, roles, region, sync, etc.). |
 
 ---
 
-## Archivo Histórico
+## Archivo Hist├│rico
 
-La carpeta [`_archive/`](./_archive/) contiene documentación histórica (planes de implementación ejecutados, informes comparativos, reportes de casos resueltos). No es necesaria para la operación diaria pero se conserva para trazabilidad.
+La carpeta [`_archive/`](./_archive/) contiene documentaci├│n hist├│rica (planes de implementaci├│n ejecutados, informes comparativos, reportes de casos resueltos). No es necesaria para la operaci├│n diaria pero se conserva para trazabilidad.
 
 ---
 
-## Guía Rápida
+## Gu├¡a R├ípida
 
-- **¿Desplegar o desarrollar?** → `GUIA_DEPLOY_DESARROLLO.md`
-- **¿Editar o sincronizar roles?** → `AVI_ROLES.md`
-- **¿Backups, health checks o sync de chats?** → `OPERACIONES.md`
+- **┬┐Desplegar o desarrollar?** ÔåÆ `GUIA_DEPLOY_DESARROLLO.md`
+- **┬┐Editar o sincronizar roles?** ÔåÆ `AVI_ROLES.md`
+- **┬┐Backups, health checks o sync de chats?** ÔåÆ `OPERACIONES.md`
+- **¿Métricas, segmentación o eventos de PostHog?** → `POSTHOG_ANALYTICS.md`
+- **¿Qué cambió recientemente?** → `CHANGELOG_AVI.md`
 
 ---
 
 **Proyecto:** LibreChat-AVI - Asistente Virtual en Infancia
-**Última actualización:** Junio 2026
+**├Ültima actualizaci├│n:** Junio 2026
