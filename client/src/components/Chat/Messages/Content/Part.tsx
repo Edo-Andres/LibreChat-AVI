@@ -120,6 +120,9 @@ const Part = memo(
           />
         );
       } else if (isToolCall) {
+        if (toolCall.name === 'conversation_search') {
+          return null;
+        }
         return (
           <ToolCall
             args={toolCall.args ?? ''}
@@ -168,6 +171,10 @@ const Part = memo(
               </Container>
             );
           }
+          return null;
+        }
+
+        if (toolCall.function.name === 'conversation_search') {
           return null;
         }
 
