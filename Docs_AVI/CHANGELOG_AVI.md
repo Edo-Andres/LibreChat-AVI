@@ -1,7 +1,7 @@
 # 🗓️ Changelog AVI - Historial de Cambios del Fork
 
 **Proyecto:** LibreChat-AVI - Asistente Virtual en Infancia
-**Última actualización:** 21 de agosto de 2026
+**Última actualización:** 10 de septiembre de 2026
 
 Este documento registra en español los cambios y features propios del fork AVI (roles, búsqueda, region, sincronizaciones, etc.). **No reemplaza** al `CHANGELOG.md` de la raíz del repo, que es el changelog oficial del upstream de LibreChat (en inglés, generado desde PRs de `danny-avila/LibreChat`).
 
@@ -11,12 +11,21 @@ Este documento registra en español los cambios y features propios del fork AVI 
 
 ## 📋 Tabla de Contenidos
 
+- [2026-09-10](#2026-09-10)
 - [2026-08-21](#2026-08-21)
 - [2026-08-20](#2026-08-20)
 - [2026-08-18](#2026-08-18)
 - [2026-08-17](#2026-08-17)
 - [2026-08-15](#2026-08-15)
 - [Cómo agregar una entrada](#cómo-agregar-una-entrada)
+
+---
+
+## 2026-09-10
+
+### 🔧 Fixes
+- **Paridad Daily-Historial con PII enmascarada**: `Daily` (tab `Daily`) ahora exporta las mismas 20 columnas que `Historial`/`GCS` (`userId,userEmail,userName,userPhone,userAgeRange,userRegion,userParticipationConsent,userAviRole,userAviSubrole,userCreatedAt,conversationId,conversationTitle,conversationCreatedAt,conversationUpdatedAt,sender,text,isCreatedByUser,messageId,messageCreatedAt,messageCreatedAtEpoch,feedback`) reutilizando `config/export-all-chats-extended.js --mask-pii` con `***` en `userEmail/userName/userPhone`. `config/upload-to-sheets.js` intacto (`api/chats.csv`). `scripts/sync-chats.sh` acepta `--mask-pii`/`--no-mask` y por defecto enmascara; `config/export-all-chats.js` queda como wrapper deprecated con paridad.
+  Archivos clave: `config/export-all-chats-extended.js`, `config/export-all-chats.js`, `api/package.json` (`export-chats-daily`, `sync-chats-to-sheets`), `scripts/sync-chats.sh`, `Docs_AVI/OPERACIONES.md`
 
 ---
 
