@@ -88,16 +88,31 @@ function toEpochMs(date) {
   console.purple('🗂️ Exportar Conversaciones (VERSIÓN EXTENDIDA)');
   console.purple('----------------------------------------------------');
 
+  // Soporte para enmascarar PII en Daily (mismo header que Historial, pero con ***)
+  const MASK_PII = process.argv.includes('--mask-pii');
+  const MASK_VALUE = '***';
+
   let format = process.argv[2] || 'csv';
   let outputFile = process.argv[3];
 
-  // Validar formato
+  // Validar formato (ignorar flag --mask-pii como formato)
   if (!['csv', 'json'].includes(format.toLowerCase())) {
-    console.orange('Uso: npm run export-chats-extended [csv|json] [archivo]');
-    console.orange('Ejemplo: npm run export-chats-extended csv chats_extended.csv');
-    format = 'csv';
+    if (format === '--mask-pii') {
+      // Caso: node export-all-chats-extended.js --mask-pii  -> default csv
+      format = 'csv';
+      outputFile = undefined;
+    } else {
+      console.orange('Uso: npm run export-chats-extended [csv|json] [archivo] [--mask-pii]');
+      console.orange('Ejemplo: npm run export-chats-extended csv chats_extended.csv');
+      console.orange('Ejemplo Daily enmascarado: npm run export-chats-extended csv ../api/chats.csv --mask-pii');
+      format = 'csv';
+    }
   }
   format = format.toLowerCase();
+  // Si outputFile es el flag, corregirlo
+  if (outputFile === '--mask-pii') {
+    outputFile = undefined;
+  }
 
   try {
     console.orange('👥 Obteniendo usuarios con AVI Roles...');
@@ -167,14 +182,14 @@ function toEpochMs(date) {
         const user = userMap[conv.user];
         if (!user) return;
 
-        const userEmail = user.email;
+        const userEmail = MASK_PII ? MASK_VALUE : user.email;
         if (!result.users[userEmail]) {
           result.users[userEmail] = {
             userInfo: {
               userId: user.userId,
-              email: user.email,
-              name: user.name,
-              phone: user.phone,
+              email: MASK_PII ? MASK_VALUE : user.email,
+              name: MASK_PII ? MASK_VALUE : user.name,
+              phone: MASK_PII ? MASK_VALUE : user.phone,
               ageRange: user.ageRange,
               region: user.region,
               participationConsent: user.participationConsent,
@@ -248,11 +263,11 @@ function toEpochMs(date) {
           text = cleanTextForCSV(text);
 
           const row = [
-            // ⭐ DATOS DE USUARIO
+            // ⭐ DATOS DE USUARIO (Daily enmascara email/name/phone con ***)
             user.userId,
-            user.email,
-            `"${cleanTextForCSV(user.name)}"`,
-            user.phone,
+            MASK_PII ? MASK_VALUE : user.email,
+            MASK_PII ? `"${MASK_VALUE}"` : `"${cleanTextForCSV(user.name)}"`,
+            MASK_PII ? MASK_VALUE : user.phone,
             `"${cleanTextForCSV(user.ageRange)}"`,
             `"${cleanTextForCSV(user.region)}"`,
             user.participationConsent,
@@ -313,6 +328,7 @@ function toEpochMs(date) {
     console.cyan(`   - Con feedback: ${messages.filter((m) => m.feedback).length}`);
     console.cyan(`📁 Formato: ${format.toUpperCase()}`);
     console.cyan(`💾 Archivo: ${outputFile}`);
+    console.cyan(`🔒 Máscara PII (Daily): ${MASK_PII ? 'ACTIVADA (*** en userEmail/userName/userPhone)' : 'desactivada'}`);
     console.cyan(`📅 Fecha: ${new Date().toLocaleString()}`);
     console.purple('----------------------------------------------------');
 

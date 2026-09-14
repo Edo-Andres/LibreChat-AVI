@@ -93,10 +93,13 @@ sh /app/scripts/backup-chats-gcs --force --days 15
 
 ### Sync b├ísico ÔÇö `scripts/sync-chats.sh`
 
-- Exporta `api/chats.csv` (b├ísico con AVI roles) y sube a Sheets.
-- **Spreadsheet:** `1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U` (override v├¡a `GOOGLE_SHEETS_ID`), tab `Daily` (**hardcoded** en `config/upload-to-sheets.js:10`). CSV con 11 columnas: `userEmail,userName,userAviRole,userAviSubrole,conversationId,conversationTitle,sender,text,isCreatedByUser,messageId,createdAt`.
+- Exporta `api/chats.csv` **con el mismo esquema que Historial** (20 cols) via `config/export-all-chats-extended.js --mask-pii` y sube a Sheets tab `Daily` (`config/upload-to-sheets.js:10`).
+- **Spreadsheet:** `1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U` (override via `GOOGLE_SHEETS_ID`), tab `Daily`.
+- **Columnas Daily (20, identicas a Historial):** `userId,userEmail,userName,userPhone,userAgeRange,userRegion,userParticipationConsent,userAviRole,userAviSubrole,userCreatedAt,conversationId,conversationTitle,conversationCreatedAt,conversationUpdatedAt,sender,text,isCreatedByUser,messageId,messageCreatedAt,messageCreatedAtEpoch,feedback` - con `userEmail/userName/userPhone = "***"` (enmascaradas).
+- **Comando:** `sh /app/scripts/sync-chats.sh` (por defecto enmascara) o `sh /app/scripts/sync-chats.sh --mask-pii` explicito; `sh /app/scripts/sync-chats.sh --no-mask` solo debug sin mascara.
+- **NPM:** `api/package.json:export-chats-daily = node ../config/export-all-chats-extended.js csv ../api/chats.csv --mask-pii`, `sync-chats-to-sheets = export-chats-daily && upload-to-sheets`, `sync-chats-to-sheets:raw` (sin mascara).
 - **Env vars:** `GOOGLE_CREDENTIALS_JSON` (req), `GOOGLE_SHEETS_ID` (opt, override del default).
-- Borra el CSV local tras subir (`:106-115`).
+- Borra el CSV local tras subir (`config/upload-to-sheets.js:106-115`). El CSV no se sube a GCS.
 
 ### Sync extendido ÔÇö `scripts/sync-chats-extended.sh`
 
@@ -106,7 +109,7 @@ sh /app/scripts/backup-chats-gcs --force --days 15
 
 ### Columnas del CSV extendido
 
-`config/export-all-chats-extended.js:206-226`:
+`config/export-all-chats-extended.js:214-236`:
 
 ```
 userId, userEmail, userName, userPhone, userParticipationConsent,
@@ -118,9 +121,10 @@ messageCreatedAtEpoch, feedback
 
 - `userAviRole` / `userAviSubrole` se populan desde `aviRol_id`/`aviSubrol_id` (`:105-108`).
 - Fechas en zona `America/Santiago` (env `TZ`, `:57`).
-- CLI: `node config/export-all-chats-extended.js [csv|json] [outputFile]` (default `csv` ÔåÆ `chats_extended.csv`).
+- CLI: `node config/export-all-chats-extended.js [csv|json] [outputFile] [--mask-pii]` (default `csv` -> `chats_extended.csv`; Daily usa `csv ../api/chats.csv --mask-pii`).
 
 > **Diferencia entre los dos uploaders:** el b├ísico respeta `GOOGLE_SHEETS_ID` como override; el extendido lo tiene hardcoded. Si necesitas cambiar el spreadsheet del extendido, hay que editar `config/upload-to-sheets-extended.js:8`.
+> **Nota Daily vs Historial:** Daily usa mismo esquema 20 cols que Historial pero con *** en PII y sin subida a GCS. Historial consolida todos los CSV de GCS con dedupe/sort.
 
 ---
 
