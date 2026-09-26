@@ -27,6 +27,8 @@ Este documento registra en español los cambios y features propios del fork AVI 
 ### 🔧 Fixes
 - **Registro exige teléfono, Rol AVI y Subrol AVI solo a nivel formulario**: validación `required` en `react-hook-form` sin cambios en backend ni BD para no romper registros existentes vacíos.
   Commit: `pendiente` · Archivo(s): `client/src/components/Auth/Registration.tsx`
+- **Teléfono valida solo dígitos con `+` opcional al inicio y 8 a 15 dígitos**: permite espacios intermedios, mensaje máximo `El formato del teléfono excede el máximo de dígitos`.
+  Commit: `pendiente` · Archivo(s): `client/src/components/Auth/Registration.tsx`
 
 ---
 

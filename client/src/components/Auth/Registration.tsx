@@ -334,6 +334,20 @@ const Registration: React.FC = () => {
                         placeholder=" "
                         {...register('phone', {
                           required: 'El teléfono es obligatorio',
+                          validate: (value) => {
+                            const trimmed = (value ?? '').trim();
+                            if (!/^\+?[0-9 ]+$/.test(trimmed)) {
+                              return 'Solo se permiten dígitos y + al inicio';
+                            }
+                            const digitCount = trimmed.replace(/\D/g, '').length;
+                            if (digitCount < 8) {
+                              return 'El teléfono debe tener al menos 8 dígitos';
+                            }
+                            if (digitCount > 15) {
+                              return 'El formato del teléfono excede el máximo de dígitos';
+                            }
+                            return true;
+                          },
                         })}
                         className={inputBaseClass}
                       />
