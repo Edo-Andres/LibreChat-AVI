@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Eye, EyeOff, Check } from 'lucide-react';
 import { ThemeContext, Spinner, Button, isDark } from '@librechat/client';
@@ -61,6 +61,7 @@ const Registration: React.FC = () => {
     register,
     handleSubmit,
     trigger,
+    setValue,
     formState: { errors },
   } = useForm<TRegisterUserWithPhone>({ mode: 'onChange' });
 
@@ -69,7 +70,14 @@ const Registration: React.FC = () => {
 
   // AVI Roles queries
   const { data: aviRoles = [] } = useAviRolesQuery();
-  const { data: aviSubroles = [] } = useAviSubrolesQuery(selectedAviRol || '');
+  const { data: aviSubroles = [], isLoading: isLoadingSubroles } = useAviSubrolesQuery(
+    selectedAviRol || '',
+  );
+
+  // Reset subrol when rol changes to avoid stale values
+  useEffect(() => {
+    setValue('aviSubrol_id', '');
+  }, [selectedAviRol, setValue]);
 
   // Component state
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -121,7 +129,12 @@ const Registration: React.FC = () => {
     if (currentStep === 1) {
       fieldsToValidate = ['name', 'username', 'phone', 'ageRange', 'region'];
     } else if (currentStep === 2) {
-      fieldsToValidate = ['email', 'aviRol_id'];
+      fieldsToValidate = ['email', 'aviRol_id', 'aviSubrol_id'];
+      // Business rule: every AVI rol has at least one subrol.
+      // Block advance if rol is selected but no subroles are configured.
+      if (selectedAviRol && !isLoadingSubroles && aviSubroles.length === 0) {
+        return;
+      }
     }
 
     const isValid = await trigger(fieldsToValidate);
@@ -312,18 +325,30 @@ const Registration: React.FC = () => {
                   </div>
 
                   {/* Phone */}
-                  <div className="relative">
-                    <input
-                      id="phone"
-                      type="tel"
-                      autoComplete="tel"
-                      placeholder=" "
-                      {...register('phone')}
-                      className={inputBaseClass}
-                    />
-                    <label htmlFor="phone" className={labelBaseClass}>
-                      Teléfono <span className="text-xs text-gray-400">(opcional)</span>
-                    </label>
+                  <div>
+                    <div className="relative">
+                      <input
+                        id="phone"
+                        type="tel"
+                        autoComplete="tel"
+                        placeholder=" "
+                        {...register('phone', {
+                          required: 'El teléfono es obligatorio',
+                        })}
+                        className={inputBaseClass}
+                      />
+                      <label htmlFor="phone" className={labelBaseClass}>
+                        Teléfono
+                      </label>
+                    </div>
+                    {!watch('phone') && (
+                      <p className="mt-1 text-xs text-gray-400">Ej: +569 1234 5678</p>
+                    )}
+                    {errors.phone && (
+                      <span className="mt-1 text-sm text-red-500">
+                        {String(errors.phone.message)}
+                      </span>
+                    )}
                   </div>
 
                   {/* Age Range */}
@@ -465,56 +490,24 @@ const Registration: React.FC = () => {
                   </div>
 
                   {/* AVI Role */}
-                  <div className="relative">
-                    <select
-                      id="aviRol_id"
-                      {...register('aviRol_id')}
-                      className={`${inputBaseClass} cursor-pointer appearance-none`}
-                    >
-                      <option value="">Selecciona tu rol...</option>
-                      {aviRoles.map((role) => (
-                        <option key={role._id} value={role._id}>
-                          {role.registerAnswer || role.name}
-                        </option>
-                      ))}
-                    </select>
-                    <label htmlFor="aviRol_id" className={labelBaseClass}>
-                      Rol AVI
-                    </label>
-                    <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* AVI Subrole (conditional) */}
-                  {selectedAviRol && aviSubroles.length > 0 && (
+                  <div>
                     <div className="relative">
                       <select
-                        id="aviSubrol_id"
-                        {...register('aviSubrol_id')}
+                        id="aviRol_id"
+                        {...register('aviRol_id', {
+                          required: 'Selecciona tu rol AVI',
+                        })}
                         className={`${inputBaseClass} cursor-pointer appearance-none`}
                       >
-                        <option value="">Selecciona una opción...</option>
-                        {aviSubroles.map((subrol) => (
-                          <option key={subrol._id} value={subrol._id}>
-                            {subrol.registerAnswer || subrol.name}
+                        <option value="">Selecciona tu rol...</option>
+                        {aviRoles.map((role) => (
+                          <option key={role._id} value={role._id}>
+                            {role.registerAnswer || role.name}
                           </option>
                         ))}
                       </select>
-                      <label htmlFor="aviSubrol_id" className={labelBaseClass}>
-                        Subrol AVI <span className="text-xs text-gray-400">(opcional)</span>
+                      <label htmlFor="aviRol_id" className={labelBaseClass}>
+                        Rol AVI
                       </label>
                       <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
                         <svg
@@ -531,6 +524,63 @@ const Registration: React.FC = () => {
                           />
                         </svg>
                       </div>
+                    </div>
+                    {errors.aviRol_id && (
+                      <span className="mt-1 text-sm text-red-500">
+                        {String(errors.aviRol_id.message)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* AVI Subrole (required when a rol is selected) */}
+                  {selectedAviRol && (
+                    <div>
+                      <div className="relative">
+                        <select
+                          id="aviSubrol_id"
+                          disabled={isLoadingSubroles || aviSubroles.length === 0}
+                          {...register('aviSubrol_id', {
+                            required: 'Selecciona tu subrol AVI',
+                          })}
+                          className={`${inputBaseClass} cursor-pointer appearance-none disabled:cursor-not-allowed disabled:opacity-60`}
+                        >
+                          <option value="">
+                            {isLoadingSubroles
+                              ? 'Cargando opciones...'
+                              : aviSubroles.length === 0
+                                ? 'Este rol no tiene subroles configurados'
+                                : 'Selecciona una opción...'}
+                          </option>
+                          {aviSubroles.map((subrol) => (
+                            <option key={subrol._id} value={subrol._id}>
+                              {subrol.registerAnswer || subrol.name}
+                            </option>
+                          ))}
+                        </select>
+                        <label htmlFor="aviSubrol_id" className={labelBaseClass}>
+                          Subrol AVI
+                        </label>
+                        <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      {errors.aviSubrol_id && (
+                        <span className="mt-1 text-sm text-red-500">
+                          {String(errors.aviSubrol_id.message)}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
