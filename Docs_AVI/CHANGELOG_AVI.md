@@ -1,7 +1,7 @@
 # 🗓️ Changelog AVI - Historial de Cambios del Fork
 
 **Proyecto:** LibreChat-AVI - Asistente Virtual en Infancia
-**Última actualización:** 10 de septiembre de 2026
+**Última actualización:** 26 de septiembre de 2026
 
 Este documento registra en español los cambios y features propios del fork AVI (roles, búsqueda, region, sincronizaciones, etc.). **No reemplaza** al `CHANGELOG.md` de la raíz del repo, que es el changelog oficial del upstream de LibreChat (en inglés, generado desde PRs de `danny-avila/LibreChat`).
 
@@ -11,6 +11,7 @@ Este documento registra en español los cambios y features propios del fork AVI 
 
 ## 📋 Tabla de Contenidos
 
+- [2026-09-26](#2026-09-26)
 - [2026-09-10](#2026-09-10)
 - [2026-08-21](#2026-08-21)
 - [2026-08-20](#2026-08-20)
@@ -18,6 +19,16 @@ Este documento registra en español los cambios y features propios del fork AVI 
 - [2026-08-17](#2026-08-17)
 - [2026-08-15](#2026-08-15)
 - [Cómo agregar una entrada](#cómo-agregar-una-entrada)
+
+---
+
+## 2026-09-26
+
+### 🔧 Fixes
+- **Registro exige teléfono, Rol AVI y Subrol AVI solo a nivel formulario**: validación `required` en `react-hook-form` sin cambios en backend ni BD para no romper registros existentes vacíos.
+  Commit: `pendiente` · Archivo(s): `client/src/components/Auth/Registration.tsx`
+- **Teléfono valida solo dígitos con `+` opcional al inicio y 8 a 15 dígitos**: permite espacios intermedios, mensaje máximo `El formato del teléfono excede el máximo de dígitos`.
+  Commit: `pendiente` · Archivo(s): `client/src/components/Auth/Registration.tsx`
 
 ---
 
