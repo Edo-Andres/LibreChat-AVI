@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { Providers } from '@librechat/agents';
 import { Tools } from 'librechat-data-provider';
 import type { MemoryArtifact } from 'librechat-data-provider';
-import { createMemoryTool, processMemory } from '../memory';
+import { createMemoryTool, processMemory, isValidMemoryKey } from '../memory';
 
 // Mock the logger
 jest.mock('winston', () => ({
@@ -43,6 +43,37 @@ jest.mock('@librechat/agents', () => ({
     TOOL_END: 'tool_end',
   },
 }));
+
+describe('isValidMemoryKey', () => {
+  it('accepts any key when no validKeys are configured', () => {
+    expect(isValidMemoryKey('cualquiera', undefined)).toBe(true);
+    expect(isValidMemoryKey('cualquiera', [])).toBe(true);
+  });
+
+  it('accepts an exact match against validKeys', () => {
+    expect(isValidMemoryKey('allowed', ['allowed'])).toBe(true);
+  });
+
+  it('accepts a valid key suffixed with a person identifier', () => {
+    expect(isValidMemoryKey('allowed__sofia', ['allowed'])).toBe(true);
+  });
+
+  it('rejects a suffix that is empty', () => {
+    expect(isValidMemoryKey('allowed__', ['allowed'])).toBe(false);
+  });
+
+  it('rejects a key whose base is not a valid key', () => {
+    expect(isValidMemoryKey('otra__sofia', ['allowed'])).toBe(false);
+  });
+
+  it('rejects a suffix with invalid characters', () => {
+    expect(isValidMemoryKey('allowed__Sofia1', ['allowed'])).toBe(false);
+  });
+
+  it('rejects an unrelated key', () => {
+    expect(isValidMemoryKey('invalid', ['allowed', 'keys'])).toBe(false);
+  });
+});
 
 describe('createMemoryTool', () => {
   let mockSetMemory: jest.Mock;
@@ -150,8 +181,43 @@ describe('createMemoryTool', () => {
 
       const result = await tool.func({ key: 'invalid', value: 'some value' });
       expect(result).toHaveLength(2);
-      expect(result[0]).toBe('Invalid key "invalid". Must be one of: allowed, keys');
+      expect(result[0]).toContain('Invalid key "invalid". Must be one of: allowed, keys');
       expect(result[1]).toBeUndefined();
+      expect(mockSetMemory).not.toHaveBeenCalled();
+    });
+
+    it('should accept a valid key suffixed with a person identifier (multi-NNA support)', async () => {
+      const tool = createMemoryTool({
+        userId: 'test-user',
+        setMemory: mockSetMemory,
+        validKeys: ['salud_alergias', 'citas_medicas'],
+      });
+
+      const result = await tool.func({
+        key: 'salud_alergias__sofia',
+        value: 'Sofía: alérgica a la penicilina.',
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toBe('Memory set for key "salud_alergias__sofia" (32 tokens)');
+      expect(mockSetMemory).toHaveBeenCalledWith({
+        userId: 'test-user',
+        key: 'salud_alergias__sofia',
+        value: 'Sofía: alérgica a la penicilina.',
+        tokenCount: 32,
+      });
+    });
+
+    it('should reject a suffixed key whose base is not a valid key', async () => {
+      const tool = createMemoryTool({
+        userId: 'test-user',
+        setMemory: mockSetMemory,
+        validKeys: ['salud_alergias'],
+      });
+
+      const result = await tool.func({ key: 'otra_cosa__sofia', value: 'algo' });
+      expect(result).toHaveLength(2);
+      expect(result[0]).toContain('Invalid key "otra_cosa__sofia"');
       expect(mockSetMemory).not.toHaveBeenCalled();
     });
 

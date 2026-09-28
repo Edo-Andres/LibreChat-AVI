@@ -1,7 +1,7 @@
 # 🗓️ Changelog AVI - Historial de Cambios del Fork
 
 **Proyecto:** LibreChat-AVI - Asistente Virtual en Infancia
-**Última actualización:** 26 de septiembre de 2026
+**Última actualización:** 27 de septiembre de 2026
 
 Este documento registra en español los cambios y features propios del fork AVI (roles, búsqueda, region, sincronizaciones, etc.). **No reemplaza** al `CHANGELOG.md` de la raíz del repo, que es el changelog oficial del upstream de LibreChat (en inglés, generado desde PRs de `danny-avila/LibreChat`).
 
@@ -11,6 +11,7 @@ Este documento registra en español los cambios y features propios del fork AVI 
 
 ## 📋 Tabla de Contenidos
 
+- [2026-09-27](#2026-09-27)
 - [2026-09-26](#2026-09-26)
 - [2026-09-10](#2026-09-10)
 - [2026-08-21](#2026-08-21)
@@ -19,6 +20,14 @@ Este documento registra en español los cambios y features propios del fork AVI 
 - [2026-08-17](#2026-08-17)
 - [2026-08-15](#2026-08-15)
 - [Cómo agregar una entrada](#cómo-agregar-una-entrada)
+
+---
+
+## 2026-09-27
+
+### ✨ Nuevas Features
+- **Memoria AVI soporta uno o más NNA por usuario**: `set_memory`/`delete_memory` ahora aceptan claves compuestas `<categoria>__<nna>` (ej. `salud_alergias__sofia`) además de la clave base exacta, para no pisar ni mezclar datos entre NNA de un mismo cuidador. `getFormattedMemories` agrupa las memorias por NNA antes de pasarlas al agente. Ver plan original en `Docs_AVI/_ignore/PLAN_MEMORY_MULTI_NNA.md`.
+  Archivo(s): `packages/api/src/agents/memory.ts`, `packages/api/src/agents/__tests__/memory.test.ts`, `packages/data-schemas/src/methods/memory.ts`
 
 ---
 

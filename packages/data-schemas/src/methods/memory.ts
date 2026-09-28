@@ -128,8 +128,15 @@ export function createMemoryMethods(mongoose: typeof import('mongoose')) {
         return { withKeys: '', withoutKeys: '', totalTokens: 0 };
       }
 
+      /** Groups memories by the person they're scoped to (e.g. `salud_alergias__sofia`), so a
+       * caregiver's multiple NNA appear together instead of interleaved by date. Keys without a
+       * `__<id>` suffix (e.g. `perfil_cuidador`) are treated as ungrouped and sort first. */
+      const nnaOf = (key: string): string => {
+        const separatorIndex = key.indexOf('__');
+        return separatorIndex > 0 ? key.slice(separatorIndex + 2) : '';
+      };
       const sortedMemories = memories.sort(
-        (a, b) => new Date(a.updated_at!).getTime() - new Date(b.updated_at!).getTime(),
+        (a, b) => nnaOf(a.key).localeCompare(nnaOf(b.key)) || a.key.localeCompare(b.key),
       );
 
       const totalTokens = sortedMemories.reduce((sum, memory) => {
