@@ -1,7 +1,7 @@
 # 🗓️ Changelog AVI - Historial de Cambios del Fork
 
 **Proyecto:** LibreChat-AVI - Asistente Virtual en Infancia
-**Última actualización:** 27 de septiembre de 2026
+**Última actualización:** 28 de septiembre de 2026
 
 Este documento registra en español los cambios y features propios del fork AVI (roles, búsqueda, region, sincronizaciones, etc.). **No reemplaza** al `CHANGELOG.md` de la raíz del repo, que es el changelog oficial del upstream de LibreChat (en inglés, generado desde PRs de `danny-avila/LibreChat`).
 
@@ -11,6 +11,7 @@ Este documento registra en español los cambios y features propios del fork AVI 
 
 ## 📋 Tabla de Contenidos
 
+- [2026-09-28](#2026-09-28)
 - [2026-09-27](#2026-09-27)
 - [2026-09-26](#2026-09-26)
 - [2026-09-10](#2026-09-10)
@@ -20,6 +21,14 @@ Este documento registra en español los cambios y features propios del fork AVI 
 - [2026-08-17](#2026-08-17)
 - [2026-08-15](#2026-08-15)
 - [Cómo agregar una entrada](#cómo-agregar-una-entrada)
+
+---
+
+## 2026-09-28
+
+### ⚙️ Otros cambios
+- **Gotcha de despliegue al testear memoria multi-NNA en local**: tras editar `packages/api/src/agents/memory.ts` (feature del 2026-09-27), el backend seguía devolviendo el error de clave viejo (`Invalid key "salud_alergias__sofia". Must be one of: ...` sin mención al sufijo `__<id>`) porque `packages/api/dist` no se había recompilado — el `CLAUDE.md` solo exige build automático para `packages/data-schemas`, no para `packages/api`. Además, `nodemonConfig.ignore` en `package.json` incluye `packages/`, así que ni un rebuild reinicia el backend solo. Solución aplicada: `cd packages/api; npm run build` (PowerShell no soporta `&&`, usar `;`) y reiniciar manualmente `npm run backend:dev`. Aplica a cualquier cambio futuro en `packages/api` o `packages/data-schemas` probado en local.
+  Archivo(s): `packages/api/src/agents/memory.ts` (sin cambios de código adicionales, solo rebuild + restart del backend)
 
 ---
 
