@@ -1,7 +1,7 @@
 # 🗓️ Changelog AVI - Historial de Cambios del Fork
 
 **Proyecto:** LibreChat-AVI - Asistente Virtual en Infancia
-**Última actualización:** 26 de septiembre de 2026
+**Última actualización:** 29 de septiembre de 2026
 
 Este documento registra en español los cambios y features propios del fork AVI (roles, búsqueda, region, sincronizaciones, etc.). **No reemplaza** al `CHANGELOG.md` de la raíz del repo, que es el changelog oficial del upstream de LibreChat (en inglés, generado desde PRs de `danny-avila/LibreChat`).
 
@@ -11,6 +11,7 @@ Este documento registra en español los cambios y features propios del fork AVI 
 
 ## 📋 Tabla de Contenidos
 
+- [2026-09-29](#2026-09-29)
 - [2026-09-26](#2026-09-26)
 - [2026-09-10](#2026-09-10)
 - [2026-08-21](#2026-08-21)
@@ -19,6 +20,14 @@ Este documento registra en español los cambios y features propios del fork AVI 
 - [2026-08-17](#2026-08-17)
 - [2026-08-15](#2026-08-15)
 - [Cómo agregar una entrada](#cómo-agregar-una-entrada)
+
+---
+
+## 2026-09-29
+
+### ✨ Nuevas Features
+- **Histórico diario acumulativo `FullDaily` (GCS base + Mongo -> Google Sheets)**: agrega solo mensajes nuevos (clave `conversationId::messageId`), nunca borra ni modifica filas, PII enmascarada (`***`) y sin generar archivos nuevos en GCS. Cron propio en Dokploy (`sh /app/scripts/sync-full-daily.sh`); requiere crear la pestaña `FullDaily`. `gcs-to-sheets-historial.js` solo se refactorizó para exponer funciones reutilizables.
+  Commit: `pendiente` · Archivo(s): `config/full-daily-to-sheets.js`, `scripts/sync-full-daily.sh`, `config/gcs-to-sheets-historial.js`, `api/package.json`, `Dockerfile.multi`, `Docs_AVI/OPERACIONES.md`
 
 ---
 
