@@ -90,7 +90,7 @@ sh /app/scripts/backup-chats-gcs --force --days 15
 
 ### Full Daily acumulativo — `config/full-daily-to-sheets.js`
 
-- Histórico incremental en la pestaña `FullDaily` de Google Sheets (similar a `Daily`, mismas 21 columnas, PII enmascarada con `***`). **Solo agrega**: nunca borra ni modifica filas existentes.
+- Histórico incremental en la pestaña `FullDaily` de Google Sheets (similar a `Daily`, mismas 21 columnas, PII enmascarada con `***`). **Solo agrega**: nunca borra ni modifica filas existentes. Tras agregar, ordena la hoja por `messageCreatedAtEpoch` de Z a A (más nuevo arriba) con un `sortRange` de Sheets, que solo cambia la posición de las filas.
 - **Base:** CSV existentes en `gs://$GCS_FULL_DAILY_BUCKET/$GCS_FULL_DAILY_PATH` (solo lectura; **no genera archivos nuevos en GCS**). `userEmail/userName/userPhone` también se enmascaran en las filas que vienen de GCS.
 - **Nuevo:** export de Mongo con `--mask-pii` (`npm run export-chats-full-daily` -> `api/chats_full_daily.csv`, temporal, se elimina siempre).
 - **Antiduplicado:** clave compuesta `conversationId::messageId`. Una conversación existente con mensajes nuevos agrega solo esos mensajes; las filas sin ambos IDs se descartan (se cuentan en el log).
@@ -99,6 +99,52 @@ sh /app/scripts/backup-chats-gcs --force --days 15
 - Wrapper: `scripts/sync-full-daily.sh` (dual container/local). Cron propio en Dokploy (ver más abajo).
 - **Env vars** (opcionales, con fallback): `GCS_FULL_DAILY_BUCKET` -> `GCS_BUCKET_NAME` -> `avi-bkt`; `GCS_FULL_DAILY_PATH` -> `GCS_BUCKET_PATH` -> `chats/`; `GCS_FULL_DAILY_FILE_PREFIX` -> `GCS_HISTORIAL_FILE_PREFIX` -> `chats_extended_`; `GOOGLE_SHEETS_FULL_DAILY_TAB` (default `FullDaily`). Además `GOOGLE_CREDENTIALS_JSON` y `GOOGLE_SHEETS_ID`.
 - **Límite:** Google Sheets admite 10M de celdas (~476k filas con 21 columnas).
+
+#### Ejecución manual y prueba local (vs producción)
+
+| | Local (dev) | Producción (Dokploy) |
+|---|---|---|
+| Dónde corre | Su máquina, desde la **raíz del repo** | Contenedor `LibreChat-API` (`/app`) |
+| Disparo | Manual | Cron diario de Dokploy |
+| MongoDB | `mongodb://127.0.0.1:27017/LibreChat` (`docker-compose -f deploy-compose-dev.yml up -d mongodb`) | `MONGO_URI` del contenedor |
+| Variables | `.env` de la raíz (+ variables de sesión para pruebas) | Variables de entorno de Dokploy |
+| Modo del script | `local`: `node config/...` desde la raíz | `container`: `npm --prefix /app/api run ...` |
+| Sheet destino | **Una copia de prueba** | El Sheet real (`GOOGLE_SHEETS_ID`) |
+
+**Local (dev)**
+
+1. Levantar Mongo: `docker-compose -f deploy-compose-dev.yml up -d mongodb`.
+2. **No probar contra el Sheet real.** El `.env` define `GOOGLE_SHEETS_ID`; para probar, hacer una copia del Sheet, compartirla como Editor con el `client_email` de `GOOGLE_CREDENTIALS_JSON` y crear en ella la pestaña `FullDaily`. Las variables de sesión pisan al `.env` sin editarlo (PowerShell):
+   ```powershell
+   $env:GOOGLE_SHEETS_ID = "<ID_DE_LA_COPIA>"
+   $env:GCS_FULL_DAILY_PATH = "avi-chat/"        # solo si difiere de GCS_BUCKET_PATH
+   $env:GOOGLE_SHEETS_FULL_DAILY_TAB = "FullDaily"
+   ```
+3. Ejecutar (desde la raíz del repo, porque `dotenv` lee el `.env` del directorio actual):
+   ```bash
+   sh scripts/sync-full-daily.sh
+   ```
+   O, sin `sh`, los dos pasos por separado:
+   ```bash
+   node config/export-all-chats-extended.js csv api/chats_full_daily.csv --mask-pii   # Mongo -> CSV temporal enmascarado
+   node config/full-daily-to-sheets.js                                                # GCS + CSV -> Sheet (solo agrega)
+   ```
+4. Qué debe verse:
+   - 1.ª corrida (pestaña vacía): siembra con GCS + Mongo; el log muestra `Lote agregado: ... en FullDaily!A1:U...` y `Hoja ordenada por messageCreatedAtEpoch (Z-A)`.
+   - 2.ª corrida sin cambios: `0 filas nuevas. La hoja ya esta al dia.`
+   - Tras enviar mensajes nuevos: solo esas filas (se escriben tras la última fila y la hoja se reordena; quedan arriba, más nuevo primero).
+5. Al terminar: cerrar la terminal (se van las variables), confirmar que no queda `api/chats_full_daily.csv` y borrar la copia del Sheet (contiene el texto de los mensajes sin enmascarar).
+
+**Producción (cron en Dokploy)**
+
+1. Crear la pestaña `FullDaily` en el Sheet real (si no existe, el script falla con un mensaje claro).
+2. Definir `GCS_FULL_DAILY_*` en Dokploy solo si difieren de `GCS_BUCKET_*`.
+3. Probar una vez a mano dentro del contenedor:
+   ```bash
+   docker exec -it LibreChat-API sh -c "sh /app/scripts/sync-full-daily.sh"
+   ```
+4. Crear el cron diario en la UI de Dokploy con el comando `sh /app/scripts/sync-full-daily.sh` (independiente del cron de backup). Como Mongo solo conserva 15 días (cleanup del backup), debe correr al menos una vez dentro de ese plazo; diario es lo recomendado.
+5. La primera ejecución en el Sheet real siembra todo el histórico de GCS + Mongo; las siguientes solo agregan lo nuevo.
 
 ---
 

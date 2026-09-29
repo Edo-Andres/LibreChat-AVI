@@ -9,7 +9,6 @@ const {
   listTargetCsvFiles,
   mergeHeaders,
   parseDateToMs,
-  getRowSortMs,
 } = require('./gcs-to-sheets-historial');
 require('dotenv').config();
 
@@ -158,7 +157,6 @@ function collectNewRecords(rows, seen, label) {
 
 function projectRows(records, headers) {
   const epochIdx = headers.indexOf('messageCreatedAtEpoch');
-  const createdAtIdx = headers.indexOf('messageCreatedAt');
 
   const rows = records.map((record) =>
     headers.map((header) => String(record[header] ?? '').slice(0, MAX_CELL_CHARS)),
@@ -171,14 +169,43 @@ function projectRows(records, headers) {
     }
   }
 
-  // Orden ascendente: lo mas nuevo queda al final de la hoja.
-  rows.sort((rowA, rowB) => {
-    const a = getRowSortMs(rowA, [epochIdx, createdAtIdx]);
-    const b = getRowSortMs(rowB, [epochIdx, createdAtIdx]);
-    return a < b ? -1 : a > b ? 1 : 0;
-  });
-
   return rows;
+}
+
+/**
+ * Ordena la pestana completa por messageCreatedAtEpoch de Z a A (mas nuevo arriba).
+ * Lo hace Sheets en el servidor: solo cambia la posicion de las filas, no su contenido.
+ * Las filas vacias quedan siempre al final.
+ */
+async function sortSheetByEpoch(sheets, epochIdx, columnCount) {
+  const meta = await sheets.spreadsheets.get({
+    spreadsheetId: SPREADSHEET_ID,
+    fields: 'sheets.properties(sheetId,title)',
+  });
+  const sheet = meta.data.sheets.find((item) => item.properties.title === TAB_NAME);
+  if (!sheet) {
+    throw new Error(`No se encontro la pestana "${TAB_NAME}" para ordenar`);
+  }
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: {
+      requests: [
+        {
+          sortRange: {
+            range: {
+              sheetId: sheet.properties.sheetId,
+              startRowIndex: 1, // salta el encabezado
+              startColumnIndex: 0,
+              endColumnIndex: columnCount,
+            },
+            sortSpecs: [{ dimensionIndex: epochIdx, sortOrder: 'DESCENDING' }],
+          },
+        },
+      ],
+    },
+  });
+  console.log('Hoja ordenada por messageCreatedAtEpoch (Z-A)');
 }
 
 function* chunkRows(rows) {
@@ -206,11 +233,12 @@ async function appendToSheet(sheets, values) {
       spreadsheetId: SPREADSHEET_ID,
       range: a1('A1'),
       valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
       requestBody: { values: chunk },
     });
     appendedRows += result.data.updates?.updatedRows || 0;
-    console.log(`Lote agregado: ${chunk.length} filas (acumulado ${appendedRows})`);
+    console.log(
+      `Lote agregado: ${chunk.length} filas (acumulado ${appendedRows}) en ${result.data.updates?.updatedRange}`,
+    );
   }
   return appendedRows;
 }
@@ -274,6 +302,13 @@ async function main() {
     const rows = projectRows(newRecords, headers);
     const values = sheetState.headers.length ? rows : [headers, ...rows];
     await appendToSheet(sheets, values);
+
+    const epochIdx = headers.indexOf('messageCreatedAtEpoch');
+    if (epochIdx === -1) {
+      console.warn('La hoja no tiene la columna messageCreatedAtEpoch: no se ordena');
+    } else {
+      await sortSheetByEpoch(sheets, epochIdx, headers.length);
+    }
 
     console.log(`Full Daily completado: ${rows.length} filas nuevas agregadas a "${TAB_NAME}"`);
     return 0;

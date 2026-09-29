@@ -26,7 +26,7 @@ Este documento registra en español los cambios y features propios del fork AVI 
 ## 2026-09-29
 
 ### ✨ Nuevas Features
-- **Histórico diario acumulativo `FullDaily` (GCS base + Mongo -> Google Sheets)**: agrega solo mensajes nuevos (clave `conversationId::messageId`), nunca borra ni modifica filas, PII enmascarada (`***`) y sin generar archivos nuevos en GCS. Cron propio en Dokploy (`sh /app/scripts/sync-full-daily.sh`); requiere crear la pestaña `FullDaily`. `gcs-to-sheets-historial.js` solo se refactorizó para exponer funciones reutilizables.
+- **Histórico diario acumulativo `FullDaily` (GCS base + Mongo -> Google Sheets)**: agrega solo mensajes nuevos (clave `conversationId::messageId`), nunca borra ni modifica filas, PII enmascarada (`***`), hoja ordenada por `messageCreatedAtEpoch` descendente (más nuevo arriba) y sin generar archivos nuevos en GCS. Cron propio en Dokploy (`sh /app/scripts/sync-full-daily.sh`); requiere crear la pestaña `FullDaily`. `gcs-to-sheets-historial.js` solo se refactorizó para exponer funciones reutilizables.
   Commit: `pendiente` · Archivo(s): `config/full-daily-to-sheets.js`, `scripts/sync-full-daily.sh`, `config/gcs-to-sheets-historial.js`, `api/package.json`, `Dockerfile.multi`, `Docs_AVI/OPERACIONES.md`
 
 ---
