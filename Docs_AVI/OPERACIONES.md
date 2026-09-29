@@ -32,6 +32,7 @@ Los scripts operativos viven en `scripts/` (wrappers shell) y `config/` (lógica
 | `scripts/sync-chats-gcs-extended.sh` | Export extendido → GCS | Vía orquestador |
 | `scripts/gcs-to-sheets-historial.sh` | Consolida CSVs de GCS → Sheets | Manual |
 | `scripts/sync-full-daily.sh` | Historial acumulativo (GCS base + Mongo) -> Sheets `FullDaily`, solo agrega | Cron Dokploy (diario) |
+| `scripts/sync-usuarios.sh` | Snapshot de usuarios (Mongo) -> Sheets `usuarios`, reescribe la pestaña | Cron Dokploy (diario) |
 | `scripts/cleanup-chats.sh` | Elimina chats antiguos | Vía orquestador |
 | `enviar-invitaciones.sh` | Invitaciones masivas por email | Manual |
 
@@ -145,6 +146,21 @@ sh /app/scripts/backup-chats-gcs --force --days 15
    ```
 4. Crear el cron diario en la UI de Dokploy con el comando `sh /app/scripts/sync-full-daily.sh` (independiente del cron de backup). Como Mongo solo conserva 15 días (cleanup del backup), debe correr al menos una vez dentro de ese plazo; diario es lo recomendado.
 5. La primera ejecución en el Sheet real siembra todo el histórico de GCS + Mongo; las siguientes solo agregan lo nuevo.
+
+### Usuarios a Sheets — `config/usuarios-to-sheets.js`
+
+- Escribe la pestaña `usuarios` del Sheet con **todos los usuarios registrados** de Mongo (tengan o no chats), una fila por usuario.
+- **Columnas:** `userId, userEmail, userName, userPhone, userAgeRange, userRegion, userParticipationConsent, userAviRole, userAviSubrole, userCreatedAt` (rol y subrol como nombre, no como ObjectId; `userCreatedAt` con el mismo formato y zona horaria `TZ` que en `Daily`/`FullDaily`).
+- **Reescritura completa** en cada corrida: refleja cambios de rol, teléfono o consentimiento y quita usuarios eliminados. Escribe primero y limpia el sobrante después, por lo que la hoja no queda vacía si algo falla. Si Mongo devuelve 0 usuarios, aborta sin tocar la hoja.
+- **⚠️ PII en claro:** `userEmail`, `userName` y `userPhone` NO se enmascaran (a diferencia de `Daily`/`FullDaily`). Compartir el Sheet solo con quien deba ver esos datos.
+- **Requisito previo:** crear a mano la pestaña `usuarios` en el Sheet (si no existe, el script falla con un mensaje claro).
+- **Ejecución local** (desde la raíz del repo, con Mongo levantado: `docker-compose -f deploy-compose-dev.yml up -d mongodb`):
+  ```bash
+  sh scripts/sync-usuarios.sh              # wrapper
+  node config/usuarios-to-sheets.js        # equivalente directo, sin sh (PowerShell)
+  ```
+- **Ejecución en producción:** `docker exec -it LibreChat-API sh -c "sh /app/scripts/sync-usuarios.sh"`. En producción, cron propio en Dokploy (ver más abajo). Para probar en local usar una copia del Sheet con `$env:GOOGLE_SHEETS_ID` (igual que Full Daily).
+- **Env vars:** `GOOGLE_CREDENTIALS_JSON`, `GOOGLE_SHEETS_ID`, `GOOGLE_SHEETS_USUARIOS_TAB` (default `usuarios`) y `MONGO_URI`.
 
 ---
 
@@ -364,6 +380,7 @@ sh /app/scripts/cleanup-chats.sh --force --days 15
 | `GCS_FULL_DAILY_PATH` | — | `GCS_BUCKET_PATH` → `chats/` | full-daily-to-sheets |
 | `GCS_FULL_DAILY_FILE_PREFIX` | — | `GCS_HISTORIAL_FILE_PREFIX` → `chats_extended_` | full-daily-to-sheets |
 | `GOOGLE_SHEETS_FULL_DAILY_TAB` | — | `FullDaily` | full-daily-to-sheets |
+| `GOOGLE_SHEETS_USUARIOS_TAB` | — | `usuarios` | usuarios-to-sheets |
 
 > `upload-to-gcs-extended.js` tiene el bucket **hardcoded** `avi-bkt` — no lee `GCS_BUCKET_NAME`.
 
@@ -396,6 +413,7 @@ Los cron jobs se configuran **en la UI de Dokploy**, no en el repo. Referencia:
 | **Health Check** | `0 */6 * * *` (cada 6h) | `sh /app/scripts/health-check.sh` | — |
 | **Backup GCS** | (diario, definir) | `sh /app/scripts/backup-chats-gcs --force --days 15` | 15 días en MongoDB; GCS sin auto-limpieza |
 | **Full Daily** | (diario, definir) | `sh /app/scripts/sync-full-daily.sh` | Solo agrega a la pestaña `FullDaily`; no borra |
+| **Usuarios** | (diario, definir) | `sh /app/scripts/sync-usuarios.sh` | Reescribe la pestaña `usuarios` (snapshot) |
 
 > Antes de activar el cron de backup GCS, desactivar cualquier cron previo standalone de cleanup para evitar doble ejecución.
 

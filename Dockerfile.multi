@@ -94,6 +94,10 @@ RUN sed -i 's/\r$//' ./scripts/gcs-to-sheets-historial.sh && chmod +x ./scripts/
 COPY ./config/full-daily-to-sheets.js ./config/full-daily-to-sheets.js
 COPY ./scripts/sync-full-daily.sh ./scripts/sync-full-daily.sh
 RUN sed -i 's/\r$//' ./scripts/sync-full-daily.sh && chmod +x ./scripts/sync-full-daily.sh
+# ✅ Usuarios: snapshot de usuarios (Mongo) a Google Sheets
+COPY ./config/usuarios-to-sheets.js ./config/usuarios-to-sheets.js
+COPY ./scripts/sync-usuarios.sh ./scripts/sync-usuarios.sh
+RUN sed -i 's/\r$//' ./scripts/sync-usuarios.sh && chmod +x ./scripts/sync-usuarios.sh
 # ✅ Scripts para Health Check Audit
 COPY ./config/health-check/ ./config/health-check/
 COPY ./config/services/ ./config/services/
