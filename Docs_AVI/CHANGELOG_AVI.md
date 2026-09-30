@@ -1,7 +1,7 @@
 # 🗓️ Changelog AVI - Historial de Cambios del Fork
 
 **Proyecto:** LibreChat-AVI - Asistente Virtual en Infancia
-**Última actualización:** 29 de septiembre de 2026
+**Última actualización:** 30 de septiembre de 2026
 
 Este documento registra en español los cambios y features propios del fork AVI (roles, búsqueda, region, sincronizaciones, etc.). **No reemplaza** al `CHANGELOG.md` de la raíz del repo, que es el changelog oficial del upstream de LibreChat (en inglés, generado desde PRs de `danny-avila/LibreChat`).
 
@@ -11,6 +11,7 @@ Este documento registra en español los cambios y features propios del fork AVI 
 
 ## 📋 Tabla de Contenidos
 
+- [2026-09-30](#2026-09-30)
 - [2026-09-29](#2026-09-29)
 - [2026-09-26](#2026-09-26)
 - [2026-09-10](#2026-09-10)
@@ -20,6 +21,18 @@ Este documento registra en español los cambios y features propios del fork AVI 
 - [2026-08-17](#2026-08-17)
 - [2026-08-15](#2026-08-15)
 - [Cómo agregar una entrada](#cómo-agregar-una-entrada)
+
+---
+
+## 2026-09-30
+
+### ✨ Nuevas Features
+- **`--no-mask` en `FullDaily`**: `sh /app/scripts/sync-full-daily.sh --no-mask` agrega filas con PII en claro. No modifica filas existentes: para resembrar sin máscara, vaciar la pestaña `FullDaily` antes.
+  Commit: `pendiente` · Archivo(s): `scripts/sync-full-daily.sh`, `config/full-daily-to-sheets.js`, `api/package.json`, `Docs_AVI/OPERACIONES.md`
+
+### 🔧 Fixes
+- **`sync-chats.sh --no-mask` ahora sube a la hoja `Daily`**: `sync-chats-to-sheets:raw` solo exportaba el CSV y no ejecutaba `upload-to-sheets`.
+  Commit: `pendiente` · Archivo(s): `api/package.json`
 
 ---
 
