@@ -1,7 +1,8 @@
 #!/bin/sh
 # scripts/sync-full-daily.sh - Historial acumulativo Full Daily (GCS base + Mongo -> Google Sheets)
-# Solo agrega filas nuevas (clave conversationId+messageId) a la pestana FullDaily; PII enmascarada (***).
-# Uso: sh /app/scripts/sync-full-daily.sh   (cron propio en Dokploy)
+# Solo agrega filas nuevas (clave conversationId+messageId) a la pestana FullDaily; PII enmascarada (***) por defecto.
+# Uso: sh /app/scripts/sync-full-daily.sh [--no-mask]   (cron propio en Dokploy)
+# --no-mask: PII en claro. Las filas ya existentes no cambian: vaciar la pestana antes para resembrar.
 
 set -e
 
@@ -22,25 +23,46 @@ if [ ! -d "$API_DIR" ]; then
   exit 1
 fi
 
+USE_MASK=1
+for arg in "$@"; do
+  if [ "$arg" = "--no-mask" ]; then
+    USE_MASK=0
+  fi
+done
+
 # El CSV temporal contiene datos de chat: se elimina siempre, incluso si un paso falla.
 TMP_CSV="$API_DIR/chats_full_daily.csv"
 trap 'rm -f "$TMP_CSV"' EXIT
 
 echo "Iniciando Full Daily (GCS base + Mongo -> Sheets FullDaily)..."
-echo "API dir: $API_DIR | Modo: $RUN_MODE"
+echo "API dir: $API_DIR | Modo: $RUN_MODE | Mascara PII: $([ $USE_MASK -eq 1 ] && echo 'ACTIVADA (***)' || echo 'desactivada')"
 
 if [ "$RUN_MODE" = "container" ]; then
-  echo "Paso 1/2: Exportando Mongo enmascarado..."
-  npm --prefix "$API_DIR" run export-chats-full-daily
-  echo "Paso 2/2: Agregando filas nuevas a Sheets..."
-  npm --prefix "$API_DIR" run full-daily-to-sheets
+  if [ $USE_MASK -eq 1 ]; then
+    echo "Paso 1/2: Exportando Mongo enmascarado..."
+    npm --prefix "$API_DIR" run export-chats-full-daily
+    echo "Paso 2/2: Agregando filas nuevas a Sheets..."
+    npm --prefix "$API_DIR" run full-daily-to-sheets
+  else
+    echo "Paso 1/2: Exportando Mongo SIN mascara..."
+    npm --prefix "$API_DIR" run export-chats-full-daily:raw
+    echo "Paso 2/2: Agregando filas nuevas a Sheets (sin mascara)..."
+    npm --prefix "$API_DIR" run full-daily-to-sheets -- --no-mask
+  fi
 else
   # En local, ejecutar desde raiz para que dotenv tome .env del proyecto.
   cd "$PROJECT_ROOT"
-  echo "Paso 1/2: Exportando Mongo enmascarado..."
-  node config/export-all-chats-extended.js csv api/chats_full_daily.csv --mask-pii
-  echo "Paso 2/2: Agregando filas nuevas a Sheets..."
-  node config/full-daily-to-sheets.js
+  if [ $USE_MASK -eq 1 ]; then
+    echo "Paso 1/2: Exportando Mongo enmascarado..."
+    node config/export-all-chats-extended.js csv api/chats_full_daily.csv --mask-pii
+    echo "Paso 2/2: Agregando filas nuevas a Sheets..."
+    node config/full-daily-to-sheets.js
+  else
+    echo "Paso 1/2: Exportando Mongo SIN mascara..."
+    node config/export-all-chats-extended.js csv api/chats_full_daily.csv
+    echo "Paso 2/2: Agregando filas nuevas a Sheets (sin mascara)..."
+    node config/full-daily-to-sheets.js --no-mask
+  fi
 fi
 
 echo "Full Daily completado!"

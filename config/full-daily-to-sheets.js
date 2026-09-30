@@ -15,7 +15,8 @@ require('dotenv').config();
 /**
  * Historial acumulativo "Full Daily" (solo agrega, nunca borra ni modifica filas):
  *   base  = CSV existentes en GCS (solo lectura, no se generan archivos nuevos)
- *   nuevo = CSV enmascarado exportado desde Mongo (api/chats_full_daily.csv)
+ *   nuevo = CSV exportado desde Mongo (api/chats_full_daily.csv)
+ * PII enmascarada (***) salvo que se pase --no-mask.
  * Se agregan a la pestana solo las filas cuya clave conversationId::messageId aun no existe.
  */
 
@@ -33,6 +34,8 @@ const FILE_PREFIX =
   'chats_extended_';
 const MONGO_CSV_FILE = path.join(__dirname, '..', 'api', 'chats_full_daily.csv');
 
+// --no-mask: PII en claro (solo debug/uso autorizado). Por defecto se enmascara.
+const NO_MASK = process.argv.includes('--no-mask');
 const PII_COLUMNS = ['userEmail', 'userName', 'userPhone'];
 const MASK_VALUE = '***';
 const MAX_CELL_CHARS = 49000; // Sheets rechaza celdas > 50.000 caracteres
@@ -141,9 +144,11 @@ function collectNewRecords(rows, seen, label) {
     }
     seen.add(key);
 
-    for (const column of PII_COLUMNS) {
-      if (column in record) {
-        record[column] = MASK_VALUE;
+    if (!NO_MASK) {
+      for (const column of PII_COLUMNS) {
+        if (column in record) {
+          record[column] = MASK_VALUE;
+        }
       }
     }
     accepted.push(record);
@@ -266,6 +271,12 @@ async function main() {
     const sheetState = await readSheetState(sheets);
     const seen = sheetState.keys;
     console.log(`Filas existentes en la hoja: ${seen.size}`);
+    console.log(`Mascara PII: ${NO_MASK ? 'desactivada' : 'ACTIVADA (***)'}`);
+    if (NO_MASK && seen.size > 0) {
+      console.warn(
+        'Aviso: la hoja ya tiene filas; conservan su valor previo (posible mezcla con ***). Para resembrar sin mascara, vacia la pestana primero.',
+      );
+    }
 
     // El encabezado de Mongo (21 columnas actuales) define el orden si la hoja esta vacia.
     const mongo = await readMongoCsv();

@@ -98,6 +98,7 @@ sh /app/scripts/backup-chats-gcs --force --days 15
 - **Idempotente:** una segunda ejecución sin mensajes nuevos agrega 0 filas. La primera ejecución siembra la hoja con todo el histórico de GCS + Mongo.
 - **Requisito previo:** crear a mano la pestaña `FullDaily` en el Sheet (si no existe, el script falla con un mensaje claro).
 - Wrapper: `scripts/sync-full-daily.sh` (dual container/local). Cron propio en Dokploy (ver más abajo).
+- **Sin máscara:** `sh /app/scripts/sync-full-daily.sh --no-mask` (export `export-chats-full-daily:raw` + `full-daily-to-sheets.js --no-mask`). Las filas ya existentes no cambian; para tener la pestaña completa sin `***`, vaciarla (con encabezado, la pestaña debe seguir existiendo) y ejecutar con `--no-mask` (siembra GCS + Mongo). No alternar con/sin flag sobre una pestaña con datos (mezcla). ⚠️ PII en claro: cuidar con quién se comparte el Sheet.
 - **Env vars** (opcionales, con fallback): `GCS_FULL_DAILY_BUCKET` -> `GCS_BUCKET_NAME` -> `avi-bkt`; `GCS_FULL_DAILY_PATH` -> `GCS_BUCKET_PATH` -> `chats/`; `GCS_FULL_DAILY_FILE_PREFIX` -> `GCS_HISTORIAL_FILE_PREFIX` -> `chats_extended_`; `GOOGLE_SHEETS_FULL_DAILY_TAB` (default `FullDaily`). Además `GOOGLE_CREDENTIALS_JSON` y `GOOGLE_SHEETS_ID`.
 - **Límite:** Google Sheets admite 10M de celdas (~476k filas con 21 columnas).
 
@@ -172,7 +173,7 @@ sh /app/scripts/backup-chats-gcs --force --days 15
 - **Spreadsheet:** `1Johw_83AhQU-bMwL36x9CV8q1yTwhxsojiBkAMkMh2U` (override via `GOOGLE_SHEETS_ID`), tab `Daily`.
 - **Columnas Daily (20, identicas a Historial):** `userId,userEmail,userName,userPhone,userAgeRange,userRegion,userParticipationConsent,userAviRole,userAviSubrole,userCreatedAt,conversationId,conversationTitle,conversationCreatedAt,conversationUpdatedAt,sender,text,isCreatedByUser,messageId,messageCreatedAt,messageCreatedAtEpoch,feedback` - con `userEmail/userName/userPhone = "***"` (enmascaradas).
 - **Comando:** `sh /app/scripts/sync-chats.sh` (por defecto enmascara) o `sh /app/scripts/sync-chats.sh --mask-pii` explicito; `sh /app/scripts/sync-chats.sh --no-mask` solo debug sin mascara.
-- **NPM:** `api/package.json:export-chats-daily = node ../config/export-all-chats-extended.js csv ../api/chats.csv --mask-pii`, `sync-chats-to-sheets = export-chats-daily && upload-to-sheets`, `sync-chats-to-sheets:raw` (sin mascara).
+- **NPM:** `api/package.json:export-chats-daily = node ../config/export-all-chats-extended.js csv ../api/chats.csv --mask-pii`, `sync-chats-to-sheets = export-chats-daily && upload-to-sheets`, `sync-chats-to-sheets:raw` (sin mascara; exporta y sube a Sheets).
 - **Env vars:** `GOOGLE_CREDENTIALS_JSON` (req), `GOOGLE_SHEETS_ID` (opt, override del default).
 - Borra el CSV local tras subir (`config/upload-to-sheets.js:106-115`). El CSV no se sube a GCS.
 
