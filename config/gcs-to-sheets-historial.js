@@ -76,20 +76,23 @@ function parseCsvBuffer(csvBuffer, fileName) {
   });
 }
 
-async function listTargetCsvFiles(storage) {
-  const [files] = await storage.bucket(BUCKET_NAME).getFiles({ prefix: BUCKET_PATH });
+async function listTargetCsvFiles(
+  storage,
+  { bucketName = BUCKET_NAME, bucketPath = BUCKET_PATH, filePrefix = FILE_PREFIX } = {},
+) {
+  const [files] = await storage.bucket(bucketName).getFiles({ prefix: bucketPath });
 
   const csvFiles = (files || [])
     .filter((file) => {
       const fullName = file.name || '';
       const baseName = fullName.split('/').pop() || '';
-      return fullName.endsWith('.csv') && baseName.startsWith(FILE_PREFIX);
+      return fullName.endsWith('.csv') && baseName.startsWith(filePrefix);
     })
     .sort((a, b) => (a.name < b.name ? -1 : 1));
 
   if (!csvFiles.length) {
     throw new Error(
-      `No se encontraron CSV en gs://${BUCKET_NAME}/${BUCKET_PATH} con prefijo ${FILE_PREFIX}`,
+      `No se encontraron CSV en gs://${bucketName}/${bucketPath} con prefijo ${filePrefix}`,
     );
   }
 
@@ -303,4 +306,12 @@ module.exports = {
   main,
   buildMergedDataFromGCS,
   dedupeRows,
+  normalizeBucketPath,
+  getGCSClient,
+  getSheetsAuth,
+  parseCsvBuffer,
+  listTargetCsvFiles,
+  mergeHeaders,
+  parseDateToMs,
+  getRowSortMs,
 };
