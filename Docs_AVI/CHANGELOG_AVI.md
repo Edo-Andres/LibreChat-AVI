@@ -13,6 +13,8 @@ Este documento registra en español los cambios y features propios del fork AVI 
 
 - [2026-09-30](#2026-09-30)
 - [2026-09-29](#2026-09-29)
+- [2026-09-28](#2026-09-28)
+- [2026-09-27](#2026-09-27)
 - [2026-09-26](#2026-09-26)
 - [2026-09-10](#2026-09-10)
 - [2026-08-21](#2026-08-21)
@@ -43,6 +45,22 @@ Este documento registra en español los cambios y features propios del fork AVI 
   Commit: `pendiente` · Archivo(s): `config/full-daily-to-sheets.js`, `scripts/sync-full-daily.sh`, `config/gcs-to-sheets-historial.js`, `api/package.json`, `Dockerfile.multi`, `Docs_AVI/OPERACIONES.md`
 - **Pestaña `usuarios` en Google Sheets**: snapshot de todos los usuarios de Mongo (`userId, userEmail, userName, userPhone, userAgeRange, userRegion, userParticipationConsent, userAviRole, userAviSubrole, userCreatedAt`) reescrito en cada corrida, con PII en claro. Cron propio en Dokploy (`sh /app/scripts/sync-usuarios.sh`); requiere crear la pestaña `usuarios`.
   Commit: `pendiente` · Archivo(s): `config/usuarios-to-sheets.js`, `scripts/sync-usuarios.sh`, `api/package.json`, `Dockerfile.multi`, `Docs_AVI/OPERACIONES.md`
+
+---
+
+## 2026-09-28
+
+### ⚙️ Otros cambios
+- **Gotcha de despliegue al testear memoria multi-NNA en local**: tras editar `packages/api/src/agents/memory.ts` (feature del 2026-09-27), el backend seguía devolviendo el error de clave viejo (`Invalid key "salud_alergias__sofia". Must be one of: ...` sin mención al sufijo `__<id>`) porque `packages/api/dist` no se había recompilado — el `CLAUDE.md` solo exige build automático para `packages/data-schemas`, no para `packages/api`. Además, `nodemonConfig.ignore` en `package.json` incluye `packages/`, así que ni un rebuild reinicia el backend solo. Solución aplicada: `cd packages/api; npm run build` (PowerShell no soporta `&&`, usar `;`) y reiniciar manualmente `npm run backend:dev`. Aplica a cualquier cambio futuro en `packages/api` o `packages/data-schemas` probado en local.
+  Archivo(s): `packages/api/src/agents/memory.ts` (sin cambios de código adicionales, solo rebuild + restart del backend)
+
+---
+
+## 2026-09-27
+
+### ✨ Nuevas Features
+- **Memoria AVI soporta uno o más NNA por usuario**: `set_memory`/`delete_memory` ahora aceptan claves compuestas `<categoria>__<nna>` (ej. `salud_alergias__sofia`) además de la clave base exacta, para no pisar ni mezclar datos entre NNA de un mismo cuidador. `getFormattedMemories` agrupa las memorias por NNA antes de pasarlas al agente. Ver plan original en `Docs_AVI/_ignore/PLAN_MEMORY_MULTI_NNA.md`.
+  Archivo(s): `packages/api/src/agents/memory.ts`, `packages/api/src/agents/__tests__/memory.test.ts`, `packages/data-schemas/src/methods/memory.ts`
 
 ---
 

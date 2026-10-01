@@ -39,6 +39,31 @@ export interface MemoryConfig {
 export const memoryInstructions =
   'The system automatically stores important user information and can update or delete memories based on user requests, enabling dynamic memory management.';
 
+/** Separator between a base key and a per-person suffix (e.g. `salud_alergias__sofia`) */
+export const MEMORY_KEY_SUFFIX_SEPARATOR = '__';
+
+/**
+ * Validates a memory key against `validKeys`.
+ * Accepts either an exact match in `validKeys`, or a `base__suffix` key where `base` is a
+ * valid key and `suffix` is a non-empty lowercase identifier (e.g. to scope a memory to a
+ * specific person, such as `salud_alergias__sofia`).
+ */
+export const isValidMemoryKey = (key: string, validKeys?: string[]): boolean => {
+  if (!validKeys || validKeys.length === 0) {
+    return true;
+  }
+  if (validKeys.includes(key)) {
+    return true;
+  }
+  const separatorIndex = key.indexOf(MEMORY_KEY_SUFFIX_SEPARATOR);
+  if (separatorIndex <= 0) {
+    return false;
+  }
+  const base = key.slice(0, separatorIndex);
+  const suffix = key.slice(separatorIndex + MEMORY_KEY_SUFFIX_SEPARATOR.length);
+  return validKeys.includes(base) && /^[a-z][a-z_]*$/.test(suffix);
+};
+
 const getDefaultInstructions = (
   validKeys?: string[],
   tokenLimit?: number,
@@ -64,7 +89,11 @@ The \`delete_memory\` tool should only be used in two scenarios:
 
 5. If the user doesn't ask you to remember or forget something, DO NOT use any memory tools.
 
-${validKeys && validKeys.length > 0 ? `\nVALID KEYS: ${validKeys.join(', ')}` : ''}
+${
+  validKeys && validKeys.length > 0
+    ? `\nVALID KEYS: ${validKeys.join(', ')} (optionally suffixed with "${MEMORY_KEY_SUFFIX_SEPARATOR}<id>", e.g. "${validKeys[0]}${MEMORY_KEY_SUFFIX_SEPARATOR}name", to store data scoped to a specific person)`
+    : ''
+}
 
 ${tokenLimit ? `\nTOKEN LIMIT: Maximum ${tokenLimit} tokens per memory value.` : ''}
 
@@ -92,13 +121,20 @@ export const createMemoryTool = ({
   return tool(
     async ({ key, value }) => {
       try {
-        if (validKeys && validKeys.length > 0 && !validKeys.includes(key)) {
+        if (!isValidMemoryKey(key, validKeys)) {
           logger.warn(
-            `Memory Agent failed to set memory: Invalid key "${key}". Must be one of: ${validKeys.join(
+            `Memory Agent failed to set memory: Invalid key "${key}". Must be one of: ${validKeys!.join(
               ', ',
-            )}`,
+            )} (optionally suffixed with "${MEMORY_KEY_SUFFIX_SEPARATOR}<id>")`,
           );
-          return [`Invalid key "${key}". Must be one of: ${validKeys.join(', ')}`, undefined];
+          return [
+            `Invalid key "${key}". Must be one of: ${validKeys!.join(
+              ', ',
+            )} — optionally suffixed with "${MEMORY_KEY_SUFFIX_SEPARATOR}<id>" (e.g. "${
+              validKeys![0]
+            }${MEMORY_KEY_SUFFIX_SEPARATOR}name") to store data per person.`,
+            undefined,
+          ];
         }
 
         const tokenCount = Tokenizer.getTokenCount(value, 'o200k_base');
@@ -172,7 +208,11 @@ export const createMemoryTool = ({
           .string()
           .describe(
             validKeys && validKeys.length > 0
-              ? `The key of the memory value. Must be one of: ${validKeys.join(', ')}`
+              ? `The key of the memory value. Must be one of: ${validKeys.join(
+                  ', ',
+                )}. Optionally suffixed with "${MEMORY_KEY_SUFFIX_SEPARATOR}<id>" (e.g. "${
+                  validKeys[0]
+                }${MEMORY_KEY_SUFFIX_SEPARATOR}name") to scope the memory to a specific person.`
               : 'The key identifier for this memory',
           ),
         value: z
@@ -200,13 +240,20 @@ const createDeleteMemoryTool = ({
   return tool(
     async ({ key }) => {
       try {
-        if (validKeys && validKeys.length > 0 && !validKeys.includes(key)) {
+        if (!isValidMemoryKey(key, validKeys)) {
           logger.warn(
-            `Memory Agent failed to delete memory: Invalid key "${key}". Must be one of: ${validKeys.join(
+            `Memory Agent failed to delete memory: Invalid key "${key}". Must be one of: ${validKeys!.join(
               ', ',
-            )}`,
+            )} (optionally suffixed with "${MEMORY_KEY_SUFFIX_SEPARATOR}<id>")`,
           );
-          return [`Invalid key "${key}". Must be one of: ${validKeys.join(', ')}`, undefined];
+          return [
+            `Invalid key "${key}". Must be one of: ${validKeys!.join(
+              ', ',
+            )} — optionally suffixed with "${MEMORY_KEY_SUFFIX_SEPARATOR}<id>" (e.g. "${
+              validKeys![0]
+            }${MEMORY_KEY_SUFFIX_SEPARATOR}name") to store data per person.`,
+            undefined,
+          ];
         }
 
         const artifact: Record<Tools.memory, MemoryArtifact> = {
@@ -238,7 +285,11 @@ const createDeleteMemoryTool = ({
           .string()
           .describe(
             validKeys && validKeys.length > 0
-              ? `The key of the memory to delete. Must be one of: ${validKeys.join(', ')}`
+              ? `The key of the memory to delete. Must be one of: ${validKeys.join(
+                  ', ',
+                )}. Optionally suffixed with "${MEMORY_KEY_SUFFIX_SEPARATOR}<id>" (e.g. "${
+                  validKeys[0]
+                }${MEMORY_KEY_SUFFIX_SEPARATOR}name") to target a memory scoped to a specific person.`
               : 'The key identifier of the memory to delete',
           ),
       }),
